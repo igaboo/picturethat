@@ -23,23 +23,25 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _views[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
+      resizeToAvoidBottomInset: false,
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.transparent,
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: [
-          BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.lightbulb),
             label: 'Prompts',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.feed),
+          NavigationDestination(
+            icon: Icon(Icons.image),
             label: 'Feed',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),

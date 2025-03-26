@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
+import 'firebase_options.dart';
+
+import 'package:picturethat/widgets/auth_wrapper.dart';
 import 'package:picturethat/screens/authenticated/edit_profile.dart';
 import 'package:picturethat/screens/authenticated/feed_screen.dart';
 import 'package:picturethat/screens/authenticated/followers_screen.dart';
@@ -12,8 +16,6 @@ import 'package:picturethat/screens/authenticated/submit_photo_screen.dart';
 import 'package:picturethat/screens/landing_screen.dart';
 import 'package:picturethat/screens/login_screen.dart';
 import 'package:picturethat/screens/register_screen.dart';
-import 'package:picturethat/screens/splash_screen.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,23 +33,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Picture That",
-      theme: ThemeData(primarySwatch: Colors.deepOrange),
-      darkTheme: ThemeData.dark(),
-      initialRoute: "/",
+      theme: ThemeData(
+        brightness: Brightness.light,
+        colorSchemeSeed: Colors.yellow,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.yellow,
+      ),
+      home: AuthWrapper(),
       routes: {
-        "/": (context) => SplashScreen(),
-        "/landing": (context) => LandingScreen(),
-        "/login": (context) => LoginScreen(),
-        "/register": (context) => RegisterScreen(),
-        "/home": (context) => Home(),
-        "/prompts": (context) => PromptsScreen(),
-        "/feed": (context) => FeedScreen(),
-        "/profile": (context) => ProfileScreen(),
-        "/submit-photo": (context) => SubmitPhotoScreen(),
-        "/settings": (context) => SettingsScreen(),
-        "/edit-profile": (context) => EditProfileScreen(),
-        "/search": (context) => SearchScreen(),
-        "/followers": (context) => FollowersScreen(),
+        "/landing_screen": (context) => LandingScreen(),
+        "/login_screen": (context) => LoginScreen(),
+        "/register_screen": (context) => RegisterScreen(),
+        "/home_screen": (context) => Home(),
+        "/prompts_screen": (context) => PromptsScreen(),
+        "/feed_screen": (context) => FeedScreen(),
+        "/profile_screen": (context) => ProfileScreen(),
+        "/submit_photo_screen": (context) => SubmitPhotoScreen(),
+        "/settings_screen": (context) => SettingsScreen(),
+        "/edit_profile_screen": (context) => EditProfileScreen(),
+        "/search_screen": (context) => SearchScreen(),
+        "/followers_screen": (context) => FollowersScreen(),
       },
     );
   }
