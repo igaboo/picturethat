@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   firebase_core: ^3.12.1
+  flutter_native_splash: ^2.4.4
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +19,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+# make sure to run `dart run flutter_native_splash:create`
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/splash_screen.png
+  color_dark: "#000000"
+  image_dark: assets/splash_screen.png
+
+  android_12:
+    icon_background_color: "#FFD209"
+    image: assets/splash_screen.png
+    icon_background_color_dark: "#FFD209"
+    image_dark: assets/splash_screen.png
