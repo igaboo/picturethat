@@ -1,33 +1,38 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:picturethat/utils/getErrorMessage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picturethat/providers/firebase_provider.dart';
+import 'package:picturethat/utils/get_error_message.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
   LoginScreenState createState() => LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   void _login() async {
     try {
-      if (_formKey.currentState!.validate()) {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
+      if (!_formKey.currentState!.validate()) return;
+
+      final firebaseService = ref.read(firebaseProvider);
+
+      await firebaseService.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          "/home_screen",
+          (route) => false,
         );
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            "/home_screen",
-            (route) => false,
-          );
-        }
       }
     } catch (e) {
       if (mounted) {

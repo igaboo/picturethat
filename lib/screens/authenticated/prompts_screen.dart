@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picturethat/utils/getFormattedDate.dart';
+import 'package:picturethat/utils/get_formatted_date.dart';
 
 class PromptsScreen extends StatelessWidget {
   const PromptsScreen({super.key});

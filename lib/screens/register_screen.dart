@@ -1,41 +1,60 @@
 import 'package:dotted_border/dotted_border.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/utils/getErrorMessage.dart';
+import 'package:picturethat/providers/firebase_provider.dart';
+import 'package:picturethat/utils/handle_error.dart';
+import 'package:picturethat/utils/image_utils.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
   RegisterScreenState createState() => RegisterScreenState();
 }
 
-class RegisterScreenState extends State<RegisterScreen> {
+class RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   XFile? _profileImage;
 
-  final ImagePicker _imagePicker = ImagePicker();
-
   void _register() async {
     try {
+      final firebaseService = ref.read(firebaseProvider);
+
       if (_profileImage == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Select a profile image before continuing")),
+        handleError(
+          context,
+          "Select a profile image before continuing",
         );
       }
 
-      if (_formKey.currentState!.validate() && _profileImage != null) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      bool isAvailable = await firebaseService.isUsernameAvailable(
+        username: _usernameController.text,
+      );
+
+      if (mounted && !isAvailable) {
+        handleError(context, "Username is already taken");
+      }
+
+      if (_formKey.currentState!.validate() &&
+          _profileImage != null &&
+          isAvailable) {
+        await firebaseService.signUpWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          username: _usernameController.text,
+          profileImage: _profileImage!,
         );
+
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -45,31 +64,23 @@ class RegisterScreenState extends State<RegisterScreen> {
         }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e is FirebaseAuthException
-                ? getErrorMessage(e.code)
-                : e.toString()),
-          ),
-        );
-      }
+      if (mounted) handleError(context, e);
     }
   }
 
   void _selectProfileImage() async {
     try {
-      final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final image = await ImageUtils.pickImage();
       if (image != null) {
-        setState(() => _profileImage = image);
+        setState(() {
+          _profileImage = image;
+        });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "An error occurred while selecting an image. Please try again."),
-          ),
+        handleError(
+          context,
+          "An error occurred while selecting an image. Please try again.",
         );
       }
     }
@@ -93,7 +104,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     spacing: 10,
                     children: [
-                      Container(
+                      SizedBox(
                         width: 120,
                         height: 120,
                         child: _profileImage == null
@@ -155,6 +166,24 @@ class RegisterScreenState extends State<RegisterScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Enter a password";
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _passwordConfirmController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Confirm Password",
+                  helperText: ' ',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Enter your password again";
+                  }
+                  if (value != _passwordController.text) {
+                    return "Passwords do not match";
                   }
                   return null;
                 },
