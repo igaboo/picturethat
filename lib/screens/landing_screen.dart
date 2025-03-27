@@ -1,6 +1,5 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:picturethat/widgets/custom_image.dart';
-import 'dart:math' as math;
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -16,49 +15,14 @@ class LandingScreen extends StatelessWidget {
           children: [
             // Images
             Padding(
-              padding: const EdgeInsets.only(top: 32.0),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Transform.rotate(
-                    angle: -10 * math.pi / 180,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        child: CustomNetworkImage(
-                          url:
-                              "https://media.istockphoto.com/id/1317323736/photo/a-view-up-into-the-trees-direction-sky.jpg?s=612x612&w=0&k=20&c=i4HYO7xhao7CkGy7Zc_8XSNX_iqG0vAwNsrH1ERmw2Q=",
-                          width: 180,
-                          height: 280,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Transform.rotate(
-                    angle: 10 * math.pi / 180,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: CustomNetworkImage(
-                        url:
-                            "https://img.freepik.com/free-photo/amazing-ants-carry-fruit-heavier-than-their-bodies-amazing-strong-ant_488145-2669.jpg?semt=ais_hybrid",
-                        width: 180,
-                        height: 280,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: CustomNetworkImage(
-                      url:
-                          "https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg",
-                      width: 230,
-                      height: 330,
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.only(top: 32),
+              child: Image(
+                image: AssetImage("assets/hero.png"),
+                width: double.infinity,
+                fit: BoxFit.cover,
               ),
             ),
-            // Text Section
+            // Text
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -100,6 +64,32 @@ class LandingScreen extends StatelessWidget {
                     },
                     child: Text("Login"),
                   ),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                      children: [
+                        TextSpan(text: "By continuing, you agree to our \n"),
+                        TextSpan(
+                          text: "Terms of Service",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()..onTap = () {},
+                        ),
+                        TextSpan(text: " and "),
+                        TextSpan(
+                          text: "Privacy Policy",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()..onTap = () {},
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),

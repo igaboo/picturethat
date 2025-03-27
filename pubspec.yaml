@@ -26,6 +26,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/hero.png
 
 # make sure to run `dart run flutter_native_splash:create`
 flutter_native_splash:
