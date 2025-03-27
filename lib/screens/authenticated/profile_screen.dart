@@ -13,15 +13,6 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final firebaseService = ref.read(firebaseServiceProvider);
-
-    // final args = ModalRoute.of(context)!.settings.arguments as Map;
-    // final uid = args["uid"];
-
-    // final userAsync = uid != null
-    //     ? firebaseService.getUser(userId: uid)
-    //     : ref.watch(userProvider);
-
     final userAsync = ref.watch(userProvider);
 
     return Scaffold(
@@ -105,7 +96,7 @@ class ProfileScreen extends ConsumerWidget {
                         Column(
                           children: [
                             Text(
-                              "x",
+                              user.followersCount.toString(),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(
@@ -117,7 +108,7 @@ class ProfileScreen extends ConsumerWidget {
                         Column(
                           children: [
                             Text(
-                              "y",
+                              user.followingCount.toString(),
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(

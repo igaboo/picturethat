@@ -24,6 +24,17 @@ class FirebaseService {
     }
   }
 
+  // get count of documents from a query
+  Future<int> getDocumentCount({required Query query}) async {
+    try {
+      final countQuery = await query.count();
+      final AggregateQuerySnapshot snapshot = await countQuery.get();
+      return snapshot.count ?? 0;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // sign up with email & password
   Future<void> signUpWithEmailAndPassword({
     required String email,
@@ -87,7 +98,26 @@ class FirebaseService {
       DocumentSnapshot userDoc =
           await _db.collection("users").doc(userId).get();
       if (!userDoc.exists) return null;
-      return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+
+      final followersCount = await getDocumentCount(
+        query: _db
+            .collection("relationships")
+            .where("followerUid", isEqualTo: userId),
+      );
+
+      final followingCount = await getDocumentCount(
+        query: _db
+            .collection("relationships")
+            .where("followingUid", isEqualTo: userId),
+      );
+
+      final userData = {
+        ...userDoc.data() as Map<String, dynamic>,
+        "followersCount": followersCount,
+        "followingCount": followingCount,
+      };
+
+      return UserModel.fromMap(userData);
     } catch (e) {
       rethrow;
     }
