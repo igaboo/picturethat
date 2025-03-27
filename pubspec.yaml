@@ -15,6 +15,9 @@ dependencies:
   dotted_border: ^2.1.0
   image_picker: ^1.1.2
   intl: ^0.20.2
+  firebase_storage: ^12.4.4
+  cloud_firestore: ^5.6.5
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
@@ -26,13 +29,13 @@ flutter:
 
 # make sure to run `dart run flutter_native_splash:create`
 flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/splash_screen.png
-  color_dark: "#000000"
-  image_dark: assets/splash_screen.png
+  color: "#FFF8F2"
+  image: assets/splash_screen_light.png
+  color_dark: "#17130B"
+  image_dark: assets/splash_screen_dark.png
 
   android_12:
-    icon_background_color: "#FFD209"
-    image: assets/splash_screen.png
-    icon_background_color_dark: "#FFD209"
-    image_dark: assets/splash_screen.png
+    icon_background_color: "#FFF8F2"
+    image: assets/splash_screen_light.png
+    icon_background_color_dark: "#17130B"
+    image_dark: assets/splash_screen_dark.png
