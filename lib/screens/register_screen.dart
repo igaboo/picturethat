@@ -7,6 +7,8 @@ import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
+final PROFILE_IMAGE_SIZE = 180.0;
+
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -105,8 +107,8 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                     spacing: 10,
                     children: [
                       SizedBox(
-                        width: 120,
-                        height: 120,
+                        width: PROFILE_IMAGE_SIZE,
+                        height: PROFILE_IMAGE_SIZE,
                         child: _profileImage == null
                             ? DottedBorder(
                                 borderType: BorderType.Circle,
@@ -128,7 +130,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                               )
                             : CustomLocalImage(
                                 path: _profileImage!.path,
-                                borderRadius: 120 / 2,
+                                borderRadius: PROFILE_IMAGE_SIZE / 2,
                               ),
                       ),
                       Text(
@@ -229,10 +231,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: "Username",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
-                ),
+                    labelText: "Username",
+                    helperText: ' ',
+                    border: OutlineInputBorder(),
+                    prefix: Text("@")),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Enter a username";

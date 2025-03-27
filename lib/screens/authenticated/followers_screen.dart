@@ -5,9 +5,17 @@ class FollowersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    // determine uid from arguments
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final type = args["type"] as String;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(type),
+      ),
       body: Center(
-        child: Text("Followers Screen"),
+        child: Text("$type Screen"),
       ),
     );
   }

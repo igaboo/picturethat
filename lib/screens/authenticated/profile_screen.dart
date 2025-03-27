@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
+final PROFILE_IMAGE_SIZE = 180.0;
+
 class ProfileScreen extends ConsumerWidget {
   final String? uid;
 
@@ -70,9 +72,9 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   CustomNetworkImage(
                     url: user.profileImageUrl,
-                    height: 120.0,
-                    width: 120.0,
-                    borderRadius: 120.0 / 2.0,
+                    height: PROFILE_IMAGE_SIZE,
+                    width: PROFILE_IMAGE_SIZE,
+                    borderRadius: PROFILE_IMAGE_SIZE / 2,
                   ),
                   Column(
                     children: [
@@ -82,41 +84,82 @@ class ProfileScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       Text(
-                        user.username,
+                        "@${user.username}",
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
+                  // Stats
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          children: [
-                            Text(
-                              user.followersCount.toString(),
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            Text(
-                              "followers",
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            )
-                          ],
+                        // Submissions
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                "0",
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              Text(
+                                "submissions",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              )
+                            ],
+                          ),
                         ),
-                        Column(
-                          children: [
-                            Text(
-                              user.followingCount.toString(),
-                              style: Theme.of(context).textTheme.titleLarge,
+                        // Followers
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              "/followers_screen",
+                              arguments: {
+                                "type": "Followers",
+                                "uid": user.uid,
+                              },
                             ),
-                            Text(
-                              "following",
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            )
-                          ],
+                            child: Column(
+                              children: [
+                                Text(
+                                  user.followersCount.toString(),
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                Text(
+                                  "followers",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                )
+                              ],
+                            ),
+                          ),
                         ),
+                        // Following
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              "/followers_screen",
+                              arguments: {
+                                "type": "Following",
+                                "uid": user.uid,
+                              },
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  user.followingCount.toString(),
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                Text(
+                                  "following",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                )
+                              ],
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ),
@@ -124,7 +167,7 @@ class ProfileScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
-                      spacing: 10.0,
+                      spacing: 16.0,
                       children: [
                         Expanded(
                           child: FilledButton(
