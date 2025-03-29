@@ -11,26 +11,44 @@ class FeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // get prompt id from args
+    // if prompt id is null, then we are on the main feed
     final promptId = ModalRoute.of(context)?.settings.arguments as String?;
     final bool isPrompt = promptId != null;
-    AsyncValue<PromptModel?> promptAsync = const AsyncValue.data(null);
-    if (isPrompt) {
-      promptAsync = ref.watch(promptProvider(promptId));
-    }
-    final SubmissionQueryParam queryParam;
-    if (isPrompt) {
-      queryParam =
-          (type: SubmissionQueryType.byPrompt, id: promptId, user: null);
-    } else {
-      queryParam = (type: SubmissionQueryType.all, id: null, user: null);
-    }
-    bool isTodaysPrompt = isToday(promptAsync.value?.date ?? DateTime.now());
+    final AsyncValue<PromptModel?> promptAsync = isPrompt
+        ? ref.watch(promptProvider(promptId))
+        : const AsyncValue.data(null); // Watch only if isPrompt is true
+
+    final SubmissionQueryParam queryParam = isPrompt
+        ? (type: SubmissionQueryType.byPrompt, id: promptId, user: null)
+        : (type: SubmissionQueryType.all, id: null, user: null);
 
     final submissionAsync = ref.watch(submissionNotifierProvider(queryParam));
 
     Future<void> refreshSubmissions() async {
       ref.invalidate(submissionNotifierProvider(queryParam));
       await ref.read(submissionNotifierProvider(queryParam).future);
+    }
+
+    // only show a submit button if we are on today's prompt
+    Widget? fab;
+    if (isPrompt) {
+      fab = promptAsync.when(
+          loading: () => null,
+          error: (e, _) => null,
+          data: (prompt) {
+            if (prompt != null && isToday(prompt.date)) {
+              return FloatingActionButton.extended(
+                onPressed: () => Navigator.pushNamed(
+                    context, "/submit_photo_screen",
+                    arguments: prompt.id),
+                label: Text("Submit Prompt"),
+                icon: Icon(Icons.add),
+              );
+            } else {
+              return null;
+            }
+          });
     }
 
     return Scaffold(
@@ -51,14 +69,7 @@ class FeedScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: isTodaysPrompt
-          ? FloatingActionButton.extended(
-              onPressed: () =>
-                  Navigator.pushNamed(context, "/submit_photo_screen"),
-              label: Text("Submit Prompt"),
-              icon: Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: fab,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,
       body: submissionAsync.when(
@@ -66,7 +77,7 @@ class FeedScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text("Error: $e")),
         data: (submissions) {
           if (submissions.isEmpty) {
-            return Center(child: Text("No submissions found"));
+            return Center(child: Text("No submissions yet!"));
           }
 
           return RefreshIndicator(

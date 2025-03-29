@@ -47,7 +47,7 @@ class SubmissionListSliver extends ConsumerWidget {
     if (submissions.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
-          child: Text("No submissions found"),
+          child: Text("No submissions yet!"),
         ),
       );
     }
