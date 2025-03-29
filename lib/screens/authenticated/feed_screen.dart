@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/providers/submission_provider.dart';
+import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 
 class FeedScreen extends ConsumerWidget {
@@ -11,9 +12,11 @@ class FeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final promptId = ModalRoute.of(context)?.settings.arguments as String?;
-
     final bool isPrompt = promptId != null;
-
+    AsyncValue<PromptModel?> promptAsync = const AsyncValue.data(null);
+    if (isPrompt) {
+      promptAsync = ref.watch(promptProvider(promptId));
+    }
     final SubmissionQueryParam queryParam;
     if (isPrompt) {
       queryParam =
@@ -21,13 +24,9 @@ class FeedScreen extends ConsumerWidget {
     } else {
       queryParam = (type: SubmissionQueryType.all, id: null, user: null);
     }
+    bool isTodaysPrompt = isToday(promptAsync.value?.date ?? DateTime.now());
 
     final submissionAsync = ref.watch(submissionNotifierProvider(queryParam));
-
-    AsyncValue<PromptModel?> promptAsync = const AsyncValue.data(null);
-    if (isPrompt) {
-      promptAsync = ref.watch(promptProvider(promptId));
-    }
 
     Future<void> refreshSubmissions() async {
       ref.invalidate(submissionNotifierProvider(queryParam));
@@ -52,11 +51,14 @@ class FeedScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, "/submit_photo_screen"),
-        label: Text("Submit Prompt"),
-        icon: Icon(Icons.add),
-      ),
+      floatingActionButton: isTodaysPrompt
+          ? FloatingActionButton.extended(
+              onPressed: () =>
+                  Navigator.pushNamed(context, "/submit_photo_screen"),
+              label: Text("Submit Prompt"),
+              icon: Icon(Icons.add),
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,
       body: submissionAsync.when(

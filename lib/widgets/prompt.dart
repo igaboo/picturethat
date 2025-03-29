@@ -3,6 +3,7 @@ import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/utils/get_formatted_date.dart';
 import 'package:picturethat/utils/get_formatted_number.dart';
 import 'package:picturethat/utils/get_time_left.dart';
+import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
 final WIDGET_HEIGHT = 350.0;
@@ -15,16 +16,9 @@ class Prompt extends StatelessWidget {
     super.key,
   });
 
-  bool _isToday(DateTime date) {
-    final today = DateTime.now();
-    return date.year == today.year &&
-        date.month == today.month &&
-        date.day == today.day;
-  }
-
   @override
   Widget build(BuildContext context) {
-    bool isToday = _isToday(prompt.date!);
+    bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
       onTap: () =>
@@ -36,10 +30,11 @@ class Prompt extends StatelessWidget {
           spacing: 5.0,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(vertical: isToday ? 14.0 : 0.0),
+              padding:
+                  EdgeInsets.symmetric(vertical: isTodaysPrompt ? 14.0 : 0.0),
               child: Text(
                 getFormattedDate(prompt.date!),
-                style: isToday
+                style: isTodaysPrompt
                     ? Theme.of(context).textTheme.titleLarge
                     : Theme.of(context).textTheme.titleMedium,
               ),
@@ -139,7 +134,7 @@ class Prompt extends StatelessWidget {
                         ],
                       ),
                       Visibility(
-                        visible: isToday,
+                        visible: isTodaysPrompt,
                         child: IconButton.filled(
                           onPressed: () {},
                           icon: Icon(Icons.add_a_photo),
