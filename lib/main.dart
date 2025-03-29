@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 
-import 'package:picturethat/widgets/auth_wrapper.dart';
+import 'package:picturethat/auth_wrapper.dart';
 import 'package:picturethat/screens/authenticated/edit_profile_screen.dart';
 import 'package:picturethat/screens/authenticated/feed_screen.dart';
 import 'package:picturethat/screens/authenticated/followers_screen.dart';

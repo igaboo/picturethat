@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/providers/firebase_provider.dart';
 import 'package:picturethat/providers/user_provider.dart';
+import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
-final PROFILE_IMAGE_SIZE = 180.0;
+final PROFILE_IMAGE_SIZE = 150.0;
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -47,9 +47,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       if (!_formKey.currentState!.validate()) return;
 
-      final firebaseService = ref.read(firebaseProvider);
-
-      await firebaseService.updateUserProfile(
+      await updateUserProfile(
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
         username: _usernameController.text,
@@ -65,7 +63,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userProvider);
+    final userAsync = ref.watch(userProvider((auth.currentUser?.uid)!));
 
     return Scaffold(
       appBar: AppBar(

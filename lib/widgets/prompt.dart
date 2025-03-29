@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/utils/get_formatted_date.dart';
 import 'package:picturethat/utils/get_formatted_number.dart';
+import 'package:picturethat/utils/get_time_left.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
-final WIDGET_HEIGHT = 450.0;
+final WIDGET_HEIGHT = 350.0;
 
 class Prompt extends StatelessWidget {
-  final String id;
-  final String title;
-  final int submissionCount;
-  final String imageUrl;
-  final DateTime date;
+  final PromptModel prompt;
 
   const Prompt({
-    required this.id,
-    required this.title,
-    required this.submissionCount,
-    required this.imageUrl,
-    required this.date,
+    required this.prompt,
     super.key,
   });
 
@@ -30,10 +24,11 @@ class Prompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isToday = _isToday(date);
+    bool isToday = _isToday(prompt.date!);
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, "/feed_screen", arguments: id),
+      onTap: () =>
+          Navigator.pushNamed(context, "/feed_screen", arguments: prompt.id),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -43,7 +38,7 @@ class Prompt extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(vertical: isToday ? 14.0 : 0.0),
               child: Text(
-                getFormattedDate(date),
+                getFormattedDate(prompt.date!),
                 style: isToday
                     ? Theme.of(context).textTheme.titleLarge
                     : Theme.of(context).textTheme.titleMedium,
@@ -52,7 +47,7 @@ class Prompt extends StatelessWidget {
             Stack(
               children: [
                 CustomNetworkImage(
-                  url: imageUrl,
+                  url: prompt.imageUrl!,
                   width: double.infinity,
                   height: WIDGET_HEIGHT,
                 ),
@@ -77,6 +72,7 @@ class Prompt extends StatelessWidget {
                   ),
                 ),
                 Positioned(
+                  top: 16.0,
                   bottom: 16.0,
                   left: 16.0,
                   right: 16.0,
@@ -88,13 +84,57 @@ class Prompt extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            title,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          // time left pill
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 4.0,
+                              horizontal: 10.0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(150),
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            child: Row(
+                              spacing: 8.0,
+                              children: [
+                                Container(
+                                  width: 8.0,
+                                  height: 8.0,
+                                  decoration: BoxDecoration(
+                                    color: Colors.lightGreen,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Text(
+                                  getTimeLeft(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(
+                                        color: Colors.white,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
+                          Spacer(),
+                          // prompt title
                           Text(
-                            "${getFormattedNumber(submissionCount)} submissions",
-                            style: Theme.of(context).textTheme.bodySmall,
+                            prompt.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                  color: Colors.white,
+                                ),
+                          ),
+                          // submission count
+                          Text(
+                            "${getFormattedNumber(prompt.submissionCount!)} submissions",
+                            style:
+                                Theme.of(context).textTheme.bodySmall!.copyWith(
+                                      color: Colors.white,
+                                    ),
                           ),
                         ],
                       ),

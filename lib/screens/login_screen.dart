@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/providers/firebase_provider.dart';
+import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/get_error_message.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,9 +20,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       if (!_formKey.currentState!.validate()) return;
 
-      final firebaseService = ref.read(firebaseProvider);
-
-      await firebaseService.signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );

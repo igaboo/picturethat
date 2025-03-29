@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/providers/firebase_provider.dart';
+import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/widgets/settings_list_tile.dart';
 
@@ -9,8 +9,7 @@ class SettingsScreen extends ConsumerWidget {
 
   void _logout(BuildContext context, WidgetRef ref) async {
     try {
-      final firebaseService = ref.read(firebaseProvider);
-      await firebaseService.signOut();
+      await signOut();
 
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(

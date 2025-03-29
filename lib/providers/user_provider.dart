@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/user_model.dart';
+import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/providers/auth_provider.dart';
-import 'package:picturethat/providers/firebase_provider.dart';
 
-final userProvider = FutureProvider<UserModel?>((ref) async {
-  final firebaseService = ref.read(firebaseProvider);
-  final user = ref.watch(authProvider).value;
+final userProvider =
+    FutureProvider.family<UserModel?, String>((ref, userId) async {
+  // ensures auth state is loaded, will reset all state when auth changes
+  ref.watch(authProvider);
 
-  if (user == null) return null;
-
-  return await firebaseService.getUser(userId: user.uid);
+  return getUser(userId: userId);
 });
