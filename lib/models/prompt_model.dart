@@ -5,6 +5,8 @@ class PromptModel {
   String title;
   int? submissionCount;
   String? imageUrl;
+  String? imageAuthorUrl;
+  String? imageAuthorName;
   DateTime? date;
 
   PromptModel({
@@ -12,6 +14,8 @@ class PromptModel {
     required this.title,
     this.submissionCount,
     this.imageUrl,
+    this.imageAuthorUrl,
+    this.imageAuthorName,
     this.date,
   });
 
@@ -21,6 +25,8 @@ class PromptModel {
       title: data['title'],
       submissionCount: data['submissionCount'],
       imageUrl: data['imageUrl'],
+      imageAuthorUrl: data['imageAuthorUrl'],
+      imageAuthorName: data['imageAuthorName'],
       date: (data["date"] as Timestamp).toDate(),
     );
   }

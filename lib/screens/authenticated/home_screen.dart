@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:picturethat/screens/authenticated/feed_screen.dart';
 import 'package:picturethat/screens/authenticated/profile_screen.dart';
 import 'package:picturethat/screens/authenticated/prompts_screen.dart';
+import 'package:picturethat/screens/authenticated/search_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -16,6 +17,7 @@ class _HomeState extends State<Home> {
   final List<Widget> _views = [
     PromptsScreen(),
     FeedScreen(),
+    SearchScreen(),
     ProfileScreen(),
   ];
 
@@ -35,15 +37,19 @@ class _HomeState extends State<Home> {
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.lightbulb),
-            label: 'Prompts',
+            label: "Prompts",
           ),
           NavigationDestination(
             icon: Icon(Icons.image),
-            label: 'Feed',
+            label: "Feed",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            label: "Search",
           ),
           NavigationDestination(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: "Profile",
           ),
         ],
       ),

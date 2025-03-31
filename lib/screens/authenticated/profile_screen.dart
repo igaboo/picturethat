@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/firebase_service.dart';
+import 'package:picturethat/utils/get_clean_url.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:picturethat/widgets/submission_list.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final PROFILE_IMAGE_SIZE = 150.0;
 
@@ -63,6 +66,10 @@ class ProfileScreen extends ConsumerWidget {
             return const Text("No user found");
           }
 
+          final isSelf = user.uid == auth.currentUser?.uid;
+          final userHasBio = user.bio != null && user.bio!.isNotEmpty;
+          final userHasUrl = user.url != null && user.url!.isNotEmpty;
+
           final queryParam =
               (type: SubmissionQueryType.byUser, id: user.uid, user: user);
           final feedAsync = ref.watch(submissionNotifierProvider(queryParam));
@@ -70,6 +77,14 @@ class ProfileScreen extends ConsumerWidget {
           Future<void> refreshSubmissions() async {
             ref.invalidate(submissionNotifierProvider(queryParam));
             await ref.read(submissionNotifierProvider(queryParam).future);
+          }
+
+          Future<void> handleButtonPress() async {
+            if (isSelf) {
+              Navigator.pushNamed(context, "/edit_profile_screen");
+              return;
+            }
+            // follow user logic here
           }
 
           return feedAsync.when(
@@ -99,30 +114,67 @@ class ProfileScreen extends ConsumerWidget {
                                 style:
                                     Theme.of(context).textTheme.headlineSmall,
                               ),
-                              Text(
-                                "@${user.username}",
+                              Row(
+                                spacing: 5.0,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "@${user.username}",
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  if (userHasUrl) const Text("·"),
+                                  if (userHasUrl)
+                                    GestureDetector(
+                                      onTap: () =>
+                                          launchUrl(Uri.parse(user.url!)),
+                                      child: Text(
+                                        getCleanUrl(user.url!),
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium!
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                      ),
+                                    ),
+                                ],
+                              )
+                            ],
+                          ),
+                          if (userHasBio)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32.0),
+                              child: Text(
+                                user.bio!,
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
-                            ],
-                          ),
-                          // Stats
+                            ),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
                             child: Row(
                               children: [
-                                // Submissions
                                 Expanded(
                                   child: Column(
                                     children: [
                                       Text(
-                                        "0",
+                                        user.submissionsCount.toString(),
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleLarge,
                                       ),
                                       Text(
-                                        "submissions",
+                                        Intl.plural(
+                                          user.submissionsCount,
+                                          one: "submission",
+                                          other: "submissions",
+                                        ),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium,
@@ -130,7 +182,6 @@ class ProfileScreen extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
-                                // Followers
                                 Expanded(
                                   child: TextButton(
                                     onPressed: () => Navigator.pushNamed(
@@ -159,7 +210,6 @@ class ProfileScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                                // Following
                                 Expanded(
                                   child: TextButton(
                                     onPressed: () => Navigator.pushNamed(
@@ -191,7 +241,6 @@ class ProfileScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          // Buttons
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
@@ -200,13 +249,10 @@ class ProfileScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   child: FilledButton(
-                                    onPressed: () => Navigator.pushNamed(
-                                      context,
-                                      "/edit_profile_screen",
-                                    ),
+                                    onPressed: () => handleButtonPress(),
                                     child: Text(
-                                      "Edit Profile",
-                                    ), // "follow" if not self
+                                      isSelf ? "Edit Profile" : "Follow",
+                                    ),
                                   ),
                                 ),
                                 Expanded(

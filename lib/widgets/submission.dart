@@ -19,7 +19,7 @@ class Submission extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(submissionNotifierProvider(queryParam).notifier);
 
-    void _navigateToScreen(String route, routeId) {
+    void navigateToScreen(String route, routeId) {
       Navigator.pushNamed(context, route, arguments: routeId);
     }
 
@@ -28,13 +28,13 @@ class Submission extends ConsumerWidget {
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 8.0),
           child: Row(
             spacing: 10.0,
             children: [
               GestureDetector(
                 onTap: () =>
-                    _navigateToScreen("/profile_screen", submission.user.uid),
+                    navigateToScreen("/profile_screen", submission.user.uid),
                 child: CustomNetworkImage(
                   url: submission.user.profileImageUrl,
                   width: 30,
@@ -46,7 +46,7 @@ class Submission extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => _navigateToScreen(
+                      onTap: () => navigateToScreen(
                           "/profile_screen", submission.user.uid),
                       child: Text(
                         "@${submission.user.username}",
@@ -56,7 +56,7 @@ class Submission extends ConsumerWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => _navigateToScreen(
+                      onTap: () => navigateToScreen(
                           "/feed_screen", submission.prompt.id),
                       child: Text(submission.prompt.title),
                     ),
@@ -64,8 +64,8 @@ class Submission extends ConsumerWidget {
                 ),
               ),
               PopupMenuButton(
-                style: ButtonStyle(visualDensity: VisualDensity.compact),
                 icon: Icon(Icons.more_horiz),
+                style: ButtonStyle(visualDensity: VisualDensity.compact),
                 onSelected: (value) {
                   if (value == "Report") {
                     // Handle report action
@@ -89,35 +89,38 @@ class Submission extends ConsumerWidget {
         ),
         // Body
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: CustomNetworkImage(
             url: submission.imageUrl,
             maxHeight: 400,
           ),
         ),
         // Footer
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            spacing: 5.0,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
                 submission.caption,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
-              Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    spacing: 5.0,
                     children: [
-                      GestureDetector(
-                        onTap: () => state.toggleSubmissionLike(
+                      IconButton(
+                        style:
+                            ButtonStyle(visualDensity: VisualDensity.compact),
+                        onPressed: () => state.toggleSubmissionLike(
                           submissionId: submission.id,
                           isLiked: submission.isLiked,
                         ),
-                        child: submission.isLiked
+                        icon: submission.isLiked
                             ? Icon(
                                 Icons.favorite,
                                 color: Colors.red,
@@ -133,18 +136,22 @@ class Submission extends ConsumerWidget {
                       )
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Icon(Icons.share),
+                  IconButton(
+                    style: ButtonStyle(visualDensity: VisualDensity.compact),
+                    onPressed: () {},
+                    icon: Icon(Icons.share),
                   ),
                 ],
               ),
-              Text(
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
                 getTimeElapsed(submission.date),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );

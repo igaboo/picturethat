@@ -5,8 +5,9 @@ import 'package:picturethat/utils/get_formatted_number.dart';
 import 'package:picturethat/utils/get_time_left.dart';
 import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/widgets/custom_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-final WIDGET_HEIGHT = 350.0;
+final WIDGET_HEIGHT = 250.0;
 
 class Prompt extends StatelessWidget {
   final PromptModel prompt;
@@ -53,14 +54,14 @@ class Prompt extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       stops: [
-                        0.6,
-                        0.85,
+                        0.0,
+                        0.5,
                         1.0,
                       ],
                       colors: [
                         Colors.transparent,
-                        Colors.black.withAlpha(150),
-                        Colors.black.withAlpha(230),
+                        Colors.transparent,
+                        Colors.black.withAlpha(225),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20.0),
@@ -80,36 +81,37 @@ class Prompt extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // time left pill
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 4.0,
-                              horizontal: 10.0,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(150),
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            child: Row(
-                              spacing: 8.0,
-                              children: [
-                                Container(
-                                  width: 8.0,
-                                  height: 8.0,
-                                  decoration: BoxDecoration(
-                                    color: Colors.lightGreen,
-                                    shape: BoxShape.circle,
+                          Visibility(
+                            visible: isTodaysPrompt,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 10.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(150),
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              child: Row(
+                                spacing: 8.0,
+                                children: [
+                                  Container(
+                                    width: 8.0,
+                                    height: 8.0,
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightGreen,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  getTimeLeft(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall!
-                                      .copyWith(
-                                        color: Colors.white,
-                                      ),
-                                ),
-                              ],
+                                  Text(
+                                    getTimeLeft(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(color: Colors.white),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           Spacer(),
@@ -119,25 +121,42 @@ class Prompt extends StatelessWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium!
-                                .copyWith(
-                                  color: Colors.white,
-                                ),
+                                .copyWith(color: Colors.white),
                           ),
                           // submission count
                           Text(
-                            "${getFormattedNumber(prompt.submissionCount!)} submissions",
-                            style:
-                                Theme.of(context).textTheme.bodySmall!.copyWith(
-                                      color: Colors.white,
-                                    ),
+                            getFormattedUnit(
+                              number: prompt.submissionCount!,
+                              unit: "submission",
+                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(color: Colors.white),
+                          ),
+                          SizedBox(
+                            height: 8.0,
+                          ),
+                          // photo attribution
+                          GestureDetector(
+                            onTap: () =>
+                                launchUrl(Uri.parse(prompt.imageAuthorUrl!)),
+                            child: Text(
+                              "Photo by ${prompt.imageAuthorName}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(color: Colors.white.withAlpha(150)),
+                            ),
                           ),
                         ],
                       ),
                       Visibility(
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
-                          onPressed: () {},
-                          icon: Icon(Icons.add_a_photo),
+                          onPressed: () => Navigator.pushNamed(
+                              context, "/submit_photo_screen"),
+                          icon: Icon(Icons.add_photo_alternate_outlined),
                         ),
                       ),
                     ],

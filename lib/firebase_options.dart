@@ -7,34 +7,13 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -48,5 +27,23 @@ class DefaultFirebaseOptions {
     messagingSenderId: '983735759449',
     projectId: 'picturethat-65135',
     storageBucket: 'picturethat-65135.firebasestorage.app',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCh4mT0WppQDTasb9cC8R86D2RTFkp5wfU',
+    appId: '1:983735759449:web:0c9adc34c0c6212d2b7748',
+    messagingSenderId: '983735759449',
+    projectId: 'picturethat-65135',
+    authDomain: 'picturethat-65135.firebaseapp.com',
+    storageBucket: 'picturethat-65135.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCMoEyfaweWi3jUX4qal8FgjoCJ2ZuS3pM',
+    appId: '1:983735759449:ios:8eec37fc97339d932b7748',
+    messagingSenderId: '983735759449',
+    projectId: 'picturethat-65135',
+    storageBucket: 'picturethat-65135.firebasestorage.app',
+    iosBundleId: 'com.example.picturethat',
   );
 }

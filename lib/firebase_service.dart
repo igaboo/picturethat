@@ -37,6 +37,8 @@ Future<void> signUpWithEmailAndPassword({
       "firstName": firstName,
       "lastName": lastName,
       "username": username,
+      "bio": "",
+      "url": "",
       "profileImageUrl": profileImageUrl,
     });
   } catch (e) {
@@ -86,10 +88,15 @@ Future<UserModel?> getUser({required String userId}) async {
           .where("followingUid", isEqualTo: userId),
     );
 
+    final submissionsCount = await getDocumentCount(
+      query: db.collection("submissions").where("userId", isEqualTo: userId),
+    );
+
     final userData = {
       ...userDoc.data() as Map<String, dynamic>,
       "followersCount": followersCount,
       "followingCount": followingCount,
+      "submissionsCount": submissionsCount,
     };
 
     return UserModel.fromMap(userData);
@@ -103,6 +110,8 @@ Future<void> updateUserProfile({
   String? firstName,
   String? lastName,
   String? username,
+  String? bio,
+  String? url,
   XFile? profileImage,
 }) async {
   try {
@@ -114,6 +123,8 @@ Future<void> updateUserProfile({
       if (firstName != null) "firstName": firstName,
       if (lastName != null) "lastName": lastName,
       if (username != null) "username": username,
+      if (bio != null) "bio": bio,
+      if (url != null) "url": url,
       if (profileImageUrl != null) "profileImageUrl": profileImageUrl,
     };
 
@@ -252,9 +263,12 @@ Future<PromptModel?> getPrompt({required String promptId}) async {
 
 // get all prompts
 Future<List<PromptModel>> getPrompts() async {
+  final now = DateTime.now().toUtc();
+  final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
   final snapshot = await db
       .collection("prompts")
-      .where("date", isLessThan: DateTime.now())
+      .where("date", isLessThan: tomorrow)
       .orderBy("date", descending: true)
       .get();
 

@@ -20,7 +20,7 @@ class PromptsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, "/submit_photo_screen"),
         label: Text("Submit Today's Prompt"),
-        icon: Icon(Icons.add),
+        icon: Icon(Icons.add_photo_alternate_outlined),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,

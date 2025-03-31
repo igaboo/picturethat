@@ -17,7 +17,7 @@ class FeedScreen extends ConsumerWidget {
     final bool isPrompt = promptId != null;
     final AsyncValue<PromptModel?> promptAsync = isPrompt
         ? ref.watch(promptProvider(promptId))
-        : const AsyncValue.data(null); // Watch only if isPrompt is true
+        : const AsyncValue.data(null); // watch only if isPrompt is true
 
     final SubmissionQueryParam queryParam = isPrompt
         ? (type: SubmissionQueryType.byPrompt, id: promptId, user: null)
@@ -43,7 +43,7 @@ class FeedScreen extends ConsumerWidget {
                     context, "/submit_photo_screen",
                     arguments: prompt.id),
                 label: Text("Submit Prompt"),
-                icon: Icon(Icons.add),
+                icon: Icon(Icons.add_photo_alternate_outlined),
               );
             } else {
               return null;
@@ -57,17 +57,9 @@ class FeedScreen extends ConsumerWidget {
             ? promptAsync.when(
                 loading: () => Text("Loading..."),
                 error: (e, _) => Text("Error: $e"),
-                data: (prompt) => Text(prompt?.title ?? "Feed"),
+                data: (prompt) => Text(prompt?.title ?? "Prompt"),
               )
             : const Text("Feed"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              Navigator.pushNamed(context, "/search_screen");
-            },
-          ),
-        ],
       ),
       floatingActionButton: fab,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -75,17 +67,13 @@ class FeedScreen extends ConsumerWidget {
       body: submissionAsync.when(
         loading: () => Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
-        data: (submissions) {
-          if (submissions.isEmpty) {
-            return Center(child: Text("No submissions yet!"));
-          }
-
-          return RefreshIndicator(
-            onRefresh: refreshSubmissions,
-            child: SubmissionList(
-                submissions: submissions, queryParam: queryParam),
-          );
-        },
+        data: (submissions) => RefreshIndicator(
+          onRefresh: refreshSubmissions,
+          child: SubmissionList(
+            submissions: submissions,
+            queryParam: queryParam,
+          ),
+        ),
       ),
     );
   }

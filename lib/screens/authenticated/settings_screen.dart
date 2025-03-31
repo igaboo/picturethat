@@ -26,16 +26,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(context, ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Settings"),
-        actions: [
-          // logout button
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () => _logout(context, ref),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text("Settings")),
       body: ListView(
         children: [
           SettingsListTile(
@@ -43,6 +34,12 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: "Example subtitle",
             icon: Icons.question_mark,
             onTap: () => {},
+          ),
+          SettingsListTile(
+            title: "Logout",
+            icon: Icons.login_outlined,
+            onTap: () => _logout(context, ref),
+            color: Colors.red,
           ),
         ],
       ),

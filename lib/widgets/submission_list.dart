@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/submission_model.dart';
 import 'package:picturethat/providers/submission_provider.dart';
+import 'package:picturethat/widgets/empty_state.dart';
 import 'package:picturethat/widgets/submission.dart';
+
+Widget emptyState = const EmptyState(
+  title: "No Submissions",
+  icon: Icons.image_outlined,
+  subtitle: "Check back later!",
+);
 
 class SubmissionList extends ConsumerWidget {
   final List<SubmissionModel> submissions;
@@ -16,6 +23,8 @@ class SubmissionList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (submissions.isEmpty) return emptyState;
+
     return ListView.separated(
       itemCount: submissions.length,
       separatorBuilder: (context, index) => SizedBox(height: 30),
@@ -45,11 +54,7 @@ class SubmissionListSliver extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (submissions.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Text("No submissions yet!"),
-        ),
-      );
+      return SliverToBoxAdapter(child: emptyState);
     }
 
     return SliverList.separated(

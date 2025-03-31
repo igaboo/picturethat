@@ -21,6 +21,8 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _urlController = TextEditingController();
   XFile? _profileImage;
 
   void _selectProfileImage() async {
@@ -51,10 +53,12 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
         username: _usernameController.text,
+        bio: _bioController.text,
+        url: _urlController.text,
         profileImage: _profileImage,
       );
 
-      ref.invalidate(userProvider);
+      ref.invalidate(userProvider((auth.currentUser!.uid)));
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) handleError(context, e);
@@ -80,6 +84,8 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _firstNameController.text = user.firstName;
           _lastNameController.text = user.lastName;
           _usernameController.text = user.username;
+          _bioController.text = user.bio ?? "";
+          _urlController.text = user.url ?? "";
 
           return SingleChildScrollView(
             padding: EdgeInsets.all(16.0),
@@ -171,6 +177,34 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       if (value == null || value.isEmpty) {
                         return "Enter a username";
                       }
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    controller: _bioController,
+                    decoration: const InputDecoration(
+                      labelText: "Bio",
+                      helperText: ' ',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLength: 150,
+                    maxLines: null,
+                  ),
+                  TextFormField(
+                    controller: _urlController,
+                    decoration: const InputDecoration(
+                      labelText: "Website",
+                      helperText: ' ',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return null;
+
+                      final uri = Uri.tryParse(value.trim());
+                      if (uri == null || !uri.isAbsolute) {
+                        return "Enter a valid URL";
+                      }
+
                       return null;
                     },
                   ),

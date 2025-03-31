@@ -6,6 +6,9 @@ class UserModel {
   final String profileImageUrl;
   final int followersCount;
   final int followingCount;
+  final int submissionsCount;
+  final String? bio;
+  final String? url;
 
   UserModel({
     required this.uid,
@@ -15,6 +18,9 @@ class UserModel {
     required this.profileImageUrl,
     required this.followersCount,
     required this.followingCount,
+    required this.submissionsCount,
+    this.bio,
+    this.url,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data) {
@@ -26,6 +32,9 @@ class UserModel {
       profileImageUrl: data['profileImageUrl'],
       followersCount: data['followersCount'],
       followingCount: data['followingCount'],
+      submissionsCount: data['submissionsCount'],
+      bio: data['bio'],
+      url: data['url'],
     );
   }
 }
