@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -10,21 +11,24 @@ class LandingScreen extends StatelessWidget {
       appBar: AppBar(toolbarHeight: 0), // hides header
       resizeToAvoidBottomInset: false,
       body: SafeArea(
+        maintainBottomViewPadding: true,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Images
-            Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: Image(
-                image: AssetImage("assets/hero.png"),
-                width: double.infinity,
-                fit: BoxFit.cover,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Image(
+                  image: AssetImage("assets/hero.png"),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             // Text
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
               child: Column(
                 spacing: 10.0,
                 children: [
@@ -77,7 +81,9 @@ class LandingScreen extends StatelessWidget {
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                               decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () =>
+                                launchUrl(Uri.parse("https://www.google.com")),
                         ),
                         TextSpan(text: " and "),
                         TextSpan(
@@ -85,7 +91,9 @@ class LandingScreen extends StatelessWidget {
                           style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
                               decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () {},
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () =>
+                                launchUrl(Uri.parse("https://www.google.com")),
                         ),
                       ],
                     ),
