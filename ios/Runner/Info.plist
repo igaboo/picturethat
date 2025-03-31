@@ -51,5 +51,9 @@
 		<string>$(PRODUCT_NAME) would like access to your photo library for uploading daily images, and for selecting a profile image.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>$(PRODUCT_NAME) would like access to your camera for taking images within the app for upload to daily prompts or profile images.</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>https</string>
+    </array>
 	</dict>
 </plist>
