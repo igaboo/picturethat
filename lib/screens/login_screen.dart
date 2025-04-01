@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/get_error_message.dart';
+import 'package:picturethat/utils/text_validation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -64,12 +65,10 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                   helperText: ' ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter your email";
-                  }
-                  return null;
-                },
+                validator: (value) => textValidator(
+                  value: value,
+                  fieldName: "email",
+                ),
               ),
               TextFormField(
                 controller: _passwordController,
@@ -79,12 +78,10 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                   helperText: ' ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter your password";
-                  }
-                  return null;
-                },
+                validator: (value) => textValidator(
+                  value: value,
+                  fieldName: "password",
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

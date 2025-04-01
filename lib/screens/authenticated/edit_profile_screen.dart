@@ -5,6 +5,7 @@ import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
+import 'package:picturethat/utils/text_validation.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
 final PROFILE_IMAGE_SIZE = 150.0;
@@ -49,15 +50,21 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       if (!_formKey.currentState!.validate()) return;
 
+      // check if username has changed, and if so, check if it's available
+      final currentUser = ref.read(userProvider((auth.currentUser!.uid))).value;
+      final newUsername = _usernameController.text;
+      final isUsernameChanged = currentUser?.username != newUsername;
+
       await updateUserProfile(
         firstName: _firstNameController.text,
         lastName: _lastNameController.text,
-        username: _usernameController.text,
+        username: isUsernameChanged ? newUsername : null,
         bio: _bioController.text,
         url: _urlController.text,
         profileImage: _profileImage,
       );
 
+      // refetch newly updated user data
       ref.invalidate(userProvider((auth.currentUser!.uid)));
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -139,12 +146,10 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             helperText: ' ',
                             border: OutlineInputBorder(),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Enter your first name";
-                            }
-                            return null;
-                          },
+                          validator: (value) => textValidator(
+                            value: value,
+                            fieldName: "first name",
+                          ),
                         ),
                       ),
                       Expanded(
@@ -155,12 +160,10 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             helperText: ' ',
                             border: OutlineInputBorder(),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Enter your last name";
-                            }
-                            return null;
-                          },
+                          validator: (value) => textValidator(
+                            value: value,
+                            fieldName: "last name",
+                          ),
                         ),
                       ),
                     ],
@@ -173,12 +176,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       border: OutlineInputBorder(),
                       prefix: Text("@"),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Enter a username";
-                      }
-                      return null;
-                    },
+                    validator: (value) => usernameValidator(value: value),
                   ),
                   TextFormField(
                     controller: _bioController,
@@ -197,16 +195,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       helperText: ' ',
                       border: OutlineInputBorder(),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return null;
-
-                      final uri = Uri.tryParse(value.trim());
-                      if (uri == null || !uri.isAbsolute) {
-                        return "Enter a valid URL";
-                      }
-
-                      return null;
-                    },
+                    validator: (value) => urlValidator(value: value),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),

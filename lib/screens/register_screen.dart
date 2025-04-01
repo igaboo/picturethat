@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
+import 'package:picturethat/utils/text_validation.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
 final PROFILE_IMAGE_SIZE = 150.0;
@@ -28,40 +29,23 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _register() async {
     try {
-      if (_profileImage == null) {
-        handleError(
-          context,
-          "Select a profile image before continuing",
-        );
-      }
+      if (!_formKey.currentState!.validate()) return;
 
-      bool isAvailable = await isUsernameAvailable(
+      await signUpWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
         username: _usernameController.text,
+        profileImage: _profileImage,
       );
 
-      if (mounted && !isAvailable) {
-        handleError(context, "Username is already taken");
-      }
-
-      if (_formKey.currentState!.validate() &&
-          _profileImage != null &&
-          isAvailable) {
-        await signUpWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          username: _usernameController.text,
-          profileImage: _profileImage!,
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          "/home_screen",
+          (route) => false,
         );
-
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            "/home_screen",
-            (route) => false,
-          );
-        }
       }
     } catch (e) {
       if (mounted) handleError(context, e);
@@ -148,12 +132,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   helperText: ' ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter your email";
-                  }
-                  return null;
-                },
+                validator: (value) => textValidator(
+                  value: value,
+                  fieldName: "email",
+                ),
               ),
               TextFormField(
                 controller: _passwordController,
@@ -163,12 +145,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   helperText: ' ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter a password";
-                  }
-                  return null;
-                },
+                validator: (value) => passwordValidator(value: value),
               ),
               TextFormField(
                 controller: _passwordConfirmController,
@@ -178,15 +155,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   helperText: ' ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter your password again";
-                  }
-                  if (value != _passwordController.text) {
-                    return "Passwords do not match";
-                  }
-                  return null;
-                },
+                validator: (value) => confirmPasswordValidator(
+                  value: value,
+                  password: _passwordController.text,
+                ),
               ),
               Row(
                 spacing: 16.0,
@@ -200,12 +172,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                         helperText: ' ',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Enter your first name";
-                        }
-                        return null;
-                      },
+                      validator: (value) => textValidator(
+                        value: value,
+                        fieldName: "first name",
+                      ),
                     ),
                   ),
                   Expanded(
@@ -216,12 +186,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                         helperText: ' ',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Enter your last name";
-                        }
-                        return null;
-                      },
+                      validator: (value) => textValidator(
+                        value: value,
+                        fieldName: "last name",
+                      ),
                     ),
                   ),
                 ],
@@ -233,12 +201,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                     helperText: ' ',
                     border: OutlineInputBorder(),
                     prefix: Text("@")),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Enter a username";
-                  }
-                  return null;
-                },
+                validator: (value) => usernameValidator(value: value),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
