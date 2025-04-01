@@ -7,7 +7,7 @@ import 'package:picturethat/widgets/submission.dart';
 
 Widget emptyState = const EmptyState(
   title: "No Submissions",
-  icon: Icons.image_outlined,
+  icon: Icons.hide_image,
   subtitle: "Check back later!",
 );
 
@@ -23,7 +23,17 @@ class SubmissionList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (submissions.isEmpty) return emptyState;
+    if (submissions.isEmpty) {
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: emptyState,
+          ),
+        ),
+      );
+    }
 
     return ListView.separated(
       itemCount: submissions.length,
@@ -54,7 +64,10 @@ class SubmissionListSliver extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (submissions.isEmpty) {
-      return SliverToBoxAdapter(child: emptyState);
+      return SliverFillRemaining(
+        child: emptyState,
+        hasScrollBody: false,
+      );
     }
 
     return SliverList.separated(

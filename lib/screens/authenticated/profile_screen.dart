@@ -9,6 +9,10 @@ import 'package:picturethat/widgets/custom_image.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// TODO
+/// add follow and unfollow logic
+/// add share logic
+
 final PROFILE_IMAGE_SIZE = 150.0;
 
 class ProfileScreen extends ConsumerWidget {
@@ -18,6 +22,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final uid = ModalRoute.of(context)?.settings.arguments as String?;
     final profileUserId = uid ?? auth.currentUser?.uid;
+    final isSelf = profileUserId == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUserId!));
 
     return Scaffold(
@@ -25,35 +30,34 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           PopupMenuButton(
             icon: Icon(Icons.more_vert),
-            onSelected: (value) {
-              if (value == "Edit") {
-                Navigator.pushNamed(context, "/edit_profile_screen");
-              } else if (value == "Settings") {
-                Navigator.pushNamed(context, "/settings_screen");
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: "Edit",
-                child: Row(
-                  spacing: 8.0,
-                  children: [
-                    Icon(Icons.edit),
-                    Text("Edit Profile"),
+            itemBuilder: (context) => isSelf
+                ? [
+                    PopupMenuItem(
+                      value: "Settings",
+                      child: Row(
+                        spacing: 8.0,
+                        children: [
+                          Icon(Icons.settings),
+                          Text("Settings"),
+                        ],
+                      ),
+                      onTap: () =>
+                          Navigator.pushNamed(context, "/settings_screen"),
+                    ),
+                  ]
+                : [
+                    PopupMenuItem(
+                      value: "Report",
+                      child: Row(
+                        spacing: 8.0,
+                        children: [
+                          Icon(Icons.report),
+                          Text("Report User"),
+                        ],
+                      ),
+                      onTap: () {},
+                    ),
                   ],
-                ),
-              ),
-              PopupMenuItem(
-                value: "Settings",
-                child: Row(
-                  spacing: 8.0,
-                  children: [
-                    Icon(Icons.settings),
-                    Text("Settings"),
-                  ],
-                ),
-              ),
-            ],
           )
         ],
       ),
@@ -66,12 +70,14 @@ class ProfileScreen extends ConsumerWidget {
             return const Text("No user found");
           }
 
-          final isSelf = user.uid == auth.currentUser?.uid;
           final userHasBio = user.bio != null && user.bio!.isNotEmpty;
           final userHasUrl = user.url != null && user.url!.isNotEmpty;
 
-          final queryParam =
-              (type: SubmissionQueryType.byUser, id: user.uid, user: user);
+          final queryParam = (
+            type: SubmissionQueryType.byUser,
+            id: user.uid,
+            user: user,
+          );
           final feedAsync = ref.watch(submissionNotifierProvider(queryParam));
 
           Future<void> refreshSubmissions() async {
@@ -267,12 +273,9 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    SliverPadding(
-                      padding: EdgeInsets.only(top: 20.0),
-                      sliver: SubmissionListSliver(
-                        submissions: submissions,
-                        queryParam: queryParam,
-                      ),
+                    SubmissionListSliver(
+                      submissions: submissions,
+                      queryParam: queryParam,
                     )
                   ],
                 ),

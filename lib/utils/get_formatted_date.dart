@@ -1,15 +1,32 @@
 import 'package:intl/intl.dart';
 
 String getFormattedDate(DateTime date) {
-  final now = DateTime.now();
-  final difference = now.difference(date).inDays;
+  final nowLocal = DateTime.now();
+  final dateLocal = date.toLocal();
 
-  if (difference == 0) {
-    return "Today, ${DateFormat('MMMM d').format(date)}${_getDaySuffix(date.day)}";
-  } else if (difference == 1) {
-    return "Yesterday, ${DateFormat('MMMM d').format(date)}${_getDaySuffix(date.day)}";
+  final startOfTodayLocal = DateTime(
+    nowLocal.year,
+    nowLocal.month,
+    nowLocal.day,
+  );
+  final startOfDateLocal = DateTime(
+    dateLocal.year,
+    dateLocal.month,
+    dateLocal.day,
+  );
+
+  final differenceInCalendarDays =
+      startOfTodayLocal.difference(startOfDateLocal).inDays;
+
+  final formattedDatePart =
+      "${DateFormat('MMMM d').format(dateLocal)}${_getDaySuffix(dateLocal.day)}";
+
+  if (differenceInCalendarDays == 0) {
+    return "Today, $formattedDatePart";
+  } else if (differenceInCalendarDays == 1) {
+    return "Yesterday, $formattedDatePart";
   } else {
-    return "${DateFormat('MMMM d').format(date)}${_getDaySuffix(date.day)}";
+    return formattedDatePart;
   }
 }
 

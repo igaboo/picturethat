@@ -1,6 +1,8 @@
 bool isToday(DateTime? date) {
-  final today = DateTime.now();
-  return date?.year == today.year &&
-      date?.month == today.month &&
-      date?.day == today.day;
+  if (date == null) return false;
+  final now = DateTime.now();
+  final dateLocal = date.toLocal();
+  return dateLocal.year == now.year &&
+      dateLocal.month == now.month &&
+      dateLocal.day == now.day;
 }

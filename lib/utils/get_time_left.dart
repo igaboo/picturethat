@@ -1,17 +1,23 @@
-import 'package:intl/intl.dart';
-
 String getTimeLeft() {
   final now = DateTime.now();
-  final tomorrow = DateTime(now.year, now.month, now.day + 1);
-  final timeLeft = tomorrow.difference(now);
+  final tomorrowMidnight = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
+  final timeLeft = tomorrowMidnight.difference(now);
+  final totalHours = timeLeft.inHours;
+  final remainingMinutes = timeLeft.inMinutes % 60;
 
-  if (timeLeft.inHours >= 1) {
-    final hours = timeLeft.inHours;
-    final hourString = Intl.plural(hours, one: "hour", other: "hours");
-    return "$hours $hourString left";
+  if (totalHours >= 1) {
+    if (remainingMinutes > 0) {
+      return "${totalHours}h ${remainingMinutes}m left";
+    } else {
+      return "${totalHours}h left";
+    }
   } else {
-    final minutes = timeLeft.inMinutes;
-    final minuteString = Intl.plural(minutes, one: "minute", other: "minutes");
-    return "$minutes $minuteString left";
+    final totalMinutesLeft = timeLeft.inMinutes;
+
+    if (totalMinutesLeft == 0 && timeLeft.inSeconds > 0) {
+      return "1m left";
+    }
+
+    return "${totalMinutesLeft}m left";
   }
 }

@@ -19,31 +19,35 @@ Future<void> signUpWithEmailAndPassword({
   required String firstName,
   required String lastName,
   required String username,
-  required XFile profileImage,
+  required XFile? profileImage,
 }) async {
-  try {
-    UserCredential credential = await auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    String profileImageUrl = await uploadImage(
-      path: "pfp",
-      image: profileImage,
-    );
-
-    await uploadDocument(id: credential.user!.uid, path: "users", data: {
-      "uid": credential.user?.uid,
-      "firstName": firstName,
-      "lastName": lastName,
-      "username": username,
-      "bio": "",
-      "url": "",
-      "profileImageUrl": profileImageUrl,
-    });
-  } catch (e) {
-    rethrow;
+  if (profileImage == null) {
+    throw Exception("Select a profile image before continuing");
   }
+
+  if (!(await isUsernameAvailable(username: username))) {
+    throw Exception("Username is already taken");
+  }
+
+  UserCredential credential = await auth.createUserWithEmailAndPassword(
+    email: email,
+    password: password,
+  );
+
+  String profileImageUrl = await uploadImage(
+    path: "pfp",
+    image: profileImage,
+  );
+
+  await uploadDocument(id: credential.user!.uid, path: "users", data: {
+    "uid": credential.user?.uid,
+    "firstName": firstName,
+    "lastName": lastName,
+    "username": username,
+    "bio": "",
+    "url": "",
+    "profileImageUrl": profileImageUrl,
+  });
 }
 
 // sign in with email & password
@@ -51,58 +55,44 @@ Future<void> signInWithEmailAndPassword({
   required String email,
   required String password,
 }) async {
-  try {
-    await auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-  } catch (e) {
-    rethrow;
-  }
+  await auth.signInWithEmailAndPassword(
+    email: email,
+    password: password,
+  );
 }
 
 // sign out
 Future<void> signOut() async {
-  try {
-    await auth.signOut();
-  } catch (e) {
-    rethrow;
-  }
+  await auth.signOut();
 }
 
 // get user given user id
 Future<UserModel?> getUser({required String userId}) async {
-  try {
-    DocumentSnapshot userDoc = await db.collection("users").doc(userId).get();
-    if (!userDoc.exists) return null;
+  DocumentSnapshot userDoc = await db.collection("users").doc(userId).get();
+  if (!userDoc.exists) return null;
 
-    final followersCount = await getDocumentCount(
-      query: db
-          .collection("relationships")
-          .where("followerUid", isEqualTo: userId),
-    );
+  final followersCount = await getDocumentCount(
+    query:
+        db.collection("relationships").where("followerUid", isEqualTo: userId),
+  );
 
-    final followingCount = await getDocumentCount(
-      query: db
-          .collection("relationships")
-          .where("followingUid", isEqualTo: userId),
-    );
+  final followingCount = await getDocumentCount(
+    query:
+        db.collection("relationships").where("followingUid", isEqualTo: userId),
+  );
 
-    final submissionsCount = await getDocumentCount(
-      query: db.collection("submissions").where("userId", isEqualTo: userId),
-    );
+  final submissionsCount = await getDocumentCount(
+    query: db.collection("submissions").where("userId", isEqualTo: userId),
+  );
 
-    final userData = {
-      ...userDoc.data() as Map<String, dynamic>,
-      "followersCount": followersCount,
-      "followingCount": followingCount,
-      "submissionsCount": submissionsCount,
-    };
+  final userData = {
+    ...userDoc.data() as Map<String, dynamic>,
+    "followersCount": followersCount,
+    "followingCount": followingCount,
+    "submissionsCount": submissionsCount,
+  };
 
-    return UserModel.fromMap(userData);
-  } catch (e) {
-    rethrow;
-  }
+  return UserModel.fromMap(userData);
 }
 
 // update user profile
@@ -114,37 +104,31 @@ Future<void> updateUserProfile({
   String? url,
   XFile? profileImage,
 }) async {
-  try {
-    final profileImageUrl = profileImage != null
-        ? await uploadImage(path: "pfp", image: profileImage)
-        : null;
-
-    final newValues = {
-      if (firstName != null) "firstName": firstName,
-      if (lastName != null) "lastName": lastName,
-      if (username != null) "username": username,
-      if (bio != null) "bio": bio,
-      if (url != null) "url": url,
-      if (profileImageUrl != null) "profileImageUrl": profileImageUrl,
-    };
-
-    await db.collection("users").doc(auth.currentUser?.uid).update(newValues);
-  } catch (e) {
-    rethrow;
+  if (username != null && !(await isUsernameAvailable(username: username))) {
+    throw Exception("Username is already taken");
   }
+
+  final profileImageUrl = profileImage != null
+      ? await uploadImage(path: "pfp", image: profileImage)
+      : null;
+
+  final newValues = {
+    if (firstName != null) "firstName": firstName,
+    if (lastName != null) "lastName": lastName,
+    if (username != null) "username": username,
+    if (bio != null) "bio": bio,
+    if (url != null) "url": url,
+    if (profileImageUrl != null) "profileImageUrl": profileImageUrl,
+  };
+
+  await db.collection("users").doc(auth.currentUser?.uid).update(newValues);
 }
 
 // check if username is available
 Future<bool> isUsernameAvailable({required String username}) async {
-  try {
-    final query = await db
-        .collection("users")
-        .where("username", isEqualTo: username)
-        .get();
-    return query.docs.isEmpty;
-  } catch (e) {
-    rethrow;
-  }
+  final query =
+      await db.collection("users").where("username", isEqualTo: username).get();
+  return query.docs.isEmpty;
 }
 
 // upload image to storage
@@ -152,27 +136,19 @@ Future<String> uploadImage({
   required String path,
   required XFile image,
 }) async {
-  try {
-    final imgRef = storage.ref().child(
-          "users/${auth.currentUser?.uid}/$path",
-        );
-    await imgRef.putFile(File(image.path));
-    return await imgRef.getDownloadURL();
-  } catch (e) {
-    rethrow;
-  }
+  final imgRef = storage.ref().child(
+        "users/${auth.currentUser?.uid}/$path",
+      );
+  await imgRef.putFile(File(image.path));
+  return await imgRef.getDownloadURL();
 }
 
 // delete image from storage
 Future<void> deleteImage({required String path}) async {
-  try {
-    final imgRef = storage.ref().child(
-          "users/${auth.currentUser?.uid}/$path",
-        );
-    await imgRef.delete();
-  } catch (e) {
-    rethrow;
-  }
+  final imgRef = storage.ref().child(
+        "users/${auth.currentUser?.uid}/$path",
+      );
+  await imgRef.delete();
 }
 
 // upload document to firestore
@@ -181,22 +157,14 @@ Future<void> uploadDocument({
   required String path,
   required Map<String, dynamic> data,
 }) async {
-  try {
-    await db.collection(path).doc(id).set(data);
-  } catch (e) {
-    rethrow;
-  }
+  await db.collection(path).doc(id).set(data);
 }
 
 // get count of documents from a query
 Future<int> getDocumentCount({required Query query}) async {
-  try {
-    final countQuery = await query.count();
-    final AggregateQuerySnapshot snapshot = await countQuery.get();
-    return snapshot.count ?? 0;
-  } catch (e) {
-    rethrow;
-  }
+  final countQuery = query.count();
+  final AggregateQuerySnapshot snapshot = await countQuery.get();
+  return snapshot.count ?? 0;
 }
 
 // toggle like on submission
@@ -205,20 +173,16 @@ Future<void> toggleLike({
   required String uid,
   required bool isLiked,
 }) async {
-  try {
-    final docRef = db.collection("submissions").doc(submissionId);
+  final docRef = db.collection("submissions").doc(submissionId);
 
-    if (isLiked) {
-      await docRef.update({
-        "likes": FieldValue.arrayRemove([uid]),
-      });
-    } else {
-      await docRef.update({
-        "likes": FieldValue.arrayUnion([uid]),
-      });
-    }
-  } catch (e) {
-    rethrow;
+  if (isLiked) {
+    await docRef.update({
+      "likes": FieldValue.arrayRemove([uid]),
+    });
+  } else {
+    await docRef.update({
+      "likes": FieldValue.arrayUnion([uid]),
+    });
   }
 }
 
@@ -227,23 +191,19 @@ Future<List<SubmissionModel>> getSubmissions({
   required Query query,
   UserModel? user,
 }) async {
-  try {
-    final snapshot = await query.get();
+  final snapshot = await query.get();
 
-    return Future.wait(snapshot.docs.map((doc) async {
-      final data = doc.data() as Map<String, dynamic>;
+  return Future.wait(snapshot.docs.map((doc) async {
+    final data = doc.data() as Map<String, dynamic>;
 
-      final userData = user ?? await getUser(userId: data["userId"]);
+    final userData = user ?? await getUser(userId: data["userId"]);
 
-      return SubmissionModel.fromMap({
-        ...data,
-        "isLiked": data["likes"].contains(auth.currentUser?.uid),
-        "user": userData,
-      });
-    }));
-  } catch (e) {
-    rethrow;
-  }
+    return SubmissionModel.fromMap({
+      ...data,
+      "isLiked": data["likes"].contains(auth.currentUser?.uid),
+      "user": userData,
+    });
+  }));
 }
 
 // get a single prompt
@@ -264,11 +224,11 @@ Future<PromptModel?> getPrompt({required String promptId}) async {
 // get all prompts
 Future<List<PromptModel>> getPrompts() async {
   final now = DateTime.now().toUtc();
-  final tomorrow = DateTime(now.year, now.month, now.day + 1);
+  final startOfTomorrow = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
 
   final snapshot = await db
       .collection("prompts")
-      .where("date", isLessThan: tomorrow)
+      .where("date", isLessThan: startOfTomorrow)
       .orderBy("date", descending: true)
       .get();
 
@@ -284,4 +244,18 @@ Future<List<PromptModel>> getPrompts() async {
 
     return PromptModel.fromMap(promptData);
   }));
+}
+
+// get a list of users from a username query
+Future<List<UserSearchResultModel>> searchUsers({required String query}) async {
+  final snapshot = await db
+      .collection("users")
+      .where("username", isGreaterThanOrEqualTo: query)
+      .where("username", isLessThanOrEqualTo: "$query\uf8ff")
+      .limit(5)
+      .get();
+
+  return snapshot.docs
+      .map((doc) => UserSearchResultModel.fromMap(doc.data()))
+      .toList();
 }

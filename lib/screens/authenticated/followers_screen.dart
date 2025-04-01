@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// TODO
+/// fetch user relationships based off of following/followers
+/// fetch user documents from relationship documents
+/// display user documents in a list
+
 class FollowersScreen extends StatelessWidget {
   const FollowersScreen({super.key});
 

@@ -6,6 +6,9 @@ import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 
+/// TODO
+/// change query to only get submissions from users that are followed
+
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
 
@@ -38,12 +41,11 @@ class FeedScreen extends ConsumerWidget {
           error: (e, _) => null,
           data: (prompt) {
             if (prompt != null && isToday(prompt.date)) {
-              return FloatingActionButton.extended(
+              return FloatingActionButton(
                 onPressed: () => Navigator.pushNamed(
                     context, "/submit_photo_screen",
                     arguments: prompt.id),
-                label: Text("Submit Prompt"),
-                icon: Icon(Icons.add_photo_alternate_outlined),
+                child: Icon(Icons.add_photo_alternate_outlined),
               );
             } else {
               return null;
@@ -60,9 +62,17 @@ class FeedScreen extends ConsumerWidget {
                 data: (prompt) => Text(prompt?.title ?? "Prompt"),
               )
             : const Text("Feed"),
+        actions: [
+          if (!isPrompt)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () async {
+                Navigator.pushNamed(context, "/search_screen");
+              },
+            ),
+        ],
       ),
       floatingActionButton: fab,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,
       body: submissionAsync.when(
         loading: () => Center(child: CircularProgressIndicator()),

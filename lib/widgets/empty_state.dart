@@ -15,7 +15,7 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -33,9 +33,17 @@ class EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16.0),
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
             if (subtitle != null)
-              Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                subtitle!,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
