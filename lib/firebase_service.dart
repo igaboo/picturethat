@@ -224,7 +224,7 @@ Future<PromptModel?> getPrompt({required String promptId}) async {
 // get all prompts
 Future<List<PromptModel>> getPrompts() async {
   final now = DateTime.now().toUtc();
-  final startOfTomorrow = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
+  final startOfTomorrow = DateTime.utc(now.year, now.month, now.day + 1);
 
   final snapshot = await db
       .collection("prompts")

@@ -65,8 +65,8 @@ class SubmissionListSliver extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (submissions.isEmpty) {
       return SliverFillRemaining(
-        child: emptyState,
         hasScrollBody: false,
+        child: emptyState,
       );
     }
 
