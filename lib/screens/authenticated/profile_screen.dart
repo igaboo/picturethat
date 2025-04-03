@@ -82,7 +82,9 @@ class ProfileScreen extends ConsumerWidget {
 
           Future<void> refreshSubmissions() async {
             ref.invalidate(submissionNotifierProvider(queryParam));
+            ref.invalidate(userProvider(profileUserId));
             await ref.read(submissionNotifierProvider(queryParam).future);
+            await ref.read(userProvider(profileUserId).future);
           }
 
           Future<void> handleButtonPress() async {
