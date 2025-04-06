@@ -80,7 +80,7 @@ class FeedScreen extends ConsumerWidget {
         data: (submissions) => RefreshIndicator(
           onRefresh: refreshSubmissions,
           child: SubmissionList(
-            submissions: submissions,
+            submissionState: submissions,
             queryParam: queryParam,
           ),
         ),

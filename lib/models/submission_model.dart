@@ -2,20 +2,40 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/models/user_model.dart';
 
+class SubmissionImageModel {
+  String url;
+  int height;
+  int width;
+
+  SubmissionImageModel({
+    required this.url,
+    required this.height,
+    required this.width,
+  });
+
+  factory SubmissionImageModel.fromMap(Map<String, dynamic> data) {
+    return SubmissionImageModel(
+      url: data['url'],
+      height: data['height'],
+      width: data['width'],
+    );
+  }
+}
+
 class SubmissionModel {
   String id;
   UserModel user;
-  String imageUrl;
+  SubmissionImageModel image;
   PromptSubmissionModel prompt;
   DateTime date;
   List<String> likes;
-  String caption;
+  String? caption;
   bool isLiked;
 
   SubmissionModel({
     required this.id,
     required this.user,
-    required this.imageUrl,
+    required this.image,
     required this.prompt,
     required this.date,
     required this.likes,
@@ -26,7 +46,7 @@ class SubmissionModel {
   SubmissionModel copyWith({
     String? id,
     UserModel? user,
-    String? imageUrl,
+    SubmissionImageModel? image,
     PromptSubmissionModel? prompt,
     DateTime? date,
     List<String>? likes,
@@ -36,7 +56,7 @@ class SubmissionModel {
     return SubmissionModel(
       id: id ?? this.id,
       user: user ?? this.user,
-      imageUrl: imageUrl ?? this.imageUrl,
+      image: image ?? this.image,
       prompt: prompt ?? this.prompt,
       date: date ?? this.date,
       likes: likes ?? this.likes,
@@ -49,7 +69,7 @@ class SubmissionModel {
     return SubmissionModel(
       id: data['id'],
       user: data['user'],
-      imageUrl: data['imageUrl'],
+      image: SubmissionImageModel.fromMap(data['image']),
       prompt: PromptSubmissionModel.fromMap(data['prompt']),
       date: (data["date"] as Timestamp).toDate(),
       likes: List<String>.from(data['likes']),
