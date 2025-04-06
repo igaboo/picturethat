@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/models/user_model.dart';
 import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/widgets/custom_image.dart';
 import 'package:picturethat/widgets/empty_state.dart';
+import 'package:picturethat/widgets/custom_image.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -87,6 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: TextField(
                     controller: _searchController,
                     autofocus: true,
+                    autocorrect: false,
                     decoration: InputDecoration(
                       hintText: "Search for users...",
                       border: InputBorder.none,
@@ -132,11 +133,11 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final user = _searchResults[index];
         return ListTile(
-          leading: CustomNetworkImage(
-            url: user.profileImageUrl,
+          leading: CustomImage(
+            imageProvider: NetworkImage(user.profileImageUrl),
+            shape: CustomImageShape.circle,
             width: 40,
             height: 40,
-            borderRadius: 60,
           ),
           title: Text("${user.firstName} ${user.lastName}"),
           subtitle: Text("@${user.username}"),

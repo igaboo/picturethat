@@ -35,8 +35,9 @@ class Submission extends ConsumerWidget {
               GestureDetector(
                 onTap: () =>
                     navigateToScreen("/profile_screen", submission.user.uid),
-                child: CustomNetworkImage(
-                  url: submission.user.profileImageUrl,
+                child: CustomImage(
+                  imageProvider: NetworkImage(submission.user.profileImageUrl),
+                  shape: CustomImageShape.circle,
                   width: 30,
                   height: 30,
                 ),
@@ -90,22 +91,26 @@ class Submission extends ConsumerWidget {
         // Body
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
-          child: CustomNetworkImage(
-            url: submission.imageUrl,
-            maxHeight: 400,
+          child: CustomImage(
+            imageProvider: NetworkImage(submission.image.url),
+            width: submission.image.width.toDouble(),
+            height: submission.image.height.toDouble(),
+            aspectRatio: submission.image.width / submission.image.height,
+            maxHeight: 400.0,
           ),
         ),
         // Footer
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                submission.caption,
-                textAlign: TextAlign.start,
+            if (submission.caption != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  submission.caption!,
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(

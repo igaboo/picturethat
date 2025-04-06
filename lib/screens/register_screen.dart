@@ -110,9 +110,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                 ),
                               )
-                            : CustomLocalImage(
-                                path: _profileImage!.path,
-                                borderRadius: PROFILE_IMAGE_SIZE / 2,
+                            : CustomImage(
+                                imageProvider: AssetImage(_profileImage!.path),
+                                shape: CustomImageShape.circle,
                               ),
                       ),
                       Text(

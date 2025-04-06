@@ -108,18 +108,13 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: Column(
                         spacing: 10,
                         children: [
-                          SizedBox(
+                          CustomImage(
+                            imageProvider: _profileImage == null
+                                ? NetworkImage(user.profileImageUrl)
+                                : AssetImage(_profileImage!.path),
+                            shape: CustomImageShape.circle,
                             width: PROFILE_IMAGE_SIZE,
                             height: PROFILE_IMAGE_SIZE,
-                            child: _profileImage == null
-                                ? CustomNetworkImage(
-                                    url: user.profileImageUrl,
-                                    borderRadius: PROFILE_IMAGE_SIZE / 2,
-                                  )
-                                : CustomLocalImage(
-                                    path: _profileImage!.path,
-                                    borderRadius: PROFILE_IMAGE_SIZE / 2,
-                                  ),
                           ),
                           Text(
                             "Pick Profile Image",

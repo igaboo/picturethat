@@ -7,7 +7,7 @@ import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final WIDGET_HEIGHT = 250.0;
+final WIDGET_HEIGHT = 300.0;
 
 class Prompt extends StatelessWidget {
   final PromptModel prompt;
@@ -42,8 +42,8 @@ class Prompt extends StatelessWidget {
             ),
             Stack(
               children: [
-                CustomNetworkImage(
-                  url: prompt.imageUrl!,
+                CustomImage(
+                  imageProvider: NetworkImage(prompt.imageUrl!),
                   width: double.infinity,
                   height: WIDGET_HEIGHT,
                 ),
