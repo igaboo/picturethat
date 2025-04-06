@@ -4,12 +4,9 @@ import 'package:picturethat/models/submission_model.dart';
 import 'package:picturethat/models/user_model.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/providers/auth_provider.dart';
+import 'package:picturethat/providers/pagination_provider.dart';
 
-enum SubmissionQueryType {
-  all,
-  byUser,
-  byPrompt,
-}
+enum SubmissionQueryType { all, byUser, byPrompt }
 
 typedef SubmissionQueryParam = ({
   SubmissionQueryType type,
@@ -17,50 +14,71 @@ typedef SubmissionQueryParam = ({
   UserModel? user
 });
 
-class SubmissionNotifier
-    extends FamilyAsyncNotifier<List<SubmissionModel>, SubmissionQueryParam> {
+Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
+    getSubmissionsAdapter({
+  required SubmissionQueryParam arg,
+  required int limit,
+  DocumentSnapshot? lastDocument,
+}) {
+  return getSubmissions(
+    queryParam: arg,
+    limit: limit,
+    lastDocument: lastDocument,
+    user: arg.user,
+  );
+}
+
+class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
+    SubmissionQueryParam> {
   @override
-  Future<List<SubmissionModel>> build(SubmissionQueryParam arg) async {
+  int get pageSize => 3;
+
+  @override
+  FetchPageWithArg<SubmissionModel, SubmissionQueryParam> get fetchPage =>
+      getSubmissionsAdapter;
+
+  @override
+  Future<PaginationState<SubmissionModel>> build(
+    SubmissionQueryParam arg,
+  ) async {
     // ensures auth state is loaded, will reset all state when auth changes
     ref.watch(authProvider);
 
-    Query query;
+    final result = await fetchPage(
+      arg: arg,
+      limit: pageSize,
+      lastDocument: null,
+    );
 
-    switch (arg.type) {
-      case SubmissionQueryType.byUser:
-        query = db.collection("submissions").where("userId", isEqualTo: arg.id);
-        break;
-      case SubmissionQueryType.byPrompt:
-        query =
-            db.collection("submissions").where("prompt.id", isEqualTo: arg.id);
-        break;
-      case SubmissionQueryType.all:
-        query = db.collection("submissions");
-    }
-
-    query = query.orderBy("date", descending: true);
-
-    return await getSubmissions(query: query, user: arg.user);
+    return PaginationState<SubmissionModel>(
+      items: result.items,
+      lastDocument: result.lastDoc,
+      hasNextPage: result.items.length == pageSize,
+    );
   }
 
   Future<void> toggleSubmissionLike({
     required String submissionId,
     required bool isLiked,
   }) async {
-    state = AsyncValue.data([
-      for (SubmissionModel submission in state.valueOrNull ?? [])
-        if (submission.id == submissionId)
-          submission.copyWith(
-            isLiked: !isLiked,
-            likes: isLiked
-                ? submission.likes
-                    .where((id) => id != auth.currentUser!.uid)
-                    .toList()
-                : [...submission.likes, auth.currentUser!.uid],
-          )
-        else
-          submission,
-    ]);
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final updatedItems = currentState.items.map((submission) {
+      if (submission.id == submissionId) {
+        return submission.copyWith(
+          isLiked: !isLiked,
+          likes: isLiked
+              ? submission.likes
+                  .where((id) => id != auth.currentUser!.uid)
+                  .toList()
+              : [...submission.likes, auth.currentUser!.uid],
+        );
+      }
+      return submission;
+    }).toList();
+
+    state = AsyncData(currentState.copyWith(items: updatedItems));
 
     await toggleLike(
       submissionId: submissionId,
@@ -71,6 +89,6 @@ class SubmissionNotifier
 }
 
 final submissionNotifierProvider = AsyncNotifierProvider.family<
-    SubmissionNotifier, List<SubmissionModel>, SubmissionQueryParam>(() {
-  return SubmissionNotifier();
-});
+    SubmissionNotifier,
+    PaginationState<SubmissionModel>,
+    SubmissionQueryParam>(() => SubmissionNotifier());

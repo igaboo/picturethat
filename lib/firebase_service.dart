@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/models/submission_model.dart';
 import 'package:picturethat/models/user_model.dart';
+import 'package:picturethat/providers/submission_provider.dart';
 
 final FirebaseAuth auth = FirebaseAuth.instance;
 final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -187,13 +188,40 @@ Future<void> toggleLike({
 }
 
 // get submissions from a query
-Future<List<SubmissionModel>> getSubmissions({
-  required Query query,
+Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
+    getSubmissions({
+  required SubmissionQueryParam queryParam,
+  required int limit,
+  DocumentSnapshot? lastDocument,
   UserModel? user,
 }) async {
-  final snapshot = await query.get();
+  Query query = db.collection("submissions");
+  switch (queryParam.type) {
+    case SubmissionQueryType.byUser:
+      query = query.where("userId", isEqualTo: queryParam.id);
+      break;
+    case SubmissionQueryType.byPrompt:
+      query = query.where("prompt.id", isEqualTo: queryParam.id);
+      break;
+    case SubmissionQueryType.all:
+      // filter by followed users
+      break;
+  }
 
-  return Future.wait(snapshot.docs.map((doc) async {
+  query = query.orderBy("date", descending: true).limit(limit);
+
+  if (lastDocument != null) {
+    query = query.startAfterDocument(lastDocument);
+  }
+
+  final snapshot = await query.get();
+  final docs = snapshot.docs;
+
+  if (docs.isEmpty) {
+    return (items: <SubmissionModel>[], lastDoc: null);
+  }
+
+  final items = await Future.wait(docs.map((doc) async {
     final data = doc.data() as Map<String, dynamic>;
 
     final userData = user ?? await getUser(userId: data["userId"]);
@@ -204,6 +232,8 @@ Future<List<SubmissionModel>> getSubmissions({
       "user": userData,
     });
   }));
+
+  return (items: items, lastDoc: docs.last);
 }
 
 // get a single prompt
@@ -221,30 +251,46 @@ Future<PromptModel?> getPrompt({required String promptId}) async {
   return PromptModel.fromMap(promptData);
 }
 
-// get all prompts
-Future<List<PromptModel>> getPrompts() async {
+// get a page of prompts
+Future<({List<PromptModel> items, DocumentSnapshot? lastDoc})> getPrompts({
+  required int limit,
+  DocumentSnapshot? lastDocument,
+}) async {
   final now = DateTime.now();
   final startOfTomorrow = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
   final cutoff = Timestamp.fromDate(startOfTomorrow.toUtc());
 
-  final snapshot = await db
+  Query query = db
       .collection("prompts")
       .where("date", isLessThan: cutoff)
       .orderBy("date", descending: true)
-      .get();
+      .limit(limit);
 
-  return Future.wait(snapshot.docs.map((doc) async {
+  if (lastDocument != null) {
+    query = query.startAfterDocument(lastDocument);
+  }
+
+  final snapshot = await query.get();
+  final docs = snapshot.docs;
+
+  if (docs.isEmpty) {
+    return (items: <PromptModel>[], lastDoc: null);
+  }
+
+  final items = await Future.wait(docs.map((doc) async {
     final submissionCount = await getDocumentCount(
       query: db.collection("submissions").where("prompt.id", isEqualTo: doc.id),
     );
 
     final promptData = {
-      ...doc.data(),
+      ...doc.data() as Map<String, dynamic>,
       "submissionCount": submissionCount,
     };
 
     return PromptModel.fromMap(promptData);
   }));
+
+  return (items: items, lastDoc: docs.last);
 }
 
 // get a list of users from a username query
