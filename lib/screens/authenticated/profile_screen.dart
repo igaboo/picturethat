@@ -5,6 +5,7 @@ import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/get_clean_url.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -41,8 +42,7 @@ class ProfileScreen extends ConsumerWidget {
                           Text("Settings"),
                         ],
                       ),
-                      onTap: () =>
-                          Navigator.pushNamed(context, "/settings_screen"),
+                      onTap: () => navigate(context, "/settings_screen"),
                     ),
                   ]
                 : [
@@ -89,7 +89,7 @@ class ProfileScreen extends ConsumerWidget {
 
           Future<void> handleButtonPress() async {
             if (isSelf) {
-              Navigator.pushNamed(context, "/edit_profile_screen");
+              navigate(context, "/edit_profile_screen");
               return;
             }
             // follow user logic here
@@ -102,15 +102,20 @@ class ProfileScreen extends ConsumerWidget {
               return RefreshIndicator(
                 onRefresh: refreshSubmissions,
                 child: SubmissionListSliver(
+                  heroContext: profileUserId,
+                  disableNavigation: isSelf,
                   header: Column(
                     spacing: 20.0,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      CustomImage(
-                        imageProvider: NetworkImage(user.profileImageUrl),
-                        shape: CustomImageShape.circle,
-                        height: PROFILE_IMAGE_SIZE,
-                        width: PROFILE_IMAGE_SIZE,
+                      CustomImageViewer(
+                        heroTag: user.uid,
+                        customImage: CustomImage(
+                          imageProvider: NetworkImage(user.profileImageUrl),
+                          shape: CustomImageShape.circle,
+                          height: PROFILE_IMAGE_SIZE,
+                          width: PROFILE_IMAGE_SIZE,
+                        ),
                       ),
                       Column(
                         children: [
@@ -184,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             Expanded(
                               child: TextButton(
-                                onPressed: () => Navigator.pushNamed(
+                                onPressed: () => navigate(
                                   context,
                                   "/followers_screen",
                                   arguments: {
@@ -212,7 +217,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             Expanded(
                               child: TextButton(
-                                onPressed: () => Navigator.pushNamed(
+                                onPressed: () => navigate(
                                   context,
                                   "/followers_screen",
                                   arguments: {

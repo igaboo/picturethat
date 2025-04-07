@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/prompt_list.dart';
 
 class PromptsScreen extends ConsumerStatefulWidget {
@@ -23,7 +24,7 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen> {
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0.0),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, "/submit_photo_screen"),
+        onPressed: () => navigate(context, "/submit_photo_screen"),
         label: Text("Submit Today's Prompt"),
         icon: Icon(Icons.add_photo_alternate_outlined),
       ),

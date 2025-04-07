@@ -4,15 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/submission_model.dart';
 import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/utils/get_time_elapsed.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;
   final SubmissionQueryParam queryParam;
+  final String? heroContext;
+  final bool? disableNavigation;
 
   const Submission({
     required this.submission,
     required this.queryParam,
+    required this.heroContext,
+    this.disableNavigation,
     super.key,
   });
 
@@ -24,7 +29,8 @@ class Submission extends ConsumerWidget {
       String route = "/profile_screen",
       required routeId,
     }) {
-      Navigator.pushNamed(context, route, arguments: routeId);
+      if (disableNavigation == true) return;
+      navigate(context, route, arguments: routeId);
     }
 
     return Column(
@@ -96,12 +102,15 @@ class Submission extends ConsumerWidget {
         // Body
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
-          child: CustomImage(
-            imageProvider: NetworkImage(submission.image.url),
-            width: submission.image.width.toDouble(),
-            height: submission.image.height.toDouble(),
-            aspectRatio: submission.image.width / submission.image.height,
-            maxHeight: 400.0,
+          child: CustomImageViewer(
+            heroTag: "${heroContext}_${submission.id}",
+            customImage: CustomImage(
+              imageProvider: NetworkImage(submission.image.url),
+              width: submission.image.width.toDouble(),
+              height: submission.image.height.toDouble(),
+              aspectRatio: submission.image.width / submission.image.height,
+              maxHeight: 400.0,
+            ),
           ),
         ),
         // Footer
@@ -163,7 +172,9 @@ class Submission extends ConsumerWidget {
                           ..onTap = () =>
                               navigateToScreen(routeId: submission.user.uid),
                       ),
-                      TextSpan(text: submission.caption!)
+                      TextSpan(
+                          text: submission.caption!,
+                          style: Theme.of(context).textTheme.bodyMedium),
                     ],
                   ),
                 ),

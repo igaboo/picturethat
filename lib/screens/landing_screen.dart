@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatelessWidget {
@@ -57,15 +58,11 @@ class LandingScreen extends StatelessWidget {
                 spacing: 16.0,
                 children: [
                   FilledButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/register_screen");
-                    },
+                    onPressed: () => navigate(context, "/register_screen"),
                     child: Text("Create an Account"),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/login_screen");
-                    },
+                    onPressed: () => navigate(context, "/login_screen"),
                     child: Text("Login"),
                   ),
                   RichText(

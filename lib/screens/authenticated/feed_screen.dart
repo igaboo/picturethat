@@ -4,6 +4,7 @@ import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/utils/is_today.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 
 /// TODO
@@ -42,9 +43,11 @@ class FeedScreen extends ConsumerWidget {
           data: (prompt) {
             if (prompt != null && isToday(prompt.date)) {
               return FloatingActionButton(
-                onPressed: () => Navigator.pushNamed(
-                    context, "/submit_photo_screen",
-                    arguments: prompt.id),
+                onPressed: () => navigate(
+                  context,
+                  "/submit_photo_screen",
+                  arguments: prompt.id,
+                ),
                 child: Icon(Icons.add_photo_alternate_outlined),
               );
             } else {
@@ -66,9 +69,7 @@ class FeedScreen extends ConsumerWidget {
           if (!isPrompt)
             IconButton(
               icon: const Icon(Icons.search),
-              onPressed: () async {
-                Navigator.pushNamed(context, "/search_screen");
-              },
+              onPressed: () async => navigate(context, "/search_screen"),
             ),
         ],
       ),
@@ -80,6 +81,7 @@ class FeedScreen extends ConsumerWidget {
         data: (submissions) => RefreshIndicator(
           onRefresh: refreshSubmissions,
           child: SubmissionList(
+            heroContext: promptId,
             submissionState: submissions,
             queryParam: queryParam,
           ),

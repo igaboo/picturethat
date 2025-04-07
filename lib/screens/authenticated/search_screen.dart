@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/models/user_model.dart';
 import 'package:picturethat/utils/handle_error.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/empty_state.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
@@ -141,7 +142,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           title: Text("${user.firstName} ${user.lastName}"),
           subtitle: Text("@${user.username}"),
-          onTap: () => Navigator.pushNamed(
+          onTap: () => navigate(
             context,
             "/profile_screen",
             arguments: user.uid,

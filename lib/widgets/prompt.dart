@@ -4,6 +4,7 @@ import 'package:picturethat/utils/get_formatted_date.dart';
 import 'package:picturethat/utils/get_formatted_number.dart';
 import 'package:picturethat/utils/get_time_left.dart';
 import 'package:picturethat/utils/is_today.dart';
+import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,8 +23,7 @@ class Prompt extends StatelessWidget {
     bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
-      onTap: () =>
-          Navigator.pushNamed(context, "/feed_screen", arguments: prompt.id),
+      onTap: () => navigate(context, "/feed_screen", arguments: prompt.id),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -154,8 +154,8 @@ class Prompt extends StatelessWidget {
                       Visibility(
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
-                          onPressed: () => Navigator.pushNamed(
-                              context, "/submit_photo_screen"),
+                          onPressed: () =>
+                              navigate(context, "/submit_photo_screen"),
                           icon: Icon(Icons.add_photo_alternate_outlined),
                         ),
                       ),

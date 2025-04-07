@@ -15,10 +15,14 @@ Widget emptyState = const EmptyState(
 class SubmissionList extends ConsumerStatefulWidget {
   final PaginationState<SubmissionModel> submissionState;
   final SubmissionQueryParam queryParam;
+  final String? heroContext;
+  final bool? disableNavigation;
 
   const SubmissionList({
     required this.submissionState,
     required this.queryParam,
+    required this.heroContext,
+    this.disableNavigation,
     super.key,
   });
 
@@ -99,6 +103,8 @@ class _SubmissionListState extends ConsumerState<SubmissionList> {
         return Submission(
           submission: submission,
           queryParam: widget.queryParam,
+          heroContext: widget.heroContext,
+          disableNavigation: widget.disableNavigation,
           key: ValueKey(submission.id),
         );
       },
@@ -110,11 +116,15 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
   final Widget header;
   final PaginationState<SubmissionModel> submissionState;
   final SubmissionQueryParam queryParam;
+  final String? heroContext;
+  final bool? disableNavigation;
 
   const SubmissionListSliver({
     required this.header,
     required this.submissionState,
     required this.queryParam,
+    required this.heroContext,
+    this.disableNavigation,
     super.key,
   });
 
@@ -201,6 +211,8 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                 return Submission(
                   submission: submission,
                   queryParam: widget.queryParam,
+                  heroContext: widget.heroContext,
+                  disableNavigation: widget.disableNavigation,
                   key: ValueKey(submission.id),
                 );
               },
