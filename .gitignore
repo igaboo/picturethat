@@ -52,3 +52,6 @@ typings/
 
 node_modules/
 *.local
+
+# generate-submissions
+serviceAccountKey.json
