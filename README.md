@@ -8,7 +8,7 @@
 
 #### [Firebase Console](https://console.firebase.google.com/u/0/project/picturethat-65135/overview)
 
-#### [Storage Bucket URL](gs://picturethat-65135.firebasestorage.app)
+#### Storage Bucket URL: gs://picturethat-65135.firebasestorage.app
 
 ## References
 
