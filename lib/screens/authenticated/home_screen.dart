@@ -12,6 +12,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
+  PageController? _pageController;
 
   final List<Widget> _views = [
     PromptsScreen(),
@@ -20,9 +21,19 @@ class _HomeState extends State<Home> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _views[_currentIndex],
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: _views,
+      ),
       resizeToAvoidBottomInset: false,
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.transparent,
@@ -30,6 +41,7 @@ class _HomeState extends State<Home> {
         onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
+            _pageController?.jumpToPage(index);
           });
         },
         destinations: const [

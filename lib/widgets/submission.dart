@@ -29,7 +29,8 @@ class Submission extends ConsumerWidget {
       String route = "/profile_screen",
       required routeId,
     }) {
-      if (disableNavigation == true) return;
+      // prevents navigation to current screen
+      if (disableNavigation == true && route == "/profile_screen") return;
       navigate(context, route, arguments: routeId);
     }
 

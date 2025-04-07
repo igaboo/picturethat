@@ -16,11 +16,22 @@ import 'package:url_launcher/url_launcher.dart';
 
 final PROFILE_IMAGE_SIZE = 150.0;
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with AutomaticKeepAliveClientMixin<ProfileScreen> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
     final uid = ModalRoute.of(context)?.settings.arguments as String?;
     final profileUserId = uid ?? auth.currentUser?.uid;
     final isSelf = profileUserId == auth.currentUser?.uid;

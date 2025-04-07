@@ -10,11 +10,22 @@ import 'package:picturethat/widgets/submission_list.dart';
 /// TODO
 /// change query to only get submissions from users that are followed
 
-class FeedScreen extends ConsumerWidget {
+class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FeedScreen> createState() => _FeedScreenState();
+}
+
+class _FeedScreenState extends ConsumerState<FeedScreen>
+    with AutomaticKeepAliveClientMixin<FeedScreen> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
     // get prompt id from args
     // if prompt id is null, then we are on the main feed
     final promptId = ModalRoute.of(context)?.settings.arguments as String?;

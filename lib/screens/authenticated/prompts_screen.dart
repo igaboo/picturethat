@@ -11,14 +11,20 @@ class PromptsScreen extends ConsumerStatefulWidget {
   ConsumerState<PromptsScreen> createState() => _PromptsScreenState();
 }
 
-class _PromptsScreenState extends ConsumerState<PromptsScreen> {
+class _PromptsScreenState extends ConsumerState<PromptsScreen>
+    with AutomaticKeepAliveClientMixin<PromptsScreen> {
   Future<void> _refreshPrompts() async {
     ref.invalidate(promptsProvider);
     await ref.read(promptsProvider.future);
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final promptsAsync = ref.watch(promptsProvider);
 
     return Scaffold(
