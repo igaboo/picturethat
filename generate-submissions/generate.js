@@ -1,3 +1,8 @@
+/**
+ * Generates a random number of dummy submissions.
+ * usage: node generate.js <number_of_submissions>
+ */
+
 const admin = require("firebase-admin");
 const axios = require("axios");
 require("dotenv").config({ path: ".env.local" });
@@ -175,7 +180,7 @@ function getRandomCaption() {
 
   caption = caption.charAt(0).toUpperCase() + caption.slice(1);
 
-  if (Math.random() < 0.75) {
+  if (Math.random() > 0.75) {
     caption += " " + getRandomElement(emojis);
   }
 
@@ -208,6 +213,18 @@ async function getUnsplashImage() {
   };
 }
 
+function getRandomLikes() {
+  // fill likes with random strings like "userId1"
+  const likes = [];
+  const numLikes = Math.floor(Math.random() * 100);
+
+  for (let i = 0; i < numLikes; i++) {
+    likes.push(`userId${i}`);
+  }
+
+  return likes;
+}
+
 async function generateSubmissions(n) {
   if (!UNSPLASH_ACCESS_KEY) {
     console.error("No Unsplash access key provided.");
@@ -237,7 +254,8 @@ async function generateSubmissions(n) {
       const userId = getRandomElement(USER_IDS);
       const prompt = getRandomElement(PROMPTS);
       const caption = getRandomCaption();
-      const timestamp = getRandomTimestamp(prompt.dateString);
+      const date = getRandomTimestamp(prompt.dateString);
+      const likes = getRandomLikes();
       const image = await getUnsplashImage();
 
       if (!image) throw new Error("Failed to fetch image from Unsplash.");
@@ -248,24 +266,22 @@ async function generateSubmissions(n) {
         id: docRef.id,
         userId,
         caption,
-        likes: [],
-        date: timestamp,
-        prompt: {
-          id: prompt.id,
-          title: prompt.title,
-        },
+        likes,
+        date,
         image: {
           url: image.url,
           width: image.width,
           height: image.height,
         },
+        prompt: {
+          id: prompt.id,
+          title: prompt.title,
+        },
       };
 
       await docRef.set(submission);
     } catch (err) {
-      console.error(
-        `Error generating submission ${i + 1}: ${err.response.data}`
-      );
+      console.error(`Error generating submission ${i + 1}: ${err}`);
       continue;
     }
   }
