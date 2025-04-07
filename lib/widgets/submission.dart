@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/submission_model.dart';
@@ -19,7 +20,10 @@ class Submission extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(submissionNotifierProvider(queryParam).notifier);
 
-    void navigateToScreen(String route, routeId) {
+    void navigateToScreen({
+      String route = "/profile_screen",
+      required routeId,
+    }) {
       Navigator.pushNamed(context, route, arguments: routeId);
     }
 
@@ -33,8 +37,7 @@ class Submission extends ConsumerWidget {
             spacing: 10.0,
             children: [
               GestureDetector(
-                onTap: () =>
-                    navigateToScreen("/profile_screen", submission.user.uid),
+                onTap: () => navigateToScreen(routeId: submission.user.uid),
                 child: CustomImage(
                   imageProvider: NetworkImage(submission.user.profileImageUrl),
                   shape: CustomImageShape.circle,
@@ -47,8 +50,8 @@ class Submission extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => navigateToScreen(
-                          "/profile_screen", submission.user.uid),
+                      onTap: () =>
+                          navigateToScreen(routeId: submission.user.uid),
                       child: Text(
                         "@${submission.user.username}",
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -58,7 +61,9 @@ class Submission extends ConsumerWidget {
                     ),
                     GestureDetector(
                       onTap: () => navigateToScreen(
-                          "/feed_screen", submission.prompt.id),
+                        route: "/feed_screen",
+                        routeId: submission.prompt.id,
+                      ),
                       child: Text(submission.prompt.title),
                     ),
                   ],
@@ -103,14 +108,6 @@ class Submission extends ConsumerWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (submission.caption != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  submission.caption!,
-                  textAlign: TextAlign.center,
-                ),
-              ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
@@ -149,6 +146,28 @@ class Submission extends ConsumerWidget {
                 ],
               ),
             ),
+            if (submission.caption != null)
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 5.0),
+                child: RichText(
+                  textAlign: TextAlign.start,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "@${submission.user.username} ",
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () =>
+                              navigateToScreen(routeId: submission.user.uid),
+                      ),
+                      TextSpan(text: submission.caption!)
+                    ],
+                  ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(

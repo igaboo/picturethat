@@ -165,6 +165,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                   TextFormField(
                     controller: _usernameController,
+                    autocorrect: false,
                     decoration: const InputDecoration(
                       labelText: "Username",
                       helperText: ' ',

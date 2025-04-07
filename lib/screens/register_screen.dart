@@ -88,11 +88,11 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Column(
                     spacing: 10,
                     children: [
-                      SizedBox(
-                        width: PROFILE_IMAGE_SIZE,
-                        height: PROFILE_IMAGE_SIZE,
-                        child: _profileImage == null
-                            ? DottedBorder(
+                      _profileImage == null
+                          ? SizedBox(
+                              width: PROFILE_IMAGE_SIZE,
+                              height: PROFILE_IMAGE_SIZE,
+                              child: DottedBorder(
                                 borderType: BorderType.Circle,
                                 color: Theme.of(context)
                                     .colorScheme
@@ -109,12 +109,14 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         .outlineVariant,
                                   ),
                                 ),
-                              )
-                            : CustomImage(
-                                imageProvider: AssetImage(_profileImage!.path),
-                                shape: CustomImageShape.circle,
                               ),
-                      ),
+                            )
+                          : CustomImage(
+                              imageProvider: AssetImage(_profileImage!.path),
+                              shape: CustomImageShape.circle,
+                              width: PROFILE_IMAGE_SIZE,
+                              height: PROFILE_IMAGE_SIZE,
+                            ),
                       Text(
                         "Pick Profile Image",
                         style: Theme.of(context).textTheme.labelLarge!.copyWith(
