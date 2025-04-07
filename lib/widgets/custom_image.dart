@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picturethat/screens/authenticated/image_viewer_screen.dart';
 
 enum CustomImageShape { squircle, circle }
 
@@ -98,5 +99,46 @@ class CustomImage extends StatelessWidget {
     }
 
     return constrainedWidget;
+  }
+}
+
+class CustomImageViewer extends StatelessWidget {
+  final CustomImage customImage;
+  final Object? heroTag;
+
+  const CustomImageViewer({
+    required this.customImage,
+    this.heroTag,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return ImageViewerScreen(
+                imageProvider: customImage.imageProvider,
+                heroTag: heroTag,
+              );
+            },
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+      child: heroTag != null
+          ? Hero(tag: heroTag!, child: customImage)
+          : customImage,
+    );
   }
 }
