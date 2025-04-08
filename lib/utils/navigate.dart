@@ -9,8 +9,6 @@ void navigate(
 
   final String? currentRouteName = currentRoute?.settings.name;
 
-  print(currentRoute);
-
   if (currentRouteName != route) {
     Navigator.pushNamed(context, route, arguments: arguments);
   }
