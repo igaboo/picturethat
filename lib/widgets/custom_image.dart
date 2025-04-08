@@ -5,21 +5,19 @@ enum CustomImageShape { squircle, circle }
 
 class CustomImage extends StatelessWidget {
   final ImageProvider imageProvider;
+  final double width;
+  final double height;
   final CustomImageShape shape;
-  final double? width;
-  final double? height;
   final double? maxWidth;
   final double? maxHeight;
-  final double? aspectRatio;
 
   const CustomImage({
     required this.imageProvider,
+    required this.width,
+    required this.height,
     this.shape = CustomImageShape.squircle,
-    this.width,
-    this.height,
     this.maxWidth,
     this.maxHeight,
-    this.aspectRatio,
     super.key,
   });
 
@@ -32,14 +30,31 @@ class CustomImage extends StatelessWidget {
         ? BorderRadius.circular(20.0)
         : null;
 
+    double scaledWidth = width;
+    double scaledHeight = height;
+    if (maxHeight != null) {
+      double scale = maxHeight! / height;
+      scaledHeight = height * scale;
+      scaledWidth = width * scale;
+    }
+    if (maxWidth != null && scaledWidth > scaledHeight) {
+      double scale = maxWidth! / scaledWidth;
+      scaledWidth = maxWidth!;
+      scaledHeight = scaledHeight * scale;
+    }
+
     Widget imageWidget = Image(
       image: imageProvider,
       fit: BoxFit.cover,
-      width: width,
-      height: height,
+      width: scaledWidth,
+      height: scaledHeight,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         if (wasSynchronouslyLoaded) return child;
-        Widget placeholder = Container(color: placeholderColor);
+        Widget placeholder = Container(
+          color: placeholderColor,
+          width: scaledWidth,
+          height: scaledHeight,
+        );
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -72,33 +87,7 @@ class CustomImage extends StatelessWidget {
       child: clippedImage,
     );
 
-    Widget sizedWidget = borderedContainer;
-    if (aspectRatio != null) {
-      sizedWidget = AspectRatio(
-        aspectRatio: aspectRatio!,
-        child: borderedContainer,
-      );
-    }
-    if (aspectRatio == null && (width != null || height != null)) {
-      sizedWidget = SizedBox(
-        width: width,
-        height: height,
-        child: borderedContainer,
-      );
-    }
-
-    Widget constrainedWidget = sizedWidget;
-    if (maxWidth != null || maxHeight != null) {
-      constrainedWidget = ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: maxWidth ?? double.infinity,
-          maxHeight: maxHeight ?? double.infinity,
-        ),
-        child: sizedWidget,
-      );
-    }
-
-    return constrainedWidget;
+    return borderedContainer;
   }
 }
 
