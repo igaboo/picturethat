@@ -26,6 +26,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   XFile? _profileImage;
+  bool _isLoading = false;
 
   void _register() async {
     try {
@@ -53,14 +54,16 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   void _selectProfileImage() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
     try {
       final image = await ImageUtils.pickImage();
-      if (image != null) {
-        setState(() {
-          _profileImage = image;
-        });
-      }
+      setState(() => _isLoading = false);
+
+      if (image != null) setState(() => _profileImage = image);
     } catch (e) {
+      setState(() => _isLoading = false);
       if (mounted) {
         handleError(
           context,
@@ -101,13 +104,15 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 strokeWidth: 5,
                                 strokeCap: StrokeCap.round,
                                 child: Center(
-                                  child: Icon(
-                                    Icons.mood,
-                                    size: 60,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outlineVariant,
-                                  ),
+                                  child: _isLoading
+                                      ? CircularProgressIndicator()
+                                      : Icon(
+                                          Icons.mood,
+                                          size: 60,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outlineVariant,
+                                        ),
                                 ),
                               ),
                             )
@@ -211,7 +216,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     FilledButton(
-                      onPressed: () => _register(),
+                      onPressed: _isLoading ? null : () => _register(),
                       child: Text("Create an Account"),
                     ),
                   ],

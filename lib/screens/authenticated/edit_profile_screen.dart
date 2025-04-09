@@ -25,24 +25,22 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _bioController = TextEditingController();
   final _urlController = TextEditingController();
   XFile? _profileImage;
+  bool _isLoading = false;
 
   void _selectProfileImage() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
     try {
       final image = await ImageUtils.pickImage();
+      setState(() => _isLoading = false);
+
       if (image != null) {
-        setState(() {
-          _profileImage = image;
-        });
+        setState(() => _profileImage = image);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "An error occurred while selecting an image. Please try again."),
-          ),
-        );
-      }
+      setState(() => _isLoading = false);
+      if (mounted) handleError(context, e);
     }
   }
 
@@ -108,13 +106,19 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: Column(
                         spacing: 10,
                         children: [
-                          CustomImage(
-                            imageProvider: _profileImage == null
-                                ? NetworkImage(user.profileImageUrl)
-                                : AssetImage(_profileImage!.path),
-                            shape: CustomImageShape.circle,
-                            width: PROFILE_IMAGE_SIZE,
-                            height: PROFILE_IMAGE_SIZE,
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CustomImage(
+                                imageProvider: _profileImage == null
+                                    ? NetworkImage(user.profileImageUrl)
+                                    : AssetImage(_profileImage!.path),
+                                shape: CustomImageShape.circle,
+                                width: PROFILE_IMAGE_SIZE,
+                                height: PROFILE_IMAGE_SIZE,
+                              ),
+                              if (_isLoading) CircularProgressIndicator(),
+                            ],
                           ),
                           Text(
                             "Pick Profile Image",
@@ -199,7 +203,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         FilledButton(
-                          onPressed: () => _updateProfile(),
+                          onPressed: _isLoading ? null : () => _updateProfile(),
                           child: Text("Save Changes"),
                         ),
                       ],
