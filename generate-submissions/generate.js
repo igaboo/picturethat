@@ -1,6 +1,9 @@
 /**
  * Generates a random number of dummy submissions.
  * usage: node generate.js <number_of_submissions>
+ *
+ * Ensure that ./serviceAccountLey.json exists,
+ * as well as a .env.local file containing UNSPLASH_ACCESS_KEY.
  */
 
 const admin = require("firebase-admin");
@@ -9,41 +12,30 @@ require("dotenv").config({ path: ".env.local" });
 
 const SERVICE_ACCOUNT = require("./serviceAccountKey.json");
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
-
 const COLLECTION_NAME = "submissions";
-const USER_IDS = [
-  "8oyiN8VUYMTdRCv4Nb7QsFGoFqi2",
-  "cRFaIR7MJnTg4stxl96PnF8b2732",
-  "qIZQ2zPALaYr0u5HrtL0rInCLpZ2",
-];
-const PROMPTS = [
-  {
-    id: "0qDOr6vLnjiAXuA5bxuQ",
-    title: "Tiny seed grows",
-    dateString: "2025-04-05",
-  },
-  {
-    id: "Ek0iSg0e1oUcyYkzEFWl",
-    title: "Reflections in water",
-    dateString: "2025-04-06",
-  },
-  { id: "FBuixqliLy6tVY5ugOML", title: "Growth", dateString: "2025-04-04" },
-  {
-    id: "MUcAmFPLnsNZHAoHMyn6",
-    title: "Gentle light",
-    dateString: "2025-04-01",
-  },
-  {
-    id: "O1kZ23q3u0obn6suQBMm",
-    title: "Whispers on wind",
-    dateString: "2025-04-03",
-  },
-  {
-    id: "P6Bm5VOXvAn553M7WJez",
-    title: "Hidden path ahead",
-    dateString: "2025-04-02",
-  },
-];
+
+async function getPromptDocuments() {
+  const snapshot = await admin
+    .firestore()
+    .collection("prompts")
+    .orderBy("date", "desc")
+    .limit(10)
+    .get();
+
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      title: data.title,
+      dateString: data.date.toDate(),
+    };
+  });
+}
+
+async function getUserIds() {
+  const snapshot = await admin.firestore().collection("users").get();
+  return snapshot.docs.map((doc) => doc.id);
+}
 
 function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -188,7 +180,7 @@ function getRandomCaption() {
 }
 
 function getRandomTimestamp(dateString) {
-  const date = new Date(dateString + "T00:00:00Z");
+  const date = new Date(dateString.getTime());
   date.setUTCHours(Math.floor(Math.random() * 24));
   date.setUTCMinutes(Math.floor(Math.random() * 60));
   date.setUTCSeconds(Math.floor(Math.random() * 60));
@@ -231,7 +223,9 @@ async function generateSubmissions(n) {
     return;
   }
 
-  console.log("Generating submissions...");
+  console.log(
+    `Starting generation of ${n} documents in "${COLLECTION_NAME}"...`
+  );
 
   if (!admin.apps.length) {
     admin.initializeApp({
@@ -240,19 +234,15 @@ async function generateSubmissions(n) {
     });
   }
 
-  const db = admin.firestore();
-  const collection = db.collection(COLLECTION_NAME);
-
-  console.log(
-    `Starting generation of ${n} documents in "${COLLECTION_NAME}"...`
-  );
+  const prompts = await getPromptDocuments();
+  const userIds = await getUserIds();
 
   for (let i = 0; i < n; i++) {
     console.log(`\n--- Generating submission ${i + 1} of ${n} ---`);
 
     try {
-      const userId = getRandomElement(USER_IDS);
-      const prompt = getRandomElement(PROMPTS);
+      const userId = getRandomElement(userIds);
+      const prompt = getRandomElement(prompts);
       const caption = getRandomCaption();
       const date = getRandomTimestamp(prompt.dateString);
       const likes = getRandomLikes();
@@ -260,7 +250,7 @@ async function generateSubmissions(n) {
 
       if (!image) throw new Error("Failed to fetch image from Unsplash.");
 
-      const docRef = collection.doc();
+      const docRef = admin.firestore().collection(COLLECTION_NAME).doc();
 
       const submission = {
         id: docRef.id,
@@ -286,9 +276,7 @@ async function generateSubmissions(n) {
     }
   }
 
-  console.log(
-    `\nGeneration complete! ${n} documents created in "${COLLECTION_NAME}".`
-  );
+  console.log("\nGeneration complete!");
 }
 
 const n = parseInt(process.argv[2], 10) || 10;
