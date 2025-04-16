@@ -24,6 +24,18 @@ class PromptNotifier extends PaginatedAsyncNotifier<PromptModel> {
       hasNextPage: result.items.length == pageSize,
     );
   }
+
+  ///
+  /// add state updates here
+  ///
+
+  Future<void> addSubmission() async {
+    final currentState = state.valueOrNull;
+  }
+
+  Future<void> deleteSubmission() async {
+    final currentState = state.valueOrNull;
+  }
 }
 
 final promptsProvider =
