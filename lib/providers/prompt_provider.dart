@@ -26,7 +26,7 @@ class PromptNotifier extends PaginatedAsyncNotifier<PromptModel> {
   }
 
   ///
-  /// add state updates here
+  /// add state updates here reference submission_provider.dart fetch submissions function
   ///
 
   Future<void> addSubmission() async {
