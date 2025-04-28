@@ -74,12 +74,12 @@ Future<UserModel?> getUser({required String userId}) async {
 
   final followersCount = await getDocumentCount(
     query:
-        db.collection("relationships").where("followerUid", isEqualTo: userId),
+        db.collection("relationships").where("followingUid", isEqualTo: userId),
   );
 
   final followingCount = await getDocumentCount(
     query:
-        db.collection("relationships").where("followingUid", isEqualTo: userId),
+        db.collection("relationships").where("followerUid", isEqualTo: userId),
   );
 
   final submissionsCount = await getDocumentCount(
@@ -188,6 +188,7 @@ Future<void> toggleLike({
 }
 
 // get submissions from a query
+final EMPTY_RETURN = (items: <SubmissionModel>[], lastDoc: null);
 Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
     getSubmissions({
   required SubmissionQueryParam queryParam,
@@ -198,17 +199,59 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   Query query = db.collection("submissions");
   switch (queryParam.type) {
     case SubmissionQueryType.byUser:
-      query = query.where("userId", isEqualTo: queryParam.id);
+      query = query
+          .where("userId", isEqualTo: queryParam.id)
+          .orderBy("date", descending: true);
       break;
     case SubmissionQueryType.byPrompt:
-      query = query.where("prompt.id", isEqualTo: queryParam.id);
+      query = query
+          .where("prompt.id", isEqualTo: queryParam.id)
+          .orderBy("date", descending: true);
       break;
-    case SubmissionQueryType.all:
-      // filter by followed users
+    case SubmissionQueryType.byFollowing:
+      // note that this is a bit inefficient, but it works for now
+      // in the future (once the relationship_provider is implemented)
+      // we can skip the relationship query and just get the submissions
+      // from the followed users
+
+      // also, firebase has a limitation of 30 whereIn clauses,
+      // so this will only work for 30 followed users.
+      // in the future, we need to switch to a different
+      // database (SQL, supabase) to support more than 30 followers.
+
+      final snapshot = await db
+          .collection("relationships")
+          .where("followerUid", isEqualTo: auth.currentUser?.uid)
+          .get();
+
+      final followedUsers = snapshot.docs
+          .map((user) => user.data()["followingUid"] as String)
+          .toList();
+
+      if (followedUsers.isNotEmpty) {
+        query = query
+            .where("userId", whereIn: followedUsers)
+            .orderBy("date", descending: true);
+      } else {
+        return EMPTY_RETURN;
+      }
+
+      break;
+    case SubmissionQueryType.byRandom:
+      // get top liked submissions in the last week
+      final now = DateTime.now();
+      final startDate = now.subtract(const Duration(days: 7));
+      final cutoff = Timestamp.fromDate(startDate.toUtc());
+
+      query = query
+          .where("date", isGreaterThan: cutoff)
+          .orderBy("likes", descending: true)
+          .orderBy("date", descending: true);
+
       break;
   }
 
-  query = query.orderBy("date", descending: true).limit(limit);
+  query = query.limit(limit);
 
   if (lastDocument != null) {
     query = query.startAfterDocument(lastDocument);
@@ -217,9 +260,7 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   final snapshot = await query.get();
   final docs = snapshot.docs;
 
-  if (docs.isEmpty) {
-    return (items: <SubmissionModel>[], lastDoc: null);
-  }
+  if (docs.isEmpty) return EMPTY_RETURN;
 
   final items = await Future.wait(docs.map((doc) async {
     final data = doc.data() as Map<String, dynamic>;

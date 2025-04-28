@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/models/prompt_model.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/providers/submission_provider.dart';
+import 'package:picturethat/utils/get_formatted_date.dart';
 import 'package:picturethat/utils/is_today.dart';
 import 'package:picturethat/utils/navigate.dart';
+import 'package:picturethat/widgets/custom_tooltip.dart';
 import 'package:picturethat/widgets/submission_list.dart';
 
 /// TODO
@@ -19,6 +23,8 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen>
     with AutomaticKeepAliveClientMixin<FeedScreen> {
+  bool showFollowingScreen = true;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -36,7 +42,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     final SubmissionQueryParam queryParam = isPrompt
         ? (type: SubmissionQueryType.byPrompt, id: promptId, user: null)
-        : (type: SubmissionQueryType.all, id: null, user: null);
+        : (
+            type: showFollowingScreen
+                ? SubmissionQueryType.byFollowing
+                : SubmissionQueryType.byRandom,
+            id: null,
+            user: null
+          );
 
     final submissionAsync = ref.watch(submissionNotifierProvider(queryParam));
 
@@ -73,9 +85,38 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             ? promptAsync.when(
                 loading: () => Text("Loading..."),
                 error: (e, _) => Text("Error: $e"),
-                data: (prompt) => Text(prompt?.title ?? "Prompt"),
+                data: (prompt) => Column(
+                  crossAxisAlignment: Platform.isIOS
+                      ? CrossAxisAlignment.center
+                      : CrossAxisAlignment.start,
+                  children: [
+                    Text(prompt?.title ?? "Prompt"),
+                    if (prompt != null)
+                      Text(
+                        getFormattedDate(prompt.date!),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
               )
-            : const Text("Feed"),
+            : SegmentedButton(
+                segments: [
+                  ButtonSegment(
+                    value: true,
+                    label: Text("Following"),
+                    icon: Icon(Icons.people),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text("Discover"),
+                    icon: Icon(Icons.explore),
+                  ),
+                ],
+                selected: {showFollowingScreen},
+                onSelectionChanged: (p0) => {
+                  setState(() => showFollowingScreen = p0.first),
+                },
+              ),
         actions: [
           if (!isPrompt)
             IconButton(
@@ -89,13 +130,38 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       body: submissionAsync.when(
         loading: () => Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
-        data: (submissions) => RefreshIndicator(
-          onRefresh: refreshSubmissions,
-          child: SubmissionList(
-            heroContext: promptId,
-            submissionState: submissions,
-            queryParam: queryParam,
-          ),
+        data: (submissions) => Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: refreshSubmissions,
+              child: SubmissionListSliver(
+                heroContext: promptId,
+                submissionState: submissions,
+                queryParam: queryParam,
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Visibility(
+                visible: !isPrompt,
+                child: CustomTooltip(
+                  key: ValueKey(showFollowingScreen
+                      ? "followingTooltip"
+                      : "discoverTooltip"),
+                  tooltipId: showFollowingScreen
+                      ? "followingTooltip"
+                      : "discoverTooltip",
+                  title:
+                      showFollowingScreen ? "Following Feed" : "Discover Feed",
+                  message: showFollowingScreen
+                      ? "Here, you will see the latest submissions from users you follow."
+                      : "Here, you will see the top submissions from all users from within the past week.",
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

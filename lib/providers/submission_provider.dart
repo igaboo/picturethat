@@ -6,7 +6,7 @@ import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/providers/auth_provider.dart';
 import 'package:picturethat/providers/pagination_provider.dart';
 
-enum SubmissionQueryType { all, byUser, byPrompt }
+enum SubmissionQueryType { byUser, byPrompt, byFollowing, byRandom }
 
 typedef SubmissionQueryParam = ({
   SubmissionQueryType type,
