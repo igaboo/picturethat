@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/utils/navigate.dart';
+import 'package:picturethat/widgets/custom_tooltip.dart';
 import 'package:picturethat/widgets/prompt_list.dart';
 
 class PromptsScreen extends ConsumerStatefulWidget {
@@ -36,13 +37,29 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,
-      body: RefreshIndicator(
-          onRefresh: _refreshPrompts,
-          child: promptsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text("Error: $e")),
-            data: (prompts) => PromptList(promptState: prompts),
-          )),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: _refreshPrompts,
+            child: promptsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text("Error: $e")),
+              data: (prompts) => PromptList(promptState: prompts),
+            ),
+          ),
+          Positioned(
+            bottom: 70.0,
+            left: 0,
+            right: 0,
+            child: CustomTooltip(
+              tooltipId: "promptsTooltip",
+              title: "Prompts",
+              message:
+                  "A new prompt is available every day. Only today's prompt is available to submit, so make sure to check back every day!",
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

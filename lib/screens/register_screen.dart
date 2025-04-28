@@ -91,37 +91,42 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Column(
                     spacing: 10,
                     children: [
-                      _profileImage == null
-                          ? SizedBox(
-                              width: PROFILE_IMAGE_SIZE,
-                              height: PROFILE_IMAGE_SIZE,
-                              child: DottedBorder(
-                                borderType: BorderType.Circle,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
-                                dashPattern: const [10, 16],
-                                strokeWidth: 5,
-                                strokeCap: StrokeCap.round,
-                                child: Center(
-                                  child: _isLoading
-                                      ? CircularProgressIndicator()
-                                      : Icon(
-                                          Icons.mood,
-                                          size: 60,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outlineVariant,
-                                        ),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          _profileImage == null
+                              ? SizedBox(
+                                  width: PROFILE_IMAGE_SIZE,
+                                  height: PROFILE_IMAGE_SIZE,
+                                  child: DottedBorder(
+                                    borderType: BorderType.Circle,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant,
+                                    dashPattern: const [10, 16],
+                                    strokeWidth: 5,
+                                    strokeCap: StrokeCap.round,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.mood,
+                                        size: 60,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outlineVariant,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : CustomImage(
+                                  imageProvider:
+                                      AssetImage(_profileImage!.path),
+                                  shape: CustomImageShape.circle,
+                                  width: PROFILE_IMAGE_SIZE,
+                                  height: PROFILE_IMAGE_SIZE,
                                 ),
-                              ),
-                            )
-                          : CustomImage(
-                              imageProvider: AssetImage(_profileImage!.path),
-                              shape: CustomImageShape.circle,
-                              width: PROFILE_IMAGE_SIZE,
-                              height: PROFILE_IMAGE_SIZE,
-                            ),
+                          if (_isLoading) CircularProgressIndicator(),
+                        ],
+                      ),
                       Text(
                         "Pick Profile Image",
                         style: Theme.of(context).textTheme.labelLarge!.copyWith(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/widgets/settings_list_tile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -30,10 +31,18 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: [
           SettingsListTile(
-            title: "Example title",
-            subtitle: "Example subtitle",
-            icon: Icons.question_mark,
-            onTap: () => {},
+            title: "Reset Tooltips",
+            subtitle: "Reset all tooltips to show again",
+            icon: Icons.refresh,
+            onTap: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+
+              if (context.mounted) {
+                handleError(context,
+                    "Tooltips reset successfully! Please restart the app to see changes.");
+              }
+            },
           ),
           SettingsListTile(
             title: "Logout",
