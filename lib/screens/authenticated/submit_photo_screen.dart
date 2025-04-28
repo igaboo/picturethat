@@ -1,16 +1,14 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/models/submission_model.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
-import 'package:picturethat/utils/text_validation.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:picturethat/providers/submission_provider.dart';
 
 class SubmitPhotoScreen extends ConsumerStatefulWidget {
   const SubmitPhotoScreen({super.key});
@@ -22,9 +20,9 @@ class SubmitPhotoScreen extends ConsumerStatefulWidget {
 class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
   final _descriptionController = TextEditingController();
   XFile? _submissionImage;
-  bool _isLoading = false;
   int? _submissionImageHeight;
   int? _submissionImageWidth;
+  bool _isLoading = false;
 
   Future<void> _submitPhoto() async {
     if (_submissionImage == null) {
@@ -47,7 +45,6 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       final promptTitle = todaysPrompt.title;
 
       final submissionId = db.collection("submissions").doc().id;
-      print(submissionId);
       final imagePath = "submissions/$submissionId";
       final imageUrl = await uploadImage(
         path: imagePath,
@@ -84,16 +81,9 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       submission["user"] = user as Object;
       //state.addSubmission(submission);
 
-      // --- 7. User Feedback (Success) ---
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Submission successful!")),
-        );
-        Navigator.of(context).pop();
-      }
+      if (mounted) Navigator.pop(context);
     } catch (e) {
-      print(e);
-      // if (mounted) handleError(context, e);
+      if (mounted) handleError(context, e);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -105,12 +95,19 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
     try {
       final image = await ImageUtils.pickImage();
-      final decodeImage = await decodeImageFromList(await image!.readAsBytes());
-      _submissionImageHeight = decodeImage.height;
-      _submissionImageWidth = decodeImage.width;
-      setState(() => _isLoading = false);
+      if (image == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
 
-      if (image != null) setState(() => _submissionImage = image);
+      final decodedImage = await decodeImageFromList(await image.readAsBytes());
+      _submissionImageHeight = decodedImage.height;
+      _submissionImageWidth = decodedImage.width;
+
+      setState(() {
+        _isLoading = false;
+        _submissionImage = image;
+      });
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
@@ -126,6 +123,9 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider(auth.currentUser!.uid));
     final promptsAsync = ref.watch(promptsProvider);
+
+    final maxImageHeight = MediaQuery.of(context).size.height * 0.5;
+    final maxImageWidth = MediaQuery.of(context).size.width - 10.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -146,143 +146,137 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
               final todaysPrompt = prompts.items[0];
 
-              return SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // User + prompt row
-                      Row(
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  spacing: 10.0,
+                  children: [
+                    Row(
+                      children: [
+                        CustomImage(
+                          imageProvider: NetworkImage(user!.profileImageUrl),
+                          shape: CustomImageShape.circle,
+                          width: 40,
+                          height: 40,
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "@${user.username}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              todaysPrompt.title,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: _selectSubmissionImage,
+                      child: Column(
                         children: [
-                          CustomImage(
-                            imageProvider: NetworkImage(user!.profileImageUrl),
-                            shape: CustomImageShape.circle,
-                            width: 40,
-                            height: 40,
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "@${user.username}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                todaysPrompt.title,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: maxImageHeight,
+                              maxWidth: maxImageWidth,
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                _submissionImage == null
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(20.0),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainer,
+                                          border: Border.all(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .surfaceContainerHighest,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: !_isLoading
+                                              ? Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.image,
+                                                      size: 60,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                    ),
+                                                    Text(
+                                                      "Select an image",
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .labelLarge!
+                                                          .copyWith(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .onSurfaceVariant,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                )
+                                              : const SizedBox(),
+                                        ),
+                                      )
+                                    : CustomImage(
+                                        imageProvider:
+                                            AssetImage(_submissionImage!.path),
+                                        shape: CustomImageShape.squircle,
+                                        width:
+                                            _submissionImageWidth!.toDouble(),
+                                        height:
+                                            _submissionImageHeight!.toDouble(),
+                                        maxHeight: maxImageHeight,
+                                        maxWidth: maxImageWidth,
+                                      ),
+                                if (_isLoading) CircularProgressIndicator(),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-
-                      // Placeholder image
-
-                      // Description input
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: GestureDetector(
-                          onTap: _selectSubmissionImage,
-                          child: Column(
-                            spacing: 10,
-                            children: [
-                              _submissionImage == null
-                                  ? SizedBox(
-                                      width: _submissionImageWidth
-                                              ?.toDouble() ??
-                                          MediaQuery.of(context).size.width -
-                                              10.0,
-                                      height: _submissionImageHeight
-                                              ?.toDouble() ??
-                                          MediaQuery.of(context).size.height *
-                                              0.5,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondaryContainer,
-                                            border: Border.all(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .surfaceContainerHighest)),
-                                        child: Center(
-                                          child: _isLoading
-                                              ? CircularProgressIndicator()
-                                              : Icon(
-                                                  Icons.image,
-                                                  size: 60,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .outlineVariant,
-                                                ),
-                                        ),
-                                      ),
-                                    )
-                                  : CustomImage(
-                                      imageProvider:
-                                          AssetImage(_submissionImage!.path),
-                                      shape: CustomImageShape.squircle,
-                                      width:
-                                          _submissionImageWidth?.toDouble() ??
-                                              double.infinity,
-                                      height:
-                                          _submissionImageHeight?.toDouble() ??
-                                              double.infinity,
-                                      maxWidth:
-                                          MediaQuery.of(context).size.width -
-                                              10.0,
-                                      maxHeight:
-                                          MediaQuery.of(context).size.height *
-                                              0.5,
-                                    ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      TextFormField(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TextFormField(
                         controller: _descriptionController,
                         decoration: const InputDecoration(
                           labelText: "Photo Description",
                           helperText: ' ',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) => textValidator(
-                          value: value,
-                          fieldName: "description",
-                        ),
+                        maxLength: 350,
                       ),
-
-                      // Submit Button
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            FilledButton(
-                              onPressed: _isLoading ? null : _submitPhoto,
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: Colors.white),
-                                    )
-                                  : const Text("Submit Photo"),
-                            ),
-                          ],
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          FilledButton(
+                            onPressed: _isLoading ? null : _submitPhoto,
+                            child: const Text("Submit Photo"),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },
