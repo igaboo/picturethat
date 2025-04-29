@@ -79,7 +79,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       var submission = submissionData;
       submission.remove("userId");
       submission["user"] = user as Object;
-      //state.addSubmission(submission);
+      // state.addSubmission(submission);
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
