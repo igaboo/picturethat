@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/providers/prompt_provider.dart';
+import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/providers/user_provider.dart';
 import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/image_utils.dart';
@@ -24,7 +25,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
   int? _submissionImageWidth;
   bool _isLoading = false;
 
-  Future<void> _submitPhoto() async {
+  Future<void> _submitPhoto(list) async {
     if (_submissionImage == null) {
       handleError(context, "Please select an image.");
       return;
@@ -79,7 +80,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       var submission = submissionData;
       submission.remove("userId");
       submission["user"] = user as Object;
-      // state.addSubmission(submission);
+      list.addSubmission(submission);
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -145,6 +146,14 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
               }
 
               final todaysPrompt = prompts.items[0];
+              final SubmissionQueryParam queryParam = (
+                type: SubmissionQueryType.byPrompt,
+                id: todaysPrompt.id,
+                user: null
+              );
+              final list = ref
+                  .watch(submissionNotifierProvider(queryParam).notifier)
+                  .addSubmission(submission: submission);
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -270,7 +279,8 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           FilledButton(
-                            onPressed: _isLoading ? null : _submitPhoto,
+                            onPressed:
+                                _isLoading ? null : () => _submitPhoto(list),
                             child: const Text("Submit Photo"),
                           ),
                         ],

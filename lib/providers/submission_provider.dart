@@ -86,6 +86,14 @@ class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
       isLiked: isLiked,
     );
   }
+
+  Future<void> addSubmission({
+    required SubmissionModel submission,
+  }) async {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+    currentState.items.insert(0, submission);
+  }
 }
 
 final submissionNotifierProvider = AsyncNotifierProvider.family<

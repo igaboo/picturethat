@@ -140,7 +140,7 @@ Future<String> uploadImage({
   final imgRef = storage.ref().child(
         "users/${auth.currentUser?.uid}/$path",
       );
-  await imgRef.putFile(File(image.path));
+  await imgRef.putData(await image.readAsBytes());
   return await imgRef.getDownloadURL();
 }
 
