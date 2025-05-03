@@ -21,6 +21,9 @@ dependencies:
   url_launcher: ^6.3.1
   photo_view: ^0.15.0
   shared_preferences: ^2.5.3
+  package_info_plus: ^8.3.0
+  skeletonizer: ^1.4.3
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -31,6 +34,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/hero.png
+    - assets/splash_screen_light.png
+    - assets/splash_screen_dark.png
+    - assets/placeholder.png
 
 # make sure to run `dart run flutter_native_splash:create`
 flutter_native_splash:
@@ -44,3 +50,15 @@ flutter_native_splash:
     image: assets/splash_screen_light.png
     icon_background_color_dark: "#17130B"
     image_dark: assets/splash_screen_dark.png
+
+# make sure to run `dart run flutter_launcher_icons`
+flutter_launcher_icons:
+  image_path: "assets/icon_light.png"
+  android: true
+  adaptive_icon_background: "#FFF8F2"
+  adaptive_icon_foreground: "assets/icon_light.png"
+  adaptive_icon_monochrome: "assets/icon_dark.png"
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#FFF8F2"
+  image_path_ios_dark_transparent: "assets/icon_dark.png"
