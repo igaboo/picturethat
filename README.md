@@ -37,3 +37,11 @@
 [photo_view](https://pub.dev/packages/photo_view)
 
 [flutter_native_splash](https://pub.dev/packages/flutter_native_splash)
+
+[flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons)
+
+[shared_preferences](https://pub.dev/packages/shared_preferences)
+
+[package_info_plus](https://pub.dev/packages/package_info_plus)
+
+[skeletonizer](https://pub.dev/packages/skeletonizer)
