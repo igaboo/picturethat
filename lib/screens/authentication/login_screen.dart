@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/utils/get_error_message.dart';
-import 'package:picturethat/utils/text_validation.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/text_validation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,10 +15,13 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   void _login() async {
     try {
+      if (_isLoading) return;
       if (!_formKey.currentState!.validate()) return;
+      setState(() => _isLoading = true);
 
       await signInWithEmailAndPassword(
         email: _emailController.text,
@@ -27,6 +29,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
       );
 
       if (mounted) {
+        setState(() => _isLoading = false);
         Navigator.pushNamedAndRemoveUntil(
           context,
           "/home_screen",
@@ -35,13 +38,8 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e is FirebaseAuthException
-                ? getErrorMessage(e.code)
-                : e.toString()),
-          ),
-        );
+        setState(() => _isLoading = false);
+        handleError(context, e);
       }
     }
   }
@@ -89,7 +87,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     FilledButton(
-                      onPressed: () => _login(),
+                      onPressed: _isLoading ? null : () => _login(),
                       child: Text("Login"),
                     ),
                   ],

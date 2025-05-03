@@ -4,13 +4,13 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/utils/image_utils.dart';
-import 'package:picturethat/utils/text_validation.dart';
-import 'package:picturethat/widgets/custom_image.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/image_utils.dart';
+import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_image.dart';
 
-final PROFILE_IMAGE_SIZE = 150.0;
+final profileImageSize = 150.0;
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -32,7 +32,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _register() async {
     try {
+      if (_isLoading) return;
       if (!_formKey.currentState!.validate()) return;
+      setState(() => _isLoading = true);
 
       await signUpWithEmailAndPassword(
         email: _emailController.text,
@@ -44,6 +46,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       if (mounted) {
+        setState(() => _isLoading = false);
         Navigator.pushNamedAndRemoveUntil(
           context,
           "/home_screen",
@@ -51,7 +54,10 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
       }
     } catch (e) {
-      if (mounted) handleError(context, e);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        handleError(context, e);
+      }
     }
   }
 
@@ -98,8 +104,8 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                         children: [
                           _profileImage == null
                               ? SizedBox(
-                                  width: PROFILE_IMAGE_SIZE,
-                                  height: PROFILE_IMAGE_SIZE,
+                                  width: profileImageSize,
+                                  height: profileImageSize,
                                   child: DottedBorder(
                                     borderType: BorderType.Circle,
                                     color: Theme.of(context)
@@ -109,12 +115,15 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     strokeWidth: 5,
                                     strokeCap: StrokeCap.round,
                                     child: Center(
-                                      child: Icon(
-                                        Icons.mood,
-                                        size: 60,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outlineVariant,
+                                      child: Visibility(
+                                        visible: !_isLoading,
+                                        child: Icon(
+                                          Icons.mood,
+                                          size: 60,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outlineVariant,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -124,8 +133,8 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   imageProvider:
                                       FileImage(File(_profileImage!.path)),
                                   shape: CustomImageShape.circle,
-                                  width: PROFILE_IMAGE_SIZE,
-                                  height: PROFILE_IMAGE_SIZE,
+                                  width: profileImageSize,
+                                  height: profileImageSize,
                                 ),
                           if (_isLoading) CircularProgressIndicator(),
                         ],
@@ -142,6 +151,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               TextFormField(
                 controller: _emailController,
+                autofocus: true,
                 decoration: const InputDecoration(
                   labelText: "Email",
                   helperText: ' ',
