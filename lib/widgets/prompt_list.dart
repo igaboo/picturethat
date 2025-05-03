@@ -75,9 +75,7 @@ class _PromptListState extends ConsumerState<PromptList> {
                 if (promptState.isFetchingNextPage) {
                   return Padding(
                     padding: EdgeInsets.all(20.0),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: Center(child: CircularProgressIndicator()),
                   );
                 } else if (promptState.nextPageError != null) {
                   return EmptyState(

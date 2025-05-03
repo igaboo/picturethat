@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:picturethat/models/prompt_model.dart';
+import 'package:picturethat/screens/prompt_feed_screen.dart';
 import 'package:picturethat/utils/get_formatted_date.dart';
 import 'package:picturethat/utils/get_formatted_number.dart';
 import 'package:picturethat/utils/get_time_left.dart';
@@ -8,7 +9,7 @@ import 'package:picturethat/utils/navigate.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final WIDGET_HEIGHT = 300.0;
+final widgetHeight = 300.0;
 
 class Prompt extends StatelessWidget {
   final PromptModel prompt;
@@ -23,7 +24,11 @@ class Prompt extends StatelessWidget {
     bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
-      onTap: () => navigate(context, "/feed_screen", arguments: prompt.id),
+      onTap: () => navigateRoute(
+        context,
+        PromptFeedScreen(promptId: prompt.id),
+        "/prompt_feed_screen",
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -43,12 +48,13 @@ class Prompt extends StatelessWidget {
             Stack(
               children: [
                 CustomImage(
+                  key: ValueKey(prompt.imageUrl),
                   imageProvider: NetworkImage(prompt.imageUrl!),
                   width: double.infinity,
-                  height: WIDGET_HEIGHT,
+                  height: widgetHeight,
                 ),
                 Container(
-                  height: WIDGET_HEIGHT,
+                  height: widgetHeight,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -80,7 +86,6 @@ class Prompt extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // time left pill
                           Visibility(
                             visible: isTodaysPrompt,
                             child: Container(
@@ -115,7 +120,6 @@ class Prompt extends StatelessWidget {
                             ),
                           ),
                           Spacer(),
-                          // prompt title
                           Text(
                             prompt.title,
                             style: Theme.of(context)
@@ -123,7 +127,6 @@ class Prompt extends StatelessWidget {
                                 .titleMedium!
                                 .copyWith(color: Colors.white),
                           ),
-                          // submission count
                           Text(
                             getFormattedUnit(
                               number: prompt.submissionCount!,
@@ -137,16 +140,27 @@ class Prompt extends StatelessWidget {
                           SizedBox(
                             height: 8.0,
                           ),
-                          // photo attribution
                           GestureDetector(
                             onTap: () =>
                                 launchUrl(Uri.parse(prompt.imageAuthorUrl!)),
-                            child: Text(
-                              "Photo by ${prompt.imageAuthorName}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(color: Colors.white.withAlpha(150)),
+                            child: Row(
+                              spacing: 4.0,
+                              children: [
+                                Icon(
+                                  Icons.link,
+                                  size: 12,
+                                  color: Colors.white.withAlpha(150),
+                                ),
+                                Text(
+                                  "Photo by ${prompt.imageAuthorName}",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(
+                                        color: Colors.white.withAlpha(150),
+                                      ),
+                                )
+                              ],
                             ),
                           ),
                         ],
