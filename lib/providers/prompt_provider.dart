@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/providers/auth_provider.dart';
-import 'package:picturethat/providers/pagination_provider.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/providers/auth_provider.dart';
+import 'package:picture_that/providers/pagination_provider.dart';
 
 class PromptNotifier extends PaginatedAsyncNotifier<PromptModel> {
   @override

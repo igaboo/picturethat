@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/models/user_model.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/models/user_model.dart';
 
 class SubmissionImageModel {
   String url;

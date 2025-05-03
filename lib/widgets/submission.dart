@@ -1,17 +1,17 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/models/submission_model.dart';
-import 'package:picturethat/providers/prompt_provider.dart';
-import 'package:picturethat/providers/submission_provider.dart';
-import 'package:picturethat/providers/user_provider.dart';
-import 'package:picturethat/screens/prompt_feed_screen.dart';
-import 'package:picturethat/utils/get_time_elapsed.dart';
-import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/utils/navigate.dart';
-import 'package:picturethat/utils/show_dialog.dart';
-import 'package:picturethat/widgets/custom_image.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/providers/user_provider.dart';
+import 'package:picture_that/screens/prompt_feed_screen.dart';
+import 'package:picture_that/utils/get_time_elapsed.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/utils/show_dialog.dart';
+import 'package:picture_that/widgets/custom_image.dart';
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;

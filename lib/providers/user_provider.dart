@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/user_model.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/providers/auth_provider.dart';
+import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/providers/auth_provider.dart';
 
 class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
   @override

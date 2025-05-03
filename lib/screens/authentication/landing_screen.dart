@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:picturethat/utils/navigate.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:picture_that/utils/navigate.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});

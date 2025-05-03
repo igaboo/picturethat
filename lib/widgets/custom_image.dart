@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picturethat/screens/image_viewer_screen.dart';
+import 'package:picture_that/screens/image_viewer_screen.dart';
 
 enum CustomImageShape { squircle, circle }
 

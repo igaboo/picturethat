@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/submission_model.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/providers/auth_provider.dart';
-import 'package:picturethat/providers/pagination_provider.dart';
+import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/providers/auth_provider.dart';
+import 'package:picture_that/providers/pagination_provider.dart';
 
 enum SubmissionQueryType { byUser, byPrompt, byFollowing, byRandom }
 

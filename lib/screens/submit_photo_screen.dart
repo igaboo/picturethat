@@ -1,19 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/models/submission_model.dart';
-import 'package:picturethat/providers/prompt_provider.dart';
-import 'package:picturethat/providers/submission_provider.dart';
-import 'package:picturethat/providers/user_provider.dart';
-import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/utils/image_utils.dart';
-import 'package:picturethat/widgets/custom_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:picturethat/widgets/empty_state.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/providers/user_provider.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/image_utils.dart';
+import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/empty_state.dart';
 
 class SubmitPhotoScreen extends ConsumerStatefulWidget {
   final SubmissionQueryParam? sourceQueryParam;

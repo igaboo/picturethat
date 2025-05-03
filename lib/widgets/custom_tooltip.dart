@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picturethat/utils/preference_utils.dart';
+import 'package:picture_that/utils/preference_utils.dart';
 
 final fadeDuration = const Duration(milliseconds: 300);
 

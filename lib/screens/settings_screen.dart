@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/utils/show_dialog.dart';
-import 'package:picturethat/widgets/settings_list_tile.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/show_dialog.dart';
+import 'package:picture_that/widgets/settings_list_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerWidget {

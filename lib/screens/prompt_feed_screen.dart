@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/providers/prompt_provider.dart';
-import 'package:picturethat/providers/submission_provider.dart';
-import 'package:picturethat/screens/tabs/feed_screen.dart';
-import 'package:picturethat/utils/get_formatted_date.dart';
-import 'package:picturethat/utils/is_today.dart';
-import 'package:picturethat/utils/navigate.dart';
-import 'package:picturethat/widgets/custom_skeletonizer.dart';
-import 'package:picturethat/widgets/submission_list.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/screens/tabs/feed_screen.dart';
+import 'package:picture_that/utils/get_formatted_date.dart';
+import 'package:picture_that/utils/is_today.dart';
+import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/submission_list.dart';
 
 final titleSkeleton = CustomSkeletonizer(
   child: TitleText(

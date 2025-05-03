@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/screens/prompt_feed_screen.dart';
 import 'firebase_options.dart';
-
-import 'package:picturethat/auth_wrapper.dart';
-import 'package:picturethat/screens/edit_profile_screen.dart';
-import 'package:picturethat/screens/tabs/feed_screen.dart';
-import 'package:picturethat/screens/followers_screen.dart';
-import 'package:picturethat/screens/tabs/home_screen.dart';
-import 'package:picturethat/screens/tabs/profile_screen.dart';
-import 'package:picturethat/screens/tabs/prompts_screen.dart';
-import 'package:picturethat/screens/search_screen.dart';
-import 'package:picturethat/screens/settings_screen.dart';
-import 'package:picturethat/screens/submit_photo_screen.dart';
-import 'package:picturethat/screens/authentication/landing_screen.dart';
-import 'package:picturethat/screens/authentication/login_screen.dart';
-import 'package:picturethat/screens/authentication/register_screen.dart';
+import 'package:picture_that/auth_wrapper.dart';
+import 'package:picture_that/screens/prompt_feed_screen.dart';
+import 'package:picture_that/screens/edit_profile_screen.dart';
+import 'package:picture_that/screens/tabs/feed_screen.dart';
+import 'package:picture_that/screens/followers_screen.dart';
+import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/screens/tabs/profile_screen.dart';
+import 'package:picture_that/screens/tabs/prompts_screen.dart';
+import 'package:picture_that/screens/search_screen.dart';
+import 'package:picture_that/screens/settings_screen.dart';
+import 'package:picture_that/screens/submit_photo_screen.dart';
+import 'package:picture_that/screens/authentication/landing_screen.dart';
+import 'package:picture_that/screens/authentication/login_screen.dart';
+import 'package:picture_that/screens/authentication/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/providers/user_provider.dart';
-import 'package:picturethat/firebase_service.dart';
-import 'package:picturethat/utils/handle_error.dart';
-import 'package:picturethat/utils/image_utils.dart';
-import 'package:picturethat/utils/text_validation.dart';
-import 'package:picturethat/widgets/custom_image.dart';
+import 'package:picture_that/providers/user_provider.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/image_utils.dart';
+import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_image.dart';
 
 // todo
 // - update state rather than invalidate the provider on success

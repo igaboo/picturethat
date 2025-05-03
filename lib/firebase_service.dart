@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/models/submission_model.dart';
-import 'package:picturethat/models/user_model.dart';
-import 'package:picturethat/providers/submission_provider.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/providers/submission_provider.dart';
 
 final FirebaseAuth auth = FirebaseAuth.instance;
 final FirebaseFirestore db = FirebaseFirestore.instance;

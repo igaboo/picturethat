@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/screens/tabs/home_screen.dart';
-import 'package:picturethat/screens/authentication/landing_screen.dart';
+import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/screens/authentication/landing_screen.dart';
 
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});

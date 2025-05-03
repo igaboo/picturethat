@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/providers/prompt_provider.dart';
-import 'package:picturethat/utils/navigate.dart';
-import 'package:picturethat/widgets/custom_skeletonizer.dart';
-import 'package:picturethat/widgets/custom_tooltip.dart';
-import 'package:picturethat/widgets/prompt.dart';
-import 'package:picturethat/widgets/prompt_list.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/custom_tooltip.dart';
+import 'package:picture_that/widgets/prompt.dart';
+import 'package:picture_that/widgets/prompt_list.dart';
 
 final skeleton = CustomSkeletonizer(
   child: ListView.separated(

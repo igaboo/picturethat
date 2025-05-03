@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/prompt_model.dart';
-import 'package:picturethat/providers/pagination_provider.dart';
-import 'package:picturethat/providers/prompt_provider.dart';
-import 'package:picturethat/widgets/empty_state.dart';
-import 'package:picturethat/widgets/prompt.dart';
+import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/providers/pagination_provider.dart';
+import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/widgets/empty_state.dart';
+import 'package:picture_that/widgets/prompt.dart';
 
 class PromptList extends ConsumerStatefulWidget {
   final PaginationState<PromptModel> promptState;

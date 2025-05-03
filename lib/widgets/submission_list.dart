@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picturethat/models/submission_model.dart';
-import 'package:picturethat/providers/pagination_provider.dart';
-import 'package:picturethat/providers/submission_provider.dart';
-import 'package:picturethat/widgets/empty_state.dart';
-import 'package:picturethat/widgets/submission.dart';
+import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/providers/pagination_provider.dart';
+import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/widgets/empty_state.dart';
+import 'package:picture_that/widgets/submission.dart';
 
 class SubmissionListSliver extends ConsumerStatefulWidget {
   final PaginationState<SubmissionModel> submissionState;
