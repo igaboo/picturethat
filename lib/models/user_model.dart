@@ -37,6 +37,32 @@ class UserModel {
       url: data['url'],
     );
   }
+
+  UserModel copyWith({
+    String? uid,
+    String? firstName,
+    String? lastName,
+    String? username,
+    String? profileImageUrl,
+    int? followersCount,
+    int? followingCount,
+    int? submissionsCount,
+    String? bio,
+    String? url,
+  }) {
+    return UserModel(
+      uid: uid ?? this.uid,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      username: username ?? this.username,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      followersCount: followersCount ?? this.followersCount,
+      followingCount: followingCount ?? this.followingCount,
+      submissionsCount: submissionsCount ?? this.submissionsCount,
+      bio: bio ?? this.bio,
+      url: url ?? this.url,
+    );
+  }
 }
 
 class UserSearchResultModel {

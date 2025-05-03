@@ -6,18 +6,13 @@ import 'package:picturethat/providers/submission_provider.dart';
 import 'package:picturethat/widgets/empty_state.dart';
 import 'package:picturethat/widgets/submission.dart';
 
-Widget emptyState = const EmptyState(
-  title: "No Submissions",
-  icon: Icons.hide_image,
-  subtitle: "Check back later!",
-);
-
 class SubmissionListSliver extends ConsumerStatefulWidget {
   final PaginationState<SubmissionModel> submissionState;
   final SubmissionQueryParam queryParam;
   final String? heroContext;
   final Widget? header;
   final bool? disableNavigation;
+  final bool? bottomPadding;
 
   const SubmissionListSliver({
     required this.submissionState,
@@ -25,6 +20,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
     required this.heroContext,
     this.header,
     this.disableNavigation,
+    this.bottomPadding,
     super.key,
   });
 
@@ -72,7 +68,11 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
           if (submissionsState.items.isEmpty && !submissionsState.hasNextPage)
             SliverFillRemaining(
               hasScrollBody: false,
-              child: emptyState,
+              child: const EmptyState(
+                title: "No Submissions",
+                icon: Icons.hide_image,
+                subtitle: "Check back later!",
+              ),
             )
           else
             SliverList.separated(
@@ -112,7 +112,11 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                   key: ValueKey(submission.id),
                 );
               },
-            )
+            ),
+          if (widget.bottomPadding == true && submissionsState.items.isNotEmpty)
+            SliverToBoxAdapter(
+              child: SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ),
         ]);
   }
 }

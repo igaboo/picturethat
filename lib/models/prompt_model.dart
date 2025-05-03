@@ -30,6 +30,27 @@ class PromptModel {
       date: (data["date"] as Timestamp).toDate(),
     );
   }
+
+  // copy with method
+  PromptModel copyWith({
+    String? id,
+    String? title,
+    int? submissionCount,
+    String? imageUrl,
+    String? imageAuthorUrl,
+    String? imageAuthorName,
+    DateTime? date,
+  }) {
+    return PromptModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      submissionCount: submissionCount ?? this.submissionCount,
+      imageUrl: imageUrl ?? this.imageUrl,
+      imageAuthorUrl: imageAuthorUrl ?? this.imageAuthorUrl,
+      imageAuthorName: imageAuthorName ?? this.imageAuthorName,
+      date: date ?? this.date,
+    );
+  }
 }
 
 class PromptSubmissionModel {

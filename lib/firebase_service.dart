@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -97,7 +95,7 @@ Future<UserModel?> getUser({required String userId}) async {
 }
 
 // update user profile
-Future<void> updateUserProfile({
+Future<Map<String, dynamic>> updateUserProfile({
   String? firstName,
   String? lastName,
   String? username,
@@ -123,6 +121,8 @@ Future<void> updateUserProfile({
   };
 
   await db.collection("users").doc(auth.currentUser?.uid).update(newValues);
+
+  return newValues;
 }
 
 // check if username is available
@@ -188,13 +188,12 @@ Future<void> toggleLike({
 }
 
 // get submissions from a query
-final EMPTY_RETURN = (items: <SubmissionModel>[], lastDoc: null);
+final emptyReturn = (items: <SubmissionModel>[], lastDoc: null);
 Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
     getSubmissions({
   required SubmissionQueryParam queryParam,
   required int limit,
   DocumentSnapshot? lastDocument,
-  UserModel? user,
 }) async {
   Query query = db.collection("submissions");
   switch (queryParam.type) {
@@ -233,7 +232,7 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
             .where("userId", whereIn: followedUsers)
             .orderBy("date", descending: true);
       } else {
-        return EMPTY_RETURN;
+        return emptyReturn;
       }
 
       break;
@@ -260,12 +259,12 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   final snapshot = await query.get();
   final docs = snapshot.docs;
 
-  if (docs.isEmpty) return EMPTY_RETURN;
+  if (docs.isEmpty) return emptyReturn;
 
   final items = await Future.wait(docs.map((doc) async {
     final data = doc.data() as Map<String, dynamic>;
 
-    final userData = user ?? await getUser(userId: data["userId"]);
+    final userData = await getUser(userId: data["userId"]);
 
     return SubmissionModel.fromMap({
       ...data,
@@ -347,3 +346,14 @@ Future<List<UserSearchResultModel>> searchUsers({required String query}) async {
       .map((doc) => UserSearchResultModel.fromMap(doc.data()))
       .toList();
 }
+
+// delete a submission
+Future<void> deleteSubmission({required String submissionId}) async {
+  final docRef = db.collection("submissions").doc(submissionId);
+  await docRef.delete();
+
+  await deleteImage(path: "submissions/$submissionId");
+}
+
+// add a submission
+Future<void> createSubmission({required SubmissionModel submission}) async {}

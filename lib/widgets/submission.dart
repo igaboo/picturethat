@@ -1,10 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picturethat/firebase_service.dart';
 import 'package:picturethat/models/submission_model.dart';
+import 'package:picturethat/providers/prompt_provider.dart';
 import 'package:picturethat/providers/submission_provider.dart';
+import 'package:picturethat/providers/user_provider.dart';
+import 'package:picturethat/screens/prompt_feed_screen.dart';
 import 'package:picturethat/utils/get_time_elapsed.dart';
+import 'package:picturethat/utils/handle_error.dart';
 import 'package:picturethat/utils/navigate.dart';
+import 'package:picturethat/utils/show_dialog.dart';
 import 'package:picturethat/widgets/custom_image.dart';
 
 class Submission extends ConsumerWidget {
@@ -24,6 +30,7 @@ class Submission extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(submissionNotifierProvider(queryParam).notifier);
+    final isSelf = submission.user.uid == auth.currentUser?.uid;
 
     void navigateToScreen({
       String route = "/profile_screen",
@@ -34,10 +41,68 @@ class Submission extends ConsumerWidget {
       navigate(context, route, arguments: routeId);
     }
 
+    void handleLike() {
+      state.toggleSubmissionLike(
+        submissionId: submission.id,
+        isLiked: submission.isLiked,
+      );
+    }
+
+    void handleDelete() async {
+      await deleteSubmission(submissionId: submission.id).catchError((e) {
+        if (context.mounted) {
+          handleError(
+            context,
+            "Error deleting submission, please try again later.",
+          );
+
+          return;
+        }
+      });
+
+      // remove the submission from its list
+      state.deleteSubmission(submission.id);
+
+      if (queryParam.type == SubmissionQueryType.byUser) {
+        // remove the submission from the prompt it was submitted to
+        final promptSubmissions =
+            ref.read(submissionNotifierProvider(SubmissionQueryParam(
+          type: SubmissionQueryType.byPrompt,
+          id: submission.prompt.id,
+        )).notifier);
+        promptSubmissions.deleteSubmission(submission.id);
+      } else if (queryParam.type == SubmissionQueryType.byPrompt) {
+        // remove the submission from the user it was submitted by
+        final userSubmissions =
+            ref.read(submissionNotifierProvider(SubmissionQueryParam(
+          type: SubmissionQueryType.byUser,
+          id: submission.user.uid,
+        )).notifier);
+        userSubmissions.deleteSubmission(submission.id);
+      }
+
+      // update the prompt submission count
+      final promptNotifier = ref.read(promptsProvider.notifier);
+      promptNotifier.updateSubmissionCount(
+        promptId: submission.prompt.id,
+        isIncrementing: false,
+      );
+
+      // update the user submission count
+      final userAsync = ref.read(userProvider(submission.user.uid)).valueOrNull;
+      if (userAsync == null) return;
+      ref.read(userProvider(userAsync.uid).notifier).updateUser({
+        "submissionsCount": userAsync.submissionsCount - 1,
+      });
+    }
+
+    void handleShare() {
+      // handle share action
+    }
+
     return Column(
       spacing: 10.0,
       children: [
-        // Header
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 8.0),
           child: Row(
@@ -46,6 +111,7 @@ class Submission extends ConsumerWidget {
               GestureDetector(
                 onTap: () => navigateToScreen(routeId: submission.user.uid),
                 child: CustomImage(
+                  key: ValueKey(submission.user.profileImageUrl),
                   imageProvider: NetworkImage(submission.user.profileImageUrl),
                   shape: CustomImageShape.circle,
                   width: 30,
@@ -67,9 +133,10 @@ class Submission extends ConsumerWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => navigateToScreen(
-                        route: "/feed_screen",
-                        routeId: submission.prompt.id,
+                      onTap: () => navigateRoute(
+                        context,
+                        PromptFeedScreen(promptId: submission.prompt.id),
+                        "/prompt_feed_screen",
                       ),
                       child: Text(submission.prompt.title),
                     ),
@@ -80,32 +147,56 @@ class Submission extends ConsumerWidget {
                 icon: Icon(Icons.more_horiz),
                 style: ButtonStyle(visualDensity: VisualDensity.compact),
                 onSelected: (value) {
-                  if (value == "Report") {
+                  if (value == "report") {
                     // Handle report action
+                  }
+                  if (value == "delete") {
+                    customShowDialog(
+                      context: context,
+                      title: "Delete Submission",
+                      content:
+                          "Are you sure you want to delete this submission?",
+                      onPressed: handleDelete,
+                      buttonText: "Delete",
+                    );
                   }
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: "Report",
-                    child: Row(
-                      spacing: 8.0,
-                      children: [
-                        Icon(Icons.report),
-                        Text("Report"),
-                      ],
-                    ),
-                  )
+                  isSelf
+                      ? PopupMenuItem(
+                          value: "delete",
+                          child: Row(
+                            spacing: 8.0,
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              Text(
+                                "Delete Post",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        )
+                      : PopupMenuItem(
+                          value: "report",
+                          child: Row(
+                            spacing: 8.0,
+                            children: [
+                              Icon(Icons.report),
+                              Text("Report"),
+                            ],
+                          ),
+                        ),
                 ],
               )
             ],
           ),
         ),
-        // Body
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: CustomImageViewer(
             heroTag: "${heroContext}_${submission.id}",
             customImage: CustomImage(
+              key: ValueKey(submission.image.url),
               imageProvider: NetworkImage(submission.image.url),
               width: submission.image.width.toDouble(),
               height: submission.image.height.toDouble(),
@@ -114,7 +205,6 @@ class Submission extends ConsumerWidget {
             ),
           ),
         ),
-        // Footer
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -128,10 +218,7 @@ class Submission extends ConsumerWidget {
                       IconButton(
                         style:
                             ButtonStyle(visualDensity: VisualDensity.compact),
-                        onPressed: () => state.toggleSubmissionLike(
-                          submissionId: submission.id,
-                          isLiked: submission.isLiked,
-                        ),
+                        onPressed: handleLike,
                         icon: submission.isLiked
                             ? Icon(
                                 Icons.favorite,
@@ -150,13 +237,13 @@ class Submission extends ConsumerWidget {
                   ),
                   IconButton(
                     style: ButtonStyle(visualDensity: VisualDensity.compact),
-                    onPressed: () {},
+                    onPressed: handleShare,
                     icon: Icon(Icons.share),
                   ),
                 ],
               ),
             ),
-            if (submission.caption != null)
+            if (submission.caption?.isNotEmpty == true)
               Padding(
                 padding:
                     const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 5.0),

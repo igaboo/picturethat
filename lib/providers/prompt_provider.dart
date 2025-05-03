@@ -24,6 +24,28 @@ class PromptNotifier extends PaginatedAsyncNotifier<PromptModel> {
       hasNextPage: result.items.length == pageSize,
     );
   }
+
+  void updateSubmissionCount({
+    required String promptId,
+    required bool isIncrementing,
+  }) {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final promptIndex = currentState.items.indexWhere((p) => p.id == promptId);
+    if (promptIndex == -1) return;
+
+    final prompt = currentState.items[promptIndex];
+    final updatedPrompt = prompt.copyWith(
+      submissionCount:
+          (prompt.submissionCount ?? 0) + (isIncrementing ? 1 : -1),
+    );
+
+    final updatedItems = [...currentState.items];
+    updatedItems[promptIndex] = updatedPrompt;
+
+    state = AsyncValue.data(currentState.copyWith(items: updatedItems));
+  }
 }
 
 final promptsProvider =
