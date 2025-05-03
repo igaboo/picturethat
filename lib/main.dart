@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picturethat/screens/prompt_feed_screen.dart';
 import 'firebase_options.dart';
 
 import 'package:picturethat/auth_wrapper.dart';
-import 'package:picturethat/screens/authenticated/edit_profile_screen.dart';
-import 'package:picturethat/screens/authenticated/feed_screen.dart';
-import 'package:picturethat/screens/authenticated/followers_screen.dart';
-import 'package:picturethat/screens/authenticated/home_screen.dart';
-import 'package:picturethat/screens/authenticated/profile_screen.dart';
-import 'package:picturethat/screens/authenticated/prompts_screen.dart';
-import 'package:picturethat/screens/authenticated/search_screen.dart';
-import 'package:picturethat/screens/authenticated/settings_screen.dart';
-import 'package:picturethat/screens/authenticated/submit_photo_screen.dart';
-import 'package:picturethat/screens/landing_screen.dart';
-import 'package:picturethat/screens/login_screen.dart';
-import 'package:picturethat/screens/register_screen.dart';
+import 'package:picturethat/screens/edit_profile_screen.dart';
+import 'package:picturethat/screens/tabs/feed_screen.dart';
+import 'package:picturethat/screens/followers_screen.dart';
+import 'package:picturethat/screens/tabs/home_screen.dart';
+import 'package:picturethat/screens/tabs/profile_screen.dart';
+import 'package:picturethat/screens/tabs/prompts_screen.dart';
+import 'package:picturethat/screens/search_screen.dart';
+import 'package:picturethat/screens/settings_screen.dart';
+import 'package:picturethat/screens/submit_photo_screen.dart';
+import 'package:picturethat/screens/authentication/landing_screen.dart';
+import 'package:picturethat/screens/authentication/login_screen.dart';
+import 'package:picturethat/screens/authentication/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
         "/home_screen": (context) => Home(),
         "/prompts_screen": (context) => PromptsScreen(),
         "/feed_screen": (context) => FeedScreen(),
+        "/prompt_feed_screen": (context) => PromptFeedScreen(promptId: ""),
         "/profile_screen": (context) => ProfileScreen(),
         "/submit_photo_screen": (context) => SubmitPhotoScreen(),
         "/settings_screen": (context) => SettingsScreen(),

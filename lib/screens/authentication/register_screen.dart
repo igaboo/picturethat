@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -118,8 +120,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                 )
                               : CustomImage(
+                                  key: ValueKey(_profileImage?.path),
                                   imageProvider:
-                                      AssetImage(_profileImage!.path),
+                                      FileImage(File(_profileImage!.path)),
                                   shape: CustomImageShape.circle,
                                   width: PROFILE_IMAGE_SIZE,
                                   height: PROFILE_IMAGE_SIZE,

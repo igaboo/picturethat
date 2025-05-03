@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:picturethat/screens/authenticated/feed_screen.dart';
-import 'package:picturethat/screens/authenticated/profile_screen.dart';
-import 'package:picturethat/screens/authenticated/prompts_screen.dart';
+import 'package:picturethat/screens/tabs/feed_screen.dart';
+import 'package:picturethat/screens/tabs/profile_screen.dart';
+import 'package:picturethat/screens/tabs/prompts_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
