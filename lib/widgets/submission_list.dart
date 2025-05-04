@@ -11,7 +11,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
   final SubmissionQueryParam queryParam;
   final String? heroContext;
   final Widget? header;
-  final bool? disableNavigation;
+  final bool? isOnProfileTab;
   final bool? bottomPadding;
 
   const SubmissionListSliver({
@@ -19,7 +19,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
     required this.queryParam,
     required this.heroContext,
     this.header,
-    this.disableNavigation,
+    this.isOnProfileTab,
     this.bottomPadding,
     super.key,
   });
@@ -108,7 +108,7 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                   submission: submission,
                   queryParam: widget.queryParam,
                   heroContext: widget.heroContext,
-                  disableNavigation: widget.disableNavigation,
+                  isOnProfileTab: widget.isOnProfileTab,
                   key: ValueKey(submission.id),
                 );
               },

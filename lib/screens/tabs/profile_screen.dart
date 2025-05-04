@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:picture_that/screens/edit_profile_screen.dart';
+import 'package:picture_that/screens/followers_screen.dart';
+import 'package:picture_that/screens/settings_screen.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:picture_that/models/prompt_model.dart';
@@ -80,7 +83,12 @@ final skeleton = CustomSkeletonizer(
 );
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  final String? userId;
+
+  const ProfileScreen({
+    required this.userId,
+    super.key,
+  });
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -95,14 +103,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    final uid = ModalRoute.of(context)?.settings.arguments as String?;
-    final profileUserId = uid ?? auth.currentUser?.uid;
-    final isSelf = profileUserId == auth.currentUser?.uid;
-    final userAsync = ref.watch(userProvider(profileUserId!));
-
-    void onEditProfile() {
-      navigate(context, "/edit_profile_screen");
+    if (widget.userId == null) {
+      return const Center(child: Text("No user found"));
     }
+
+    final profileUid = widget.userId!;
+    final isSelf = profileUid == auth.currentUser?.uid;
+    final userAsync = ref.watch(userProvider(profileUid));
+
+    void onEditProfile() => navigateRoute(context, EditProfileScreen());
 
     void onFollowToggle() {
       // follow user logic here
@@ -125,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ? [
                     PopupMenuItem(
                       value: "Settings",
-                      onTap: () => navigate(context, "/settings_screen"),
+                      onTap: () => navigateRoute(context, SettingsScreen()),
                       child: Row(
                         spacing: 8.0,
                         children: [
@@ -168,11 +177,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ref.watch(submissionNotifierProvider(queryParam));
 
               Future<void> refreshSubmissions() async {
-                ref.invalidate(userProvider(profileUserId));
+                ref.invalidate(userProvider(profileUid));
                 ref.invalidate(submissionNotifierProvider(queryParam));
 
                 await Future.wait([
-                  ref.read(userProvider(profileUserId).future),
+                  ref.read(userProvider(profileUid).future),
                   ref.read(submissionNotifierProvider(queryParam).future),
                 ]);
               }
@@ -183,8 +192,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   loading: () => skeleton,
                   error: (e, _) => Text("Error: $e"),
                   data: (submissions) => SubmissionListSliver(
-                    heroContext: profileUserId,
-                    disableNavigation: isSelf,
+                    heroContext: profileUid,
+                    isOnProfileTab: isSelf,
                     submissionState: submissions,
                     queryParam: queryParam,
                     bottomPadding: true,
@@ -319,13 +328,12 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigate(
+                  onPressed: () => navigateRoute(
                     context,
-                    "/followers_screen",
-                    arguments: {
-                      "type": "Followers",
-                      "uid": user.uid,
-                    },
+                    FollowersScreen(
+                      type: FollowersScreenType.followers,
+                      userId: user.uid,
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -347,13 +355,12 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigate(
+                  onPressed: () => navigateRoute(
                     context,
-                    "/followers_screen",
-                    arguments: {
-                      "type": "Following",
-                      "uid": user.uid,
-                    },
+                    FollowersScreen(
+                      type: FollowersScreenType.following,
+                      userId: user.uid,
+                    ),
                   ),
                   child: Column(
                     children: [

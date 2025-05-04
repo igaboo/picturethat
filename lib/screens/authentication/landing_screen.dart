@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:picture_that/screens/authentication/login_screen.dart';
+import 'package:picture_that/screens/authentication/register_screen.dart';
 import 'package:picture_that/utils/navigate.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -58,11 +60,11 @@ class LandingScreen extends StatelessWidget {
                 spacing: 16.0,
                 children: [
                   FilledButton(
-                    onPressed: () => navigate(context, "/register_screen"),
+                    onPressed: () => navigateRoute(context, RegisterScreen()),
                     child: Text("Create an Account"),
                   ),
                   OutlinedButton(
-                    onPressed: () => navigate(context, "/login_screen"),
+                    onPressed: () => navigateRoute(context, LoginScreen()),
                     child: Text("Login"),
                   ),
                   RichText(

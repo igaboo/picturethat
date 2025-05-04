@@ -7,6 +7,7 @@ import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
+import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/get_time_elapsed.dart';
 import 'package:picture_that/utils/handle_error.dart';
 import 'package:picture_that/utils/navigate.dart';
@@ -17,13 +18,13 @@ class Submission extends ConsumerWidget {
   final SubmissionModel submission;
   final SubmissionQueryParam queryParam;
   final String? heroContext;
-  final bool? disableNavigation;
+  final bool? isOnProfileTab;
 
   const Submission({
     required this.submission,
     required this.queryParam,
     required this.heroContext,
-    this.disableNavigation,
+    this.isOnProfileTab,
     super.key,
   });
 
@@ -32,13 +33,9 @@ class Submission extends ConsumerWidget {
     final state = ref.watch(submissionNotifierProvider(queryParam).notifier);
     final isSelf = submission.user.uid == auth.currentUser?.uid;
 
-    void navigateToScreen({
-      String route = "/profile_screen",
-      required routeId,
-    }) {
-      // prevents navigation to current screen
-      if (disableNavigation == true && route == "/profile_screen") return;
-      navigate(context, route, arguments: routeId);
+    void navigateToProfile(String userId) {
+      if (isOnProfileTab == true) return;
+      navigateRoute(context, ProfileScreen(userId: userId));
     }
 
     void handleLike() {
@@ -109,7 +106,7 @@ class Submission extends ConsumerWidget {
             spacing: 10.0,
             children: [
               GestureDetector(
-                onTap: () => navigateToScreen(routeId: submission.user.uid),
+                onTap: () => navigateToProfile(submission.user.uid),
                 child: CustomImage(
                   key: ValueKey(submission.user.profileImageUrl),
                   imageProvider: NetworkImage(submission.user.profileImageUrl),
@@ -123,8 +120,7 @@ class Submission extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () =>
-                          navigateToScreen(routeId: submission.user.uid),
+                      onTap: () => navigateToProfile(submission.user.uid),
                       child: Text(
                         "@${submission.user.username}",
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -136,7 +132,6 @@ class Submission extends ConsumerWidget {
                       onTap: () => navigateRoute(
                         context,
                         PromptFeedScreen(promptId: submission.prompt.id),
-                        "/prompt_feed_screen",
                       ),
                       child: Text(submission.prompt.title),
                     ),
@@ -257,8 +252,8 @@ class Submission extends ConsumerWidget {
                               fontWeight: FontWeight.w700,
                             ),
                         recognizer: TapGestureRecognizer()
-                          ..onTap = () =>
-                              navigateToScreen(routeId: submission.user.uid),
+                          ..onTap =
+                              () => navigateToProfile(submission.user.uid),
                       ),
                       TextSpan(
                           text: submission.caption!,

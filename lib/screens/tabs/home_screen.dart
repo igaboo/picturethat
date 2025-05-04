@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/screens/tabs/prompts_screen.dart';
@@ -17,7 +18,7 @@ class _HomeState extends State<Home> {
   final List<Widget> _views = [
     PromptsScreen(),
     FeedScreen(),
-    ProfileScreen(),
+    ProfileScreen(userId: auth.currentUser?.uid),
   ];
 
   @override

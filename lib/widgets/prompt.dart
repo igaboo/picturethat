@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
+import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/get_formatted_date.dart';
 import 'package:picture_that/utils/get_formatted_number.dart';
 import 'package:picture_that/utils/get_time_left.dart';
@@ -27,7 +28,6 @@ class Prompt extends StatelessWidget {
       onTap: () => navigateRoute(
         context,
         PromptFeedScreen(promptId: prompt.id),
-        "/prompt_feed_screen",
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -168,8 +168,10 @@ class Prompt extends StatelessWidget {
                       Visibility(
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
-                          onPressed: () =>
-                              navigate(context, "/submit_photo_screen"),
+                          onPressed: () => navigateRoute(
+                            context,
+                            SubmitPhotoScreen(),
+                          ),
                           icon: Icon(Icons.add_photo_alternate_outlined),
                         ),
                       ),

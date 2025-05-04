@@ -4,24 +4,28 @@ import 'package:flutter/material.dart';
 /// fetch user relationships based off of following/followers
 /// fetch user documents from relationship documents
 /// display user documents in a list
+///
+
+enum FollowersScreenType { followers, following }
 
 class FollowersScreen extends StatelessWidget {
-  const FollowersScreen({super.key});
+  final FollowersScreenType type;
+  final String userId;
+
+  const FollowersScreen({
+    required this.type,
+    required this.userId,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // determine uid from arguments
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final type = args["type"] as String;
+    final typeString =
+        type == FollowersScreenType.followers ? "Followers" : "Following";
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(type),
-      ),
-      body: Center(
-        child: Text("$type Screen"),
-      ),
+      appBar: AppBar(title: Text(typeString)),
+      body: Center(child: Text("$typeString Screen")),
     );
   }
 }

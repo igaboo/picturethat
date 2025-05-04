@@ -4,6 +4,7 @@ import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/screens/search_screen.dart';
 import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_tooltip.dart';
@@ -105,7 +106,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () async => navigate(context, "/search_screen"),
+            onPressed: () async => navigateRoute(context, SearchScreen()),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/get_formatted_date.dart';
 import 'package:picture_that/utils/is_today.dart';
@@ -65,7 +66,7 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       data: (prompt) {
         if (prompt != null && isToday(prompt.date)) {
           return FloatingActionButton(
-            onPressed: () => navigate(context, "/submit_photo_screen"),
+            onPressed: () => navigateRoute(context, SubmitPhotoScreen()),
             child: Icon(Icons.add_photo_alternate_outlined),
           );
         } else {

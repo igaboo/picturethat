@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/handle_error.dart';
 import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
@@ -171,11 +172,7 @@ class SearchResultItem extends StatelessWidget {
       ),
       title: Text("${user.firstName} ${user.lastName}"),
       subtitle: Text("@${user.username}"),
-      onTap: () => navigate(
-        context,
-        "/profile_screen",
-        arguments: user.uid,
-      ),
+      onTap: () => navigateRoute(context, ProfileScreen(userId: user.uid)),
     );
   }
 }
