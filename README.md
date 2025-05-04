@@ -45,3 +45,5 @@
 [package_info_plus](https://pub.dev/packages/package_info_plus)
 
 [skeletonizer](https://pub.dev/packages/skeletonizer)
+
+[share_plus](https://pub.dev/packages/share_plus)

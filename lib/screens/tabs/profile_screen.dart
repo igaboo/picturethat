@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
 import 'package:picture_that/screens/settings_screen.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:picture_that/models/prompt_model.dart';
@@ -111,14 +112,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final isSelf = profileUid == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUid));
 
-    void onEditProfile() => navigateRoute(context, EditProfileScreen());
+    void onEditProfile() => navigate(context, EditProfileScreen());
 
     void onFollowToggle() {
       // follow user logic here
     }
 
     void onShare() {
-      // share user profile logic here
+      // this url is just a placeholder, replace with actual url
+      // in future when deep linking is implemented
+      final url = "https://picturethat.com/${userAsync.value?.username}";
+      final subject = isSelf ? "my" : "${userAsync.value?.firstName}'s";
+
+      SharePlus.instance.share(ShareParams(
+        text: "Check out $subject profile on Picture That: $url",
+      ));
     }
 
     void onReportUser() {
@@ -134,7 +142,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ? [
                     PopupMenuItem(
                       value: "Settings",
-                      onTap: () => navigateRoute(context, SettingsScreen()),
+                      onTap: () => navigate(context, SettingsScreen()),
                       child: Row(
                         spacing: 8.0,
                         children: [
@@ -328,7 +336,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigateRoute(
+                  onPressed: () => navigate(
                     context,
                     FollowersScreen(
                       type: FollowersScreenType.followers,
@@ -355,7 +363,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigateRoute(
+                  onPressed: () => navigate(
                     context,
                     FollowersScreen(
                       type: FollowersScreenType.following,
