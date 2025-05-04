@@ -36,6 +36,9 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(context, ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(title: Text("Settings")),
       body: ListView(
@@ -68,8 +71,6 @@ class SettingsScreen extends ConsumerWidget {
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) {
               final packageInfo = snapshot.data;
-              final isDarkMode =
-                  Theme.of(context).brightness == Brightness.dark;
               if (packageInfo == null) return const SizedBox();
 
               return Padding(
@@ -89,7 +90,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     Text(
                       "You are using Picture That v${packageInfo.version}",
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: textTheme.bodySmall,
                     ),
                   ],
                 ),

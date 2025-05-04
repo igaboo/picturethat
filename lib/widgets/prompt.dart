@@ -22,6 +22,8 @@ class Prompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
@@ -41,8 +43,8 @@ class Prompt extends StatelessWidget {
               child: Text(
                 getFormattedDate(prompt.date!),
                 style: isTodaysPrompt
-                    ? Theme.of(context).textTheme.titleLarge
-                    : Theme.of(context).textTheme.titleMedium,
+                    ? textTheme.titleLarge
+                    : textTheme.titleMedium,
               ),
             ),
             Stack(
@@ -110,9 +112,7 @@ class Prompt extends StatelessWidget {
                                   ),
                                   Text(
                                     getTimeLeft(),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
+                                    style: textTheme.bodySmall!
                                         .copyWith(color: Colors.white),
                                   ),
                                 ],
@@ -122,9 +122,7 @@ class Prompt extends StatelessWidget {
                           Spacer(),
                           Text(
                             prompt.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium!
+                            style: textTheme.titleMedium!
                                 .copyWith(color: Colors.white),
                           ),
                           Text(
@@ -132,9 +130,7 @@ class Prompt extends StatelessWidget {
                               number: prompt.submissionCount!,
                               unit: "submission",
                             ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
+                            style: textTheme.bodySmall!
                                 .copyWith(color: Colors.white),
                           ),
                           SizedBox(
@@ -153,12 +149,9 @@ class Prompt extends StatelessWidget {
                                 ),
                                 Text(
                                   "Photo by ${prompt.imageAuthorName}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall!
-                                      .copyWith(
-                                        color: Colors.white.withAlpha(150),
-                                      ),
+                                  style: textTheme.bodySmall!.copyWith(
+                                    color: Colors.white.withAlpha(150),
+                                  ),
                                 )
                               ],
                             ),

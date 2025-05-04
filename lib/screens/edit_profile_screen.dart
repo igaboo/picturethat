@@ -96,6 +96,8 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider((auth.currentUser?.uid)!));
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -150,12 +152,8 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ),
                           Text(
                             "Pick Profile Image",
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                            style: textTheme.labelLarge!
+                                .copyWith(color: colorScheme.primary),
                           )
                         ],
                       ),

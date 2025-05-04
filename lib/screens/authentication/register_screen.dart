@@ -75,6 +75,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(title: Text("Register")),
       body: SingleChildScrollView(
@@ -100,9 +103,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   height: profileImageSize,
                                   child: DottedBorder(
                                     borderType: BorderType.Circle,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outlineVariant,
+                                    color: colorScheme.outlineVariant,
                                     dashPattern: const [10, 16],
                                     strokeWidth: 5,
                                     strokeCap: StrokeCap.round,
@@ -112,9 +113,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         child: Icon(
                                           Icons.mood,
                                           size: 60,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outlineVariant,
+                                          color: colorScheme.outlineVariant,
                                         ),
                                       ),
                                     ),
@@ -133,9 +132,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       Text(
                         "Pick Profile Image",
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                        style: textTheme.labelLarge!.copyWith(
+                          color: colorScheme.primary,
+                        ),
                       )
                     ],
                   ),

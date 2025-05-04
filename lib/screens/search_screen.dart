@@ -85,12 +85,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(150.0), // Rounded corners
             ),
             child: Row(

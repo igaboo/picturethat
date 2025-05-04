@@ -18,25 +18,27 @@ class SettingsListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 14.0),
-      leading:
-          Icon(icon, color: color ?? Theme.of(context).colorScheme.onSurface),
+      leading: Icon(icon, color: color ?? colorScheme.onSurface),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  color: color ?? Theme.of(context).colorScheme.onSurface,
-                ),
+            style: textTheme.titleLarge!.copyWith(
+              color: color ?? colorScheme.onSurface,
+            ),
           ),
           if (subtitle != null)
             Text(
               subtitle!,
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: color ?? Theme.of(context).colorScheme.onSurface,
-                  ),
+              style: textTheme.bodyMedium!.copyWith(
+                color: color ?? colorScheme.onSurface,
+              ),
             ),
         ],
       ),

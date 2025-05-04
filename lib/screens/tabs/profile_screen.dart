@@ -253,6 +253,9 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     final userHasBio = user.bio != null && user.bio!.isNotEmpty;
     final userHasUrl = user.url != null && user.url!.isNotEmpty;
 
@@ -275,7 +278,7 @@ class ProfileHeader extends StatelessWidget {
             Text(
               "${user.firstName} ${user.lastName}",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: textTheme.headlineSmall,
             ),
             Row(
               spacing: 5.0,
@@ -284,7 +287,7 @@ class ProfileHeader extends StatelessWidget {
                 Text(
                   "@${user.username}",
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: textTheme.bodyMedium,
                 ),
                 if (userHasUrl) const Text("·"),
                 if (userHasUrl)
@@ -293,9 +296,9 @@ class ProfileHeader extends StatelessWidget {
                     child: Text(
                       getCleanUrl(user.url!),
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                      style: textTheme.bodyMedium!.copyWith(
+                        color: colorScheme.primary,
+                      ),
                     ),
                   ),
               ],
@@ -308,7 +311,7 @@ class ProfileHeader extends StatelessWidget {
             child: Text(
               user.bio!,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: textTheme.bodyMedium,
             ),
           ),
         Padding(
@@ -320,7 +323,7 @@ class ProfileHeader extends StatelessWidget {
                   children: [
                     Text(
                       user.submissionsCount.toString(),
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: textTheme.titleLarge,
                     ),
                     Text(
                       Intl.plural(
@@ -328,7 +331,7 @@ class ProfileHeader extends StatelessWidget {
                         one: "submission",
                         other: "submissions",
                       ),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: textTheme.bodyMedium,
                     )
                   ],
                 ),
@@ -346,7 +349,7 @@ class ProfileHeader extends StatelessWidget {
                     children: [
                       Text(
                         user.followersCount.toString(),
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: textTheme.titleLarge,
                       ),
                       Text(
                         Intl.plural(
@@ -354,7 +357,7 @@ class ProfileHeader extends StatelessWidget {
                           one: "follower",
                           other: "followers",
                         ),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: textTheme.bodyMedium,
                       )
                     ],
                   ),
@@ -373,12 +376,9 @@ class ProfileHeader extends StatelessWidget {
                     children: [
                       Text(
                         user.followingCount.toString(),
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: textTheme.titleLarge,
                       ),
-                      Text(
-                        "following",
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      )
+                      Text("following", style: textTheme.bodyMedium)
                     ],
                   ),
                 ),

@@ -13,13 +13,13 @@ class ImageViewerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Theme.of(context)
-            .colorScheme
-            .surface
-            .withAlpha(0), // fixes toolbar text color
+        backgroundColor:
+            colorScheme.surface.withAlpha(0), // fixes toolbar text color
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -39,9 +39,7 @@ class ImageViewerScreen extends StatelessWidget {
             minScale: PhotoViewComputedScale.contained,
             maxScale: PhotoViewComputedScale.covered * 2,
             initialScale: PhotoViewComputedScale.contained,
-            backgroundDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-            ),
+            backgroundDecoration: BoxDecoration(color: colorScheme.surface),
           ),
         ),
       ),

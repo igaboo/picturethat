@@ -23,9 +23,9 @@ class CustomImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final borderColor = theme.colorScheme.surfaceContainerHighest;
-    final placeholderColor = theme.colorScheme.surfaceContainerLow;
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderColor = colorScheme.surfaceContainerHighest;
+    final placeholderColor = colorScheme.surfaceContainerLow;
     final borderRadius = (shape == CustomImageShape.squircle)
         ? BorderRadius.circular(20.0)
         : null;

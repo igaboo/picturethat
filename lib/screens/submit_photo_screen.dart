@@ -165,6 +165,8 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider(auth.currentUser!.uid));
     final promptsAsync = ref.watch(promptsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     final maxImageHeight = MediaQuery.of(context).size.height * 0.5;
     final maxImageWidth = MediaQuery.of(context).size.width - 10.0;
@@ -216,14 +218,12 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                           children: [
                             Text(
                               "@${user.username}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
+                              style: textTheme.labelLarge
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               todaysPrompt.title,
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              style: textTheme.bodyMedium,
                             ),
                           ],
                         ),
@@ -246,12 +246,9 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                                         decoration: BoxDecoration(
                                           borderRadius:
                                               BorderRadius.circular(20.0),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainer,
+                                          color: colorScheme.surfaceContainer,
                                           border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
+                                            color: colorScheme
                                                 .surfaceContainerHighest,
                                           ),
                                         ),
@@ -264,21 +261,17 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                                                     Icon(
                                                       Icons.image,
                                                       size: 60,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
+                                                      color: colorScheme
                                                           .onSurfaceVariant,
                                                     ),
                                                     Text(
                                                       "Select an image",
-                                                      style: Theme.of(context)
-                                                          .textTheme
+                                                      style: textTheme
                                                           .labelLarge!
                                                           .copyWith(
-                                                            color: Theme.of(
-                                                                    context)
-                                                                .colorScheme
-                                                                .onSurfaceVariant,
-                                                          ),
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                      ),
                                                     ),
                                                   ],
                                                 )

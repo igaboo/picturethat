@@ -48,8 +48,8 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     final promptsAsync = ref.watch(promptsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0.0),
@@ -57,6 +57,8 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
         onPressed: () => navigate(context, SubmitPhotoScreen()),
         label: Text("Submit Today's Prompt"),
         icon: Icon(Icons.add_photo_alternate_outlined),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       resizeToAvoidBottomInset: false,

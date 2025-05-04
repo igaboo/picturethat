@@ -11,11 +11,13 @@ class CustomSkeletonizer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Skeletonizer(
       ignoreContainers: true,
       effect: ShimmerEffect(
-        baseColor: Theme.of(context).colorScheme.surfaceContainer,
-        highlightColor: Theme.of(context).colorScheme.surfaceBright,
+        baseColor: colorScheme.surfaceContainer,
+        highlightColor: colorScheme.surfaceBright,
       ),
       child: child,
     );

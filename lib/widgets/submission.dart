@@ -13,6 +13,8 @@ import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/labeled_icon_button.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;
@@ -31,6 +33,8 @@ class Submission extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(submissionProvider(queryParam).notifier);
+    final textTheme = Theme.of(context).textTheme;
+
     final isSelf = submission.user.uid == auth.currentUser?.uid;
 
     void navigateToProfile(String userId) {
@@ -94,7 +98,15 @@ class Submission extends ConsumerWidget {
     }
 
     void handleShare() {
-      // handle share action
+      // this url is just a placeholder, replace with actual url
+      // in future when deep linking is implemented
+      final url =
+          "https://picturethat.com/submission/${submission.user.username}";
+      final subject = isSelf ? "my" : "${submission.user.firstName}'s";
+
+      SharePlus.instance.share(ShareParams(
+        text: "Check out $subject photo on Picture That: $url",
+      ));
     }
 
     return Column(
@@ -123,9 +135,9 @@ class Submission extends ConsumerWidget {
                       onTap: () => navigateToProfile(submission.user.uid),
                       child: Text(
                         "@${submission.user.username}",
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     GestureDetector(
@@ -206,34 +218,31 @@ class Submission extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        style:
-                            ButtonStyle(visualDensity: VisualDensity.compact),
-                        onPressed: handleLike,
-                        icon: submission.isLiked
-                            ? Icon(
-                                Icons.favorite,
-                                color: Colors.red,
-                              )
-                            : Icon(
-                                Icons.favorite_border,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                      ),
-                      Text(
-                        "${submission.likes.length}",
-                        style: Theme.of(context).textTheme.titleMedium,
-                      )
-                    ],
+                  SizedBox(
+                    width: 60,
+                    child: LabeledIconButton(
+                      onPressed: handleLike,
+                      icon: Icons.favorite_outline,
+                      selectedIcon: Icons.favorite,
+                      label: "${submission.likes.length}",
+                      isSelected: submission.isLiked,
+                    ),
                   ),
-                  IconButton(
-                    style: ButtonStyle(visualDensity: VisualDensity.compact),
-                    onPressed: handleShare,
-                    icon: Icon(Icons.share),
+                  SizedBox(
+                    width: 60,
+                    child: LabeledIconButton(
+                      onPressed: () {},
+                      icon: Icons.chat_bubble_outline,
+                      label: "0",
+                    ),
+                  ),
+                  SizedBox(
+                    width: 60,
+                    child: LabeledIconButton(
+                      onPressed: handleShare,
+                      icon: Icons.share_outlined,
+                    ),
                   ),
                 ],
               ),
@@ -248,16 +257,17 @@ class Submission extends ConsumerWidget {
                     children: [
                       TextSpan(
                         text: "@${submission.user.username} ",
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: textTheme.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                         recognizer: TapGestureRecognizer()
                           ..onTap =
                               () => navigateToProfile(submission.user.uid),
                       ),
                       TextSpan(
-                          text: submission.caption!,
-                          style: Theme.of(context).textTheme.bodyMedium),
+                        text: submission.caption!,
+                        style: textTheme.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -266,7 +276,7 @@ class Submission extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 getTimeElapsed(submission.date),
-                style: Theme.of(context).textTheme.bodySmall,
+                style: textTheme.bodySmall,
               ),
             ),
           ],

@@ -43,9 +43,8 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<PromptModel?> promptAsync = ref.watch(
-      promptProvider(widget.promptId),
-    );
+    final promptAsync = ref.watch(promptProvider(widget.promptId));
+    final colorScheme = Theme.of(context).colorScheme;
 
     final queryParam = SubmissionQueryParam(
       type: SubmissionQueryType.byPrompt,
@@ -67,6 +66,8 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
         if (prompt != null && isToday(prompt.date)) {
           return FloatingActionButton(
             onPressed: () => navigate(context, SubmitPhotoScreen()),
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             child: Icon(Icons.add_photo_alternate_outlined),
           );
         } else {
@@ -138,6 +139,8 @@ class TitleText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment:
           Platform.isIOS ? CrossAxisAlignment.center : CrossAxisAlignment.start,
@@ -146,7 +149,7 @@ class TitleText extends StatelessWidget {
         if (prompt != null)
           Text(
             getFormattedDate(prompt?.date ?? DateTime.now()),
-            style: Theme.of(context).textTheme.bodySmall,
+            style: textTheme.bodySmall,
           ),
       ],
     );

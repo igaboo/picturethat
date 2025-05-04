@@ -10,6 +10,9 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0), // hides header
       resizeToAvoidBottomInset: false,
@@ -38,12 +41,12 @@ class LandingScreen extends StatelessWidget {
                   Text(
                     "A fresh perspective, every day.",
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall,
+                    style: textTheme.displaySmall,
                   ),
                   Text(
                     "A new photo prompt daily—capture it your way, share your work, and explore others’ interpretations.",
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: textTheme.bodyLarge,
                   ),
                 ],
               ),
@@ -70,15 +73,15 @@ class LandingScreen extends StatelessWidget {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
+                      style: textTheme.bodyMedium!.copyWith(
+                        color: colorScheme.secondary,
+                      ),
                       children: [
                         TextSpan(text: "By continuing, you agree to our \n"),
                         TextSpan(
                           text: "Terms of Service",
                           style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: colorScheme.primary,
                               decoration: TextDecoration.underline),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () =>
@@ -88,7 +91,7 @@ class LandingScreen extends StatelessWidget {
                         TextSpan(
                           text: "Privacy Policy",
                           style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: colorScheme.primary,
                               decoration: TextDecoration.underline),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () =>

@@ -46,6 +46,9 @@ class _CustomTooltipState extends State<CustomTooltip> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Visibility(
         visible: isVisible,
         child: SafeArea(
@@ -56,11 +59,10 @@ class _CustomTooltipState extends State<CustomTooltip> {
               padding: const EdgeInsets.all(16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(10.0),
                   border: Border.all(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 child: Padding(
@@ -71,8 +73,7 @@ class _CustomTooltipState extends State<CustomTooltip> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.title,
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(widget.title, style: textTheme.titleMedium),
                       Text(widget.message),
                       Padding(
                         padding: const EdgeInsets.only(top: 10.0),
