@@ -66,7 +66,7 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       data: (prompt) {
         if (prompt != null && isToday(prompt.date)) {
           return FloatingActionButton(
-            onPressed: () => navigateRoute(context, SubmitPhotoScreen()),
+            onPressed: () => navigate(context, SubmitPhotoScreen()),
             child: Icon(Icons.add_photo_alternate_outlined),
           );
         } else {

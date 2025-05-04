@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void navigateRoute(BuildContext context, Widget screen) {
+void navigate(BuildContext context, Widget screen) {
   if (ModalRoute.of(context)?.settings.name == screen.runtimeType.toString()) {
     return;
   }
@@ -11,5 +11,13 @@ void navigateRoute(BuildContext context, Widget screen) {
       builder: (context) => screen,
       settings: RouteSettings(name: screen.runtimeType.toString()),
     ),
+  );
+}
+
+void navigateAndDisableBack(BuildContext context, Widget screen) {
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => screen),
+    (route) => false,
   );
 }

@@ -9,7 +9,7 @@ import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 import 'package:picture_that/widgets/empty_state.dart';
@@ -32,11 +32,10 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
   Future<void> _submitPhoto() async {
     if (_submissionImage == null) {
-      handleError(context, "Please select an image.");
+      customShowSnackbar(context, "Please select an image.");
       return;
     }
 
-    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     final prompts = ref.read(promptsProvider).value!;
@@ -133,41 +132,33 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       // navigate back to the previous screen
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) handleError(context, e);
+      if (mounted) customShowSnackbar(context, e);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _selectSubmissionImage() async {
-    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     try {
       final image = await ImageUtils.pickImage();
-      if (image == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
+      if (image == null) return;
 
       final decodedImage = await decodeImageFromList(await image.readAsBytes());
       _submissionImageHeight = decodedImage.height;
       _submissionImageWidth = decodedImage.width;
 
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _submissionImage = image;
-        });
-      }
+      if (mounted) setState(() => _submissionImage = image);
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        handleError(
+        customShowSnackbar(
           context,
           "An error occurred while selecting an image. Please try again.",
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -240,7 +231,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: _selectSubmissionImage,
+                      onTap: _isLoading ? null : () => _selectSubmissionImage(),
                       child: Column(
                         children: [
                           ConstrainedBox(

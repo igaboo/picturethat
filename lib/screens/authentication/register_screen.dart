@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
+import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
@@ -32,7 +34,6 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _register() async {
     try {
-      if (_isLoading) return;
       if (!_formKey.currentState!.validate()) return;
       setState(() => _isLoading = true);
 
@@ -45,39 +46,30 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
         profileImage: _profileImage,
       );
 
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          "/home_screen",
-          (route) => false,
-        );
-      }
+      if (mounted) navigateAndDisableBack(context, Home());
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        handleError(context, e);
-      }
+      if (mounted) customShowSnackbar(context, e);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _selectProfileImage() async {
-    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     try {
       final image = await ImageUtils.pickImage();
-      setState(() => _isLoading = false);
 
       if (image != null) setState(() => _profileImage = image);
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
-        handleError(
+        customShowSnackbar(
           context,
           "An error occurred while selecting an image. Please try again.",
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -95,7 +87,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: GestureDetector(
-                  onTap: _selectProfileImage,
+                  onTap: _isLoading ? null : () => _selectProfileImage(),
                   child: Column(
                     spacing: 10,
                     children: [

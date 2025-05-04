@@ -25,7 +25,7 @@ class Prompt extends StatelessWidget {
     bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
-      onTap: () => navigateRoute(
+      onTap: () => navigate(
         context,
         PromptFeedScreen(promptId: prompt.id),
       ),
@@ -168,7 +168,7 @@ class Prompt extends StatelessWidget {
                       Visibility(
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
-                          onPressed: () => navigateRoute(
+                          onPressed: () => navigate(
                             context,
                             SubmitPhotoScreen(),
                           ),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
@@ -72,16 +72,14 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final results = await searchUsers(query: query);
 
-      setState(() {
-        _searchResults = results;
-        _isLoading = false;
-      });
+      setState(() => _searchResults = results);
     } catch (e) {
-      if (mounted) handleError(context, e);
-      setState(() {
-        _searchResults = [];
-        _isLoading = false;
-      });
+      if (mounted) {
+        customShowSnackbar(context, e);
+        setState(() => _searchResults = []);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -172,7 +170,7 @@ class SearchResultItem extends StatelessWidget {
       ),
       title: Text("${user.firstName} ${user.lastName}"),
       subtitle: Text("@${user.username}"),
-      onTap: () => navigateRoute(context, ProfileScreen(userId: user.uid)),
+      onTap: () => navigate(context, ProfileScreen(userId: user.uid)),
     );
   }
 }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/screens/authentication/landing_screen.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
+import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,19 +12,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  void _logout(BuildContext context, WidgetRef ref) async {
+  void _logout(BuildContext context) async {
     try {
       await signOut();
 
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          "/landing_screen",
-          (route) => false,
-        );
-      }
+      if (context.mounted) navigateAndDisableBack(context, LandingScreen());
     } catch (e) {
-      if (context.mounted) handleError(context, e);
+      if (context.mounted) customShowSnackbar(context, e);
+    }
+  }
+
+  void _handleResetTooltips(BuildContext context) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
+
+    if (context.mounted) {
+      customShowSnackbar(
+        context,
+        "Tooltips reset successfully! Please restart the app to see changes.",
+      );
     }
   }
 
@@ -42,15 +50,7 @@ class SettingsScreen extends ConsumerWidget {
             title: "Reset Tooltips",
             subtitle: "Reset all tooltips to show again",
             icon: Icons.refresh,
-            onTap: () async {
-              final preferences = await SharedPreferences.getInstance();
-              await preferences.clear();
-
-              if (context.mounted) {
-                handleError(context,
-                    "Tooltips reset successfully! Please restart the app to see changes.");
-              }
-            },
+            onTap: () => _handleResetTooltips(context),
           ),
           SettingsListTile(
             title: "Logout",
@@ -59,7 +59,7 @@ class SettingsScreen extends ConsumerWidget {
               context: context,
               title: "Logout",
               content: "Are you sure you want to logout?",
-              onPressed: () => _logout(context, ref),
+              onPressed: () => _logout(context),
               buttonText: "Logout",
             ),
             color: Colors.red,

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_image.dart';
@@ -34,26 +34,22 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   bool _controllersInitialized = false;
 
   void _selectProfileImage() async {
-    if (_isLoading) return;
     setState(() => _isLoading = true);
 
     try {
       final image = await ImageUtils.pickImage();
-      setState(() => _isLoading = false);
 
-      if (image != null) {
-        setState(() => _profileImage = image);
-      }
+      if (image != null) setState(() => _profileImage = image);
     } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) handleError(context, e);
+      if (mounted) customShowSnackbar(context, e);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _updateProfile() async {
     try {
       if (!_formKey.currentState!.validate()) return;
-      if (_isLoading) return;
       setState(() => _isLoading = true);
 
       // check if username has changed, and if so, check if it's available
@@ -91,8 +87,9 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) handleError(context, e);
-      setState(() => _isLoading = false);
+      if (mounted) customShowSnackbar(context, e);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -132,7 +129,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 20),
                     child: GestureDetector(
-                      onTap: _selectProfileImage,
+                      onTap: _isLoading ? null : () => _selectProfileImage(),
                       child: Column(
                         spacing: 10,
                         children: [

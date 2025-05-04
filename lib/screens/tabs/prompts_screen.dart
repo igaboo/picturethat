@@ -54,7 +54,7 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0.0),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => navigateRoute(context, SubmitPhotoScreen()),
+        onPressed: () => navigate(context, SubmitPhotoScreen()),
         label: Text("Submit Today's Prompt"),
         icon: Icon(Icons.add_photo_alternate_outlined),
       ),

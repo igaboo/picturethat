@@ -9,7 +9,7 @@ import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/get_time_elapsed.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/custom_image.dart';
@@ -35,7 +35,7 @@ class Submission extends ConsumerWidget {
 
     void navigateToProfile(String userId) {
       if (isOnProfileTab == true) return;
-      navigateRoute(context, ProfileScreen(userId: userId));
+      navigate(context, ProfileScreen(userId: userId));
     }
 
     void handleLike() {
@@ -48,7 +48,7 @@ class Submission extends ConsumerWidget {
     void handleDelete() async {
       await deleteSubmission(submissionId: submission.id).catchError((e) {
         if (context.mounted) {
-          handleError(
+          customShowSnackbar(
             context,
             "Error deleting submission, please try again later.",
           );
@@ -129,7 +129,7 @@ class Submission extends ConsumerWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => navigateRoute(
+                      onTap: () => navigate(
                         context,
                         PromptFeedScreen(promptId: submission.prompt.id),
                       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/utils/handle_error.dart';
+import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
+import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/text_validation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -19,7 +21,6 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _login() async {
     try {
-      if (_isLoading) return;
       if (!_formKey.currentState!.validate()) return;
       setState(() => _isLoading = true);
 
@@ -28,19 +29,11 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         password: _passwordController.text,
       );
 
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          "/home_screen",
-          (route) => false,
-        );
-      }
+      if (mounted) navigateAndDisableBack(context, Home());
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        handleError(context, e);
-      }
+      if (mounted) customShowSnackbar(context, e);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

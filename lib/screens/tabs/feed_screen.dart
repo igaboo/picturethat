@@ -106,7 +106,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () async => navigateRoute(context, SearchScreen()),
+            onPressed: () async => navigate(context, SearchScreen()),
           ),
         ],
       ),

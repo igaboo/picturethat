@@ -60,11 +60,11 @@ class LandingScreen extends StatelessWidget {
                 spacing: 16.0,
                 children: [
                   FilledButton(
-                    onPressed: () => navigateRoute(context, RegisterScreen()),
+                    onPressed: () => navigate(context, RegisterScreen()),
                     child: Text("Create an Account"),
                   ),
                   OutlinedButton(
-                    onPressed: () => navigateRoute(context, LoginScreen()),
+                    onPressed: () => navigate(context, LoginScreen()),
                     child: Text("Login"),
                   ),
                   RichText(
