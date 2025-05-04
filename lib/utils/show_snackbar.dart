@@ -16,6 +16,7 @@ void customShowSnackbar(BuildContext context, dynamic e) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(errorMessage),
+      behavior: SnackBarBehavior.floating,
     ),
   );
 }

@@ -3,8 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/prompt.dart';
+
+final fetchingNextPageSkelton = CustomSkeletonizer(
+  child: Prompt(
+    prompt: PromptModel(
+      id: "skeleton",
+      title: "skeleton",
+      date: DateTime.now().subtract(const Duration(days: 1)),
+      submissionCount: 0,
+      imageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
+      imageAuthorName: "skeleton",
+    ),
+  ),
+);
 
 class PromptList extends ConsumerStatefulWidget {
   final PaginationState<PromptModel> promptState;
@@ -37,8 +51,10 @@ class _PromptListState extends ConsumerState<PromptList> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.9) {
+    final offset = _scrollController.position;
+
+    if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
+        !widget.promptState.isFetchingNextPage) {
       ref.read(promptsProvider.notifier).fetchNextPage();
     }
   }
@@ -73,9 +89,14 @@ class _PromptListState extends ConsumerState<PromptList> {
             itemBuilder: (context, index) {
               if (index == promptState.items.length) {
                 if (promptState.isFetchingNextPage) {
-                  return Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Center(child: CircularProgressIndicator()),
+                  return SizedBox(
+                    height: 100.0,
+                    child: OverflowBox(
+                      minHeight: 100.0,
+                      maxHeight: double.infinity,
+                      alignment: Alignment.topCenter,
+                      child: fetchingNextPageSkelton,
+                    ),
                   );
                 } else if (promptState.nextPageError != null) {
                   return EmptyState(

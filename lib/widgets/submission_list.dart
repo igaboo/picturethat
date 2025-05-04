@@ -1,10 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/submission.dart';
+
+final fetchingNextPageSkelton = CustomSkeletonizer(
+  child: Submission(
+    heroContext: "skeleton",
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byRandom,
+    ),
+    submission: SubmissionModel(
+      id: "skeleton",
+      date: DateTime.now(),
+      image: SubmissionImageModel(
+        url: "https://dummyimage.com/1x1/0011ff/0011ff.png",
+        height: 200,
+        width: 300,
+      ),
+      caption: "skeleton caption",
+      isLiked: false,
+      likes: [],
+      prompt: PromptSubmissionModel(
+        id: "skeleton",
+        title: "skeleton prompt",
+      ),
+      user: UserModel(
+        uid: "skeleton",
+        firstName: "skeleton",
+        lastName: "skeleton",
+        followersCount: 0,
+        followingCount: 0,
+        submissionsCount: 0,
+        profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
+        username: "skeleton",
+      ),
+    ),
+  ),
+);
 
 class SubmissionListSliver extends ConsumerStatefulWidget {
   final PaginationState<SubmissionModel> submissionState;
@@ -13,6 +51,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
   final Widget? header;
   final bool? isOnProfileTab;
   final bool? bottomPadding;
+  final EmptyState? emptyState;
 
   const SubmissionListSliver({
     required this.submissionState,
@@ -21,6 +60,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
     this.header,
     this.isOnProfileTab,
     this.bottomPadding,
+    this.emptyState,
     super.key,
   });
 
@@ -46,8 +86,10 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
   }
 
   void _scrollListener() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent * 0.9) {
+    final offset = _scrollController.position;
+
+    if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
+        !widget.submissionState.isFetchingNextPage) {
       ref
           .read(submissionNotifierProvider(widget.queryParam).notifier)
           .fetchNextPage();
@@ -68,11 +110,12 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
           if (submissionsState.items.isEmpty && !submissionsState.hasNextPage)
             SliverFillRemaining(
               hasScrollBody: false,
-              child: const EmptyState(
-                title: "No Submissions",
-                icon: Icons.hide_image,
-                subtitle: "Check back later!",
-              ),
+              child: widget.emptyState ??
+                  const EmptyState(
+                    title: "No Submissions",
+                    icon: Icons.hide_image,
+                    subtitle: "Check back later!",
+                  ),
             )
           else
             SliverList.separated(
@@ -86,10 +129,13 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
               itemBuilder: (context, index) {
                 if (index == submissionsState.items.length) {
                   if (submissionsState.isFetchingNextPage) {
-                    return Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Center(
-                        child: CircularProgressIndicator(),
+                    return SizedBox(
+                      height: 200.0,
+                      child: OverflowBox(
+                        minHeight: 200.0,
+                        maxHeight: double.infinity,
+                        alignment: Alignment.topCenter,
+                        child: fetchingNextPageSkelton,
                       ),
                     );
                   } else if (submissionsState.nextPageError != null) {
