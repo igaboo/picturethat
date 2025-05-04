@@ -90,9 +90,7 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
 
     if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
         !widget.submissionState.isFetchingNextPage) {
-      ref
-          .read(submissionNotifierProvider(widget.queryParam).notifier)
-          .fetchNextPage();
+      ref.read(submissionProvider(widget.queryParam).notifier).fetchNextPage();
     }
   }
 

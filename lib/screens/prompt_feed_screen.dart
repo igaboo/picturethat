@@ -52,11 +52,11 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       id: widget.promptId,
     );
 
-    final submissionsAsync = ref.watch(submissionNotifierProvider(queryParam));
+    final submissionsAsync = ref.watch(submissionProvider(queryParam));
 
     Future<void> refreshSubmissions() async {
-      ref.invalidate(submissionNotifierProvider(queryParam));
-      await ref.read(submissionNotifierProvider(queryParam).future);
+      ref.invalidate(submissionProvider(queryParam));
+      await ref.read(submissionProvider(queryParam).future);
     }
 
     Widget? fab;

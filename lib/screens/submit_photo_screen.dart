@@ -103,15 +103,14 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
       // update the submission list
       final promptSubmissions =
-          ref.read(submissionNotifierProvider(SubmissionQueryParam(
+          ref.read(submissionProvider(SubmissionQueryParam(
         type: SubmissionQueryType.byPrompt,
         id: promptId,
       )).notifier);
       promptSubmissions.addSubmission(newSubmission);
 
       // update the user submission list
-      final userSubmissions =
-          ref.read(submissionNotifierProvider(SubmissionQueryParam(
+      final userSubmissions = ref.read(submissionProvider(SubmissionQueryParam(
         type: SubmissionQueryType.byUser,
         id: userId,
       )).notifier);

@@ -181,16 +181,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 type: SubmissionQueryType.byUser,
                 id: user.uid,
               );
-              final feedAsync =
-                  ref.watch(submissionNotifierProvider(queryParam));
+              final feedAsync = ref.watch(submissionProvider(queryParam));
 
               Future<void> refreshSubmissions() async {
                 ref.invalidate(userProvider(profileUid));
-                ref.invalidate(submissionNotifierProvider(queryParam));
+                ref.invalidate(submissionProvider(queryParam));
 
                 await Future.wait([
                   ref.read(userProvider(profileUid).future),
-                  ref.read(submissionNotifierProvider(queryParam).future),
+                  ref.read(submissionProvider(queryParam).future),
                 ]);
               }
 

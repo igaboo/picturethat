@@ -125,7 +125,7 @@ class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
   }
 }
 
-final submissionNotifierProvider = AsyncNotifierProvider.family<
+final submissionProvider = AsyncNotifierProvider.family<
     SubmissionNotifier,
     PaginationState<SubmissionModel>,
     SubmissionQueryParam>(() => SubmissionNotifier());

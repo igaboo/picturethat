@@ -30,7 +30,7 @@ class Submission extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(submissionNotifierProvider(queryParam).notifier);
+    final state = ref.watch(submissionProvider(queryParam).notifier);
     final isSelf = submission.user.uid == auth.currentUser?.uid;
 
     void navigateToProfile(String userId) {
@@ -63,7 +63,7 @@ class Submission extends ConsumerWidget {
       if (queryParam.type == SubmissionQueryType.byUser) {
         // remove the submission from the prompt it was submitted to
         final promptSubmissions =
-            ref.read(submissionNotifierProvider(SubmissionQueryParam(
+            ref.read(submissionProvider(SubmissionQueryParam(
           type: SubmissionQueryType.byPrompt,
           id: submission.prompt.id,
         )).notifier);
@@ -71,7 +71,7 @@ class Submission extends ConsumerWidget {
       } else if (queryParam.type == SubmissionQueryType.byPrompt) {
         // remove the submission from the user it was submitted by
         final userSubmissions =
-            ref.read(submissionNotifierProvider(SubmissionQueryParam(
+            ref.read(submissionProvider(SubmissionQueryParam(
           type: SubmissionQueryType.byUser,
           id: submission.user.uid,
         )).notifier);
