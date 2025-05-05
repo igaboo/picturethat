@@ -96,6 +96,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
         likes: [],
         caption: description,
         isLiked: false,
+        commentsCount: 0,
       );
 
       // update prompt list

@@ -117,6 +117,25 @@ class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
         .toList();
     state = AsyncData(currentState.copyWith(items: updatedItems));
   }
+
+  void updateCommentCount({
+    required String submissionId,
+    required bool isIncrementing,
+  }) {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final updatedItems = currentState.items.map((submission) {
+      if (submission.id == submissionId) {
+        return submission.copyWith(
+          commentsCount: submission.commentsCount + (isIncrementing ? 1 : -1),
+        );
+      }
+      return submission;
+    }).toList();
+
+    state = AsyncData(currentState.copyWith(items: updatedItems));
+  }
 }
 
 final submissionProvider = AsyncNotifierProvider.family<

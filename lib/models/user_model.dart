@@ -96,3 +96,16 @@ class UserSearchResultModel {
     );
   }
 }
+
+UserModel getDummyUser({index = 0}) {
+  return UserModel(
+    uid: "dummy$index",
+    firstName: "dummy",
+    lastName: "user",
+    username: "dummyuser",
+    profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
+    followersCount: 0,
+    followingCount: 0,
+    submissionsCount: 0,
+  );
+}

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
@@ -188,7 +189,6 @@ Future<void> toggleLike({
 }
 
 // get submissions from a query
-final emptyReturn = (items: <SubmissionModel>[], lastDoc: null);
 Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
     getSubmissions({
   required SubmissionQueryParam queryParam,
@@ -232,7 +232,7 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
             .where("userId", whereIn: followedUsers)
             .orderBy("date", descending: true);
       } else {
-        return emptyReturn;
+        return (items: <SubmissionModel>[], lastDoc: null);
       }
 
       break;
@@ -259,16 +259,21 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   final snapshot = await query.get();
   final docs = snapshot.docs;
 
-  if (docs.isEmpty) return emptyReturn;
+  if (docs.isEmpty) return (items: <SubmissionModel>[], lastDoc: null);
 
   final items = await Future.wait(docs.map((doc) async {
     final data = doc.data() as Map<String, dynamic>;
 
     final userData = await getUser(userId: data["userId"]);
 
+    final commentsCount = await getDocumentCount(
+      query: db.collection("comments").where("submissionId", isEqualTo: doc.id),
+    );
+
     return SubmissionModel.fromMap({
       ...data,
       "isLiked": data["likes"].contains(auth.currentUser?.uid),
+      "commentsCount": commentsCount,
       "user": userData,
     });
   }));
@@ -350,10 +355,83 @@ Future<List<UserSearchResultModel>> searchUsers({required String query}) async {
 // delete a submission
 Future<void> deleteSubmission({required String submissionId}) async {
   final docRef = db.collection("submissions").doc(submissionId);
-  await docRef.delete();
 
-  await deleteImage(path: "submissions/$submissionId");
+  final commentsSnapshot = await db
+      .collection("comments")
+      .where("submissionId", isEqualTo: submissionId)
+      .get();
+
+  final batch = db.batch();
+
+  for (final commentDoc in commentsSnapshot.docs) {
+    batch.delete(commentDoc.reference);
+  }
+
+  await Future.wait([
+    batch.commit(),
+    docRef.delete(),
+    deleteImage(path: "submissions/$submissionId"),
+  ]);
 }
 
 // add a submission
 Future<void> createSubmission({required SubmissionModel submission}) async {}
+
+// get comments
+Future<({List<CommentModel> items, DocumentSnapshot? lastDoc})> getComments({
+  required String submissionId,
+  required int limit,
+  DocumentSnapshot? lastDocument,
+}) async {
+  Query query = db
+      .collection("comments")
+      .where("submissionId", isEqualTo: submissionId)
+      .orderBy("date", descending: true)
+      .limit(limit);
+
+  if (lastDocument != null) {
+    query = query.startAfterDocument(lastDocument);
+  }
+
+  final snapshot = await query.get();
+  final docs = snapshot.docs;
+
+  if (docs.isEmpty) return (items: <CommentModel>[], lastDoc: null);
+
+  final items = await Future.wait(docs.map((doc) async {
+    final data = doc.data() as Map<String, dynamic>;
+    final userData = await getUser(userId: data["userId"]);
+
+    return CommentModel.fromMap({
+      ...data,
+      "user": userData,
+    });
+  }));
+
+  return (items: items, lastDoc: docs.last);
+}
+
+// add a comment
+Future<String> createComment({
+  required String submissionId,
+  required String userId,
+  required String text,
+}) async {
+  final docRef = db.collection("comments").doc();
+
+  await docRef.set({
+    "id": docRef.id,
+    "submissionId": submissionId,
+    "userId": userId,
+    "text": text,
+    "date": DateTime.now().toUtc(),
+  });
+
+  return docRef.id;
+}
+
+// delete a comment
+Future<void> deleteComment({required String commentId}) async {
+  final docRef = db.collection("comments").doc(commentId);
+  await docRef.delete();
+}

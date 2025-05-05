@@ -73,6 +73,7 @@ final skeleton = CustomSkeletonizer(
             profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
             username: "skeleton",
           ),
+          commentsCount: 0,
         ),
       ),
     ],

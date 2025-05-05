@@ -9,7 +9,7 @@ import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/submission.dart';
 
-final fetchingNextPageSkelton = CustomSkeletonizer(
+final fetchingNextPageSkeleton = CustomSkeletonizer(
   child: Submission(
     heroContext: "skeleton",
     submission: SubmissionModel(
@@ -27,16 +27,8 @@ final fetchingNextPageSkelton = CustomSkeletonizer(
         id: "skeleton",
         title: "skeleton prompt",
       ),
-      user: UserModel(
-        uid: "skeleton",
-        firstName: "skeleton",
-        lastName: "skeleton",
-        followersCount: 0,
-        followingCount: 0,
-        submissionsCount: 0,
-        profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-        username: "skeleton",
-      ),
+      user: getDummyUser(),
+      commentsCount: 0,
     ),
   ),
 );
@@ -129,7 +121,7 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                         minHeight: 200.0,
                         maxHeight: double.infinity,
                         alignment: Alignment.topCenter,
-                        child: fetchingNextPageSkelton,
+                        child: fetchingNextPageSkeleton,
                       ),
                     );
                   } else if (submissionsState.nextPageError != null) {

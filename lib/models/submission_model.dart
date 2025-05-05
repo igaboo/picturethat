@@ -31,6 +31,7 @@ class SubmissionModel {
   List<String> likes;
   String? caption;
   bool isLiked;
+  int commentsCount;
 
   SubmissionModel({
     required this.id,
@@ -41,6 +42,7 @@ class SubmissionModel {
     required this.likes,
     required this.caption,
     required this.isLiked,
+    required this.commentsCount,
   });
 
   SubmissionModel copyWith({
@@ -52,6 +54,7 @@ class SubmissionModel {
     List<String>? likes,
     String? caption,
     bool? isLiked,
+    int? commentsCount,
   }) {
     return SubmissionModel(
       id: id ?? this.id,
@@ -62,6 +65,7 @@ class SubmissionModel {
       likes: likes ?? this.likes,
       caption: caption ?? this.caption,
       isLiked: isLiked ?? this.isLiked,
+      commentsCount: commentsCount ?? this.commentsCount,
     );
   }
 
@@ -75,6 +79,7 @@ class SubmissionModel {
       likes: List<String>.from(data['likes']),
       caption: data['caption'],
       isLiked: data['isLiked'],
+      commentsCount: data['commentsCount'],
     );
   }
 }

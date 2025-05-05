@@ -2,18 +2,94 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/submission_model.dart';
+import 'package:picture_that/providers/comment_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
+import 'package:picture_that/utils/show_snackbar.dart';
+import 'package:picture_that/widgets/comment.dart';
+import 'package:picture_that/widgets/comments_list.dart';
 import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_text_field.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/labeled_icon_button.dart';
 import 'package:share_plus/share_plus.dart';
+
+const List<String> reactions = [
+  "❤️",
+  "🔥",
+  "🙌",
+  "👏",
+  "👍",
+  "😍",
+  "😮",
+  "😊",
+];
+
+final skeleton = CustomSkeletonizer(
+  child: ListView.separated(
+    itemCount: 10,
+    separatorBuilder: (context, index) => const SizedBox(height: 16.0),
+    itemBuilder: (context, index) {
+      return Comment(
+        comment: getDummyComment(),
+        handleReply: (_) {},
+      );
+    },
+  ),
+);
+
+void updateCommentCountHelper({
+  required BuildContext context,
+  required WidgetRef ref,
+  required bool isIncrementing,
+  required SubmissionModel submission,
+}) {
+  void onInitialized(SubmissionNotifier notifier) {
+    notifier.updateCommentCount(
+      submissionId: submission.id,
+      isIncrementing: isIncrementing,
+    );
+  }
+
+  // update count for prompt submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byPrompt,
+      id: submission.prompt.id,
+    ),
+    onInitialized: onInitialized,
+  );
+
+  // update count for user submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byUser,
+      id: submission.user.uid,
+    ),
+    onInitialized: onInitialized,
+  );
+
+  // update count for feed submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byRandom,
+    ),
+    onInitialized: onInitialized,
+  );
+}
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;
@@ -149,7 +225,7 @@ class Submission extends ConsumerWidget {
       // open bottom sheet
       showModalBottomSheet(
         context: context,
-        builder: (context) => CommentBottomSheet(submissionId: submission.id),
+        builder: (context) => CommentBottomSheet(submission: submission),
         isScrollControlled: true,
         useSafeArea: true,
         shape: RoundedRectangleBorder(
@@ -297,7 +373,7 @@ class Submission extends ConsumerWidget {
                     child: LabeledIconButton(
                       onPressed: handleComment,
                       icon: Icons.chat_bubble_outline,
-                      label: "0",
+                      label: submission.commentsCount.toString(),
                     ),
                   ),
                   ConstrainedBox(
@@ -349,22 +425,11 @@ class Submission extends ConsumerWidget {
   }
 }
 
-const List<String> reactions = [
-  "❤️",
-  "🔥",
-  "🙌",
-  "👏",
-  "👍",
-  "😍",
-  "😮",
-  "😊",
-];
-
 class CommentBottomSheet extends ConsumerStatefulWidget {
-  final String submissionId;
+  final SubmissionModel submission;
 
   const CommentBottomSheet({
-    required this.submissionId,
+    required this.submission,
     super.key,
   });
 
@@ -374,7 +439,9 @@ class CommentBottomSheet extends ConsumerStatefulWidget {
 
 class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
   final _commentController = TextEditingController();
+  final _scrollController = ScrollController();
   bool _isCommentControllerEmpty = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -392,19 +459,70 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
     super.dispose();
   }
 
-  void handleComment() {
-    _commentController.clear();
+  void handleComment() async {
+    final commentNotifier =
+        ref.read(commentsProvider(widget.submission.id).notifier);
+    final user = ref.read(userProvider((auth.currentUser?.uid)!)).valueOrNull;
+    if (user == null) return;
+
+    try {
+      setState(() => _isLoading = true);
+
+      final docId = await createComment(
+        submissionId: widget.submission.id,
+        userId: user.uid,
+        text: _commentController.text,
+      );
+
+      updateCommentCountHelper(
+        context: context,
+        ref: ref,
+        isIncrementing: true,
+        submission: widget.submission,
+      );
+
+      final comment = CommentModel(
+        id: docId,
+        submissionId: widget.submission.id,
+        user: user,
+        text: _commentController.text,
+        date: DateTime.now(),
+      );
+
+      commentNotifier.addComment(comment);
+      _commentController.clear();
+      // scroll to top
+      _scrollController.animateTo(
+        0,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOutQuint,
+      );
+    } catch (e) {
+      if (mounted) customShowSnackbar(context, e);
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void handleReaction(String reaction) {
     _commentController.text += reaction;
   }
 
+  void handleReply(String username) {
+    _commentController.text = "@$username ${_commentController.text}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider((auth.currentUser?.uid)!));
+    final commentsAsync = ref.watch(commentsProvider(widget.submission.id));
     final textTheme = Theme.of(context).textTheme;
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+
+    Future<void> refreshComments() async {
+      ref.invalidate(commentsProvider(widget.submission.id));
+      await ref.read(commentsProvider(widget.submission.id).future);
+    }
 
     return Padding(
       padding: EdgeInsets.only(
@@ -448,17 +566,25 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
             ),
             Divider(height: 1.0),
             Expanded(
-              child: CustomScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverFillRemaining(
-                    child: EmptyState(
-                      title: "No Comments",
-                      subtitle: "Start the conversation!",
-                      icon: Icons.chat_bubble_outline,
-                    ),
+              child: RefreshIndicator(
+                onRefresh: refreshComments,
+                child: commentsAsync.when(
+                  loading: () => Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: skeleton,
                   ),
-                ],
+                  error: (e, _) => const EmptyState(
+                    title: "Error",
+                    icon: Icons.error,
+                    subtitle: "Something went wrong!",
+                  ),
+                  data: (comments) => CommentsListSliver(
+                    commentState: comments,
+                    submission: widget.submission,
+                    handleReply: handleReply,
+                    scrollController: _scrollController,
+                  ),
+                ),
               ),
             ),
             Divider(height: 1.0),
@@ -510,7 +636,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                           hintText: "Add a comment...",
                           trailingButton: IconButton(
                             icon: Icon(Icons.send),
-                            onPressed: _isCommentControllerEmpty
+                            onPressed: _isCommentControllerEmpty || _isLoading
                                 ? null
                                 : () => handleComment(),
                           ),
