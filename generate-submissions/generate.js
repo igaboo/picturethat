@@ -12,6 +12,7 @@ require("dotenv").config({ path: ".env.local" });
 
 const SERVICE_ACCOUNT = require("./serviceAccountKey.json");
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+const FIREBASE_STORAGE_BUCKET = process.env.FIREBASE_STORAGE_BUCKET;
 const COLLECTION_NAME = "submissions";
 
 async function getPromptDocuments() {
@@ -205,10 +206,31 @@ async function getUnsplashImage() {
   };
 }
 
+async function downloadImage(url) {
+  const response = await axios({
+    method: "get",
+    url,
+    responseType: "arraybuffer",
+  });
+
+  return Buffer.from(response.data);
+}
+
+async function uploadImageToStorage(buffer, destinationPath) {
+  const bucket = admin.storage().bucket(FIREBASE_STORAGE_BUCKET);
+  const file = bucket.file(destinationPath);
+
+  await file.save(buffer, {
+    public: true,
+  });
+
+  return `https://storage.googleapis.com/${FIREBASE_STORAGE_BUCKET}/${destinationPath}`;
+}
+
 function getRandomLikes() {
   // fill likes with random strings like "userId1"
   const likes = [];
-  const numLikes = Math.floor(Math.random() * 100);
+  const numLikes = Math.floor(Math.random() * 50);
 
   for (let i = 0; i < numLikes; i++) {
     likes.push(`userId${i}`);
@@ -223,6 +245,11 @@ async function generateSubmissions(n) {
     return;
   }
 
+  if (!FIREBASE_STORAGE_BUCKET) {
+    console.error("No Firebase storage bucket provided.");
+    return;
+  }
+
   console.log(
     `Starting generation of ${n} documents in "${COLLECTION_NAME}"...`
   );
@@ -230,7 +257,7 @@ async function generateSubmissions(n) {
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(SERVICE_ACCOUNT),
-      databaseURL: "https://your-database-name.firebaseio.com",
+      storageBucket: FIREBASE_STORAGE_BUCKET,
     });
   }
 
@@ -250,7 +277,16 @@ async function generateSubmissions(n) {
 
       if (!image) throw new Error("Failed to fetch image from Unsplash.");
 
+      const imageBuffer = await downloadImage(image.url);
+      if (!imageBuffer) throw new Error("Failed to download image.");
+
       const docRef = admin.firestore().collection(COLLECTION_NAME).doc();
+      const destinationPath = `users/${userId}/submissions/${docRef.id}.jpg`;
+      const imageUrl = await uploadImageToStorage(imageBuffer, destinationPath);
+
+      console.log(
+        `Image (${image.width}x${image.height}) uploaded to "${destinationPath}" and its URL is "${imageUrl}"`
+      );
 
       const submission = {
         id: docRef.id,
@@ -259,7 +295,7 @@ async function generateSubmissions(n) {
         likes,
         date,
         image: {
-          url: image.url,
+          url: imageUrl,
           width: image.width,
           height: image.height,
         },
