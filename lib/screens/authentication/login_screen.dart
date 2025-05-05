@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
-import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/text_validation.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {

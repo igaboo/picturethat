@@ -40,23 +40,20 @@ class _PromptListState extends ConsumerState<PromptList> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
+    _scrollController.addListener(() {
+      final offset = _scrollController.position;
+
+      if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
+          !widget.promptState.isFetchingNextPage) {
+        ref.read(promptsProvider.notifier).fetchNextPage();
+      }
+    });
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _scrollListener() {
-    final offset = _scrollController.position;
-
-    if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
-        !widget.promptState.isFetchingNextPage) {
-      ref.read(promptsProvider.notifier).fetchNextPage();
-    }
   }
 
   @override

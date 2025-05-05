@@ -94,16 +94,19 @@ class CustomImage extends StatelessWidget {
 class CustomImageViewer extends StatelessWidget {
   final CustomImage customImage;
   final Object? heroTag;
+  final VoidCallback? onDoubleTap;
 
   const CustomImageViewer({
     required this.customImage,
     this.heroTag,
+    this.onDoubleTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onDoubleTap: onDoubleTap,
       onTap: () {
         Navigator.push(
           context,

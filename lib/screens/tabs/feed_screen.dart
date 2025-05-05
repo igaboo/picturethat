@@ -5,7 +5,7 @@ import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/screens/search_screen.dart';
-import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_tooltip.dart';
 import 'package:picture_that/widgets/submission.dart';
@@ -16,9 +16,6 @@ final skeleton = CustomSkeletonizer(
     itemBuilder: (context, index) {
       return Submission(
         heroContext: "skeleton$index",
-        queryParam: SubmissionQueryParam(
-          type: SubmissionQueryType.byRandom,
-        ),
         submission: SubmissionModel(
           id: "skeleton",
           date: DateTime.now(),

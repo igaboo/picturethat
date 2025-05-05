@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
-import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
@@ -52,11 +53,11 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  void _onSearchChanged() {
+  void _onSearchChanged(String value) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (_searchController.text.trim().isNotEmpty) {
-        _performSearch(_searchController.text.trim());
+      if (value.trim().isNotEmpty) {
+        _performSearch(value.trim());
       } else {
         setState(() {
           _searchResults = [];
@@ -85,43 +86,29 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(150.0), // Rounded corners
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back)),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      hintText: "Search for users...",
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) => _onSearchChanged(),
-                  ),
-                ),
-                if (_searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => _clearSearch(),
-                  ),
-              ],
-            ),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: CustomTextField(
+          controller: _searchController,
+          hintText: "Search for users...",
+          onChanged: (value) => _onSearchChanged(value),
+          autocorrect: false,
+          autofocus: true,
+          leadingButton: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
           ),
+          trailingButton: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => _clearSearch(),
+                )
+              : null,
         ),
-        body: _buildSearchResults());
+      ),
+      body: _buildSearchResults(),
+    );
   }
 
   Widget _buildSearchResults() {

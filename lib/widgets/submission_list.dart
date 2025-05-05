@@ -12,9 +12,6 @@ import 'package:picture_that/widgets/submission.dart';
 final fetchingNextPageSkelton = CustomSkeletonizer(
   child: Submission(
     heroContext: "skeleton",
-    queryParam: SubmissionQueryParam(
-      type: SubmissionQueryType.byRandom,
-    ),
     submission: SubmissionModel(
       id: "skeleton",
       date: DateTime.now(),
@@ -75,23 +72,22 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_scrollListener);
+    _scrollController.addListener(() {
+      final offset = _scrollController.position;
+
+      if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
+          !widget.submissionState.isFetchingNextPage) {
+        ref
+            .read(submissionProvider(widget.queryParam).notifier)
+            .fetchNextPage();
+      }
+    });
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _scrollListener() {
-    final offset = _scrollController.position;
-
-    if (offset.pixels >= offset.maxScrollExtent * 0.9 &&
-        !widget.submissionState.isFetchingNextPage) {
-      ref.read(submissionProvider(widget.queryParam).notifier).fetchNextPage();
-    }
   }
 
   @override
@@ -150,7 +146,6 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                 final submission = submissionsState.items[index];
                 return Submission(
                   submission: submission,
-                  queryParam: widget.queryParam,
                   heroContext: widget.heroContext,
                   isOnProfileTab: widget.isOnProfileTab,
                   key: ValueKey(submission.id),

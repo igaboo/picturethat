@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:picture_that/screens/authentication/login_screen.dart';
 import 'package:picture_that/screens/authentication/register_screen.dart';
-import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatelessWidget {

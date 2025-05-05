@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
 import 'package:picture_that/screens/settings_screen.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,8 +14,6 @@ import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/utils/get_clean_url.dart';
-import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_tooltip.dart';
@@ -49,9 +48,6 @@ final skeleton = CustomSkeletonizer(
       ),
       Submission(
         heroContext: "skeleton${DateTime.now().toString()}",
-        queryParam: SubmissionQueryParam(
-          type: SubmissionQueryType.byRandom,
-        ),
         submission: SubmissionModel(
           id: "skeleton",
           date: DateTime.now(),
