@@ -3,28 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/submission_model.dart';
-import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
-import 'package:picture_that/utils/get_time_elapsed.dart';
-import 'package:picture_that/utils/show_snackbar.dart';
-import 'package:picture_that/utils/navigate.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
+import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/labeled_icon_button.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;
-  final SubmissionQueryParam queryParam;
   final String? heroContext;
   final bool? isOnProfileTab;
 
   const Submission({
     required this.submission,
-    required this.queryParam,
     required this.heroContext,
     this.isOnProfileTab,
     super.key,
@@ -32,7 +29,6 @@ class Submission extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(submissionProvider(queryParam).notifier);
     final textTheme = Theme.of(context).textTheme;
 
     final isSelf = submission.user.uid == auth.currentUser?.uid;
@@ -43,65 +39,131 @@ class Submission extends ConsumerWidget {
     }
 
     void handleLike() {
-      state.toggleSubmissionLike(
+      void onInitialized(SubmissionNotifier notifier) {
+        notifier.toggleSubmissionLike(
+          submissionId: submission.id,
+          isLiked: submission.isLiked,
+        );
+      }
+
+      // update prompt list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byPrompt,
+          id: submission.prompt.id,
+        ),
+        onInitialized: onInitialized,
+      );
+
+      // update user list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byUser,
+          id: submission.user.uid,
+        ),
+        onInitialized: onInitialized,
+      );
+
+      // update feed list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byRandom,
+        ),
+        onInitialized: onInitialized,
+      );
+
+      // update firestore
+      toggleLike(
         submissionId: submission.id,
+        uid: auth.currentUser!.uid,
         isLiked: submission.isLiked,
       );
     }
 
     void handleDelete() async {
-      await deleteSubmission(submissionId: submission.id).catchError((e) {
-        if (context.mounted) {
-          customShowSnackbar(
-            context,
-            "Error deleting submission, please try again later.",
-          );
-
-          return;
-        }
-      });
-
-      // remove the submission from its list
-      state.deleteSubmission(submission.id);
-
-      if (queryParam.type == SubmissionQueryType.byUser) {
-        // remove the submission from the prompt it was submitted to
-        final promptSubmissions =
-            ref.read(submissionProvider(SubmissionQueryParam(
-          type: SubmissionQueryType.byPrompt,
-          id: submission.prompt.id,
-        )).notifier);
-        promptSubmissions.deleteSubmission(submission.id);
-      } else if (queryParam.type == SubmissionQueryType.byPrompt) {
-        // remove the submission from the user it was submitted by
-        final userSubmissions =
-            ref.read(submissionProvider(SubmissionQueryParam(
-          type: SubmissionQueryType.byUser,
-          id: submission.user.uid,
-        )).notifier);
-        userSubmissions.deleteSubmission(submission.id);
+      void onInitialized(SubmissionNotifier notifier) {
+        notifier.deleteSubmission(submission.id);
       }
 
-      // update the prompt submission count
-      final promptNotifier = ref.read(promptsProvider.notifier);
-      promptNotifier.updateSubmissionCount(
-        promptId: submission.prompt.id,
-        isIncrementing: false,
+      // update firestore
+      await deleteSubmission(submissionId: submission.id);
+
+      // update prompt list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byPrompt,
+          id: submission.prompt.id,
+        ),
+        onInitialized: onInitialized,
       );
 
-      // update the user submission count
-      final userAsync = ref.read(userProvider(submission.user.uid)).valueOrNull;
-      if (userAsync == null) return;
-      ref.read(userProvider(userAsync.uid).notifier).updateUser({
-        "submissionsCount": userAsync.submissionsCount - 1,
-      });
+      // update user list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byUser,
+          id: submission.user.uid,
+        ),
+        onInitialized: onInitialized,
+      );
+
+      // update feed list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byRandom,
+        ),
+        onInitialized: onInitialized,
+      );
+
+      // update submission count for prompt
+      updatePromptNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        onInitialized: (notifier) => notifier.updateSubmissionCount(
+          promptId: submission.prompt.id,
+          isIncrementing: false,
+        ),
+      );
+
+      // update submission count for user
+      updateUserNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        userId: submission.user.uid,
+        onInitialized: (notifier) => notifier.updateSubmissionsCount(false),
+      );
+    }
+
+    void handleComment() {
+      // open bottom sheet
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => CommentBottomSheet(submissionId: submission.id),
+        isScrollControlled: true,
+        useSafeArea: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20.0),
+          ),
+        ),
+      );
     }
 
     void handleShare() {
       // this url is just a placeholder, replace with actual url
       // in future when deep linking is implemented
-      final url =
-          "https://picturethat.com/submission/${submission.user.username}";
+      final url = "https://picturethat.com/submission/${submission.id}";
       final subject = isSelf ? "my" : "${submission.user.firstName}'s";
 
       SharePlus.instance.share(ShareParams(
@@ -201,6 +263,7 @@ class Submission extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: CustomImageViewer(
+            onDoubleTap: handleLike,
             heroTag: "${heroContext}_${submission.id}",
             customImage: CustomImage(
               key: ValueKey(submission.image.url),
@@ -219,8 +282,8 @@ class Submission extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 60,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: 70),
                     child: LabeledIconButton(
                       onPressed: handleLike,
                       icon: Icons.favorite_outline,
@@ -229,16 +292,16 @@ class Submission extends ConsumerWidget {
                       isSelected: submission.isLiked,
                     ),
                   ),
-                  SizedBox(
-                    width: 60,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: 70),
                     child: LabeledIconButton(
-                      onPressed: () {},
+                      onPressed: handleComment,
                       icon: Icons.chat_bubble_outline,
                       label: "0",
                     ),
                   ),
-                  SizedBox(
-                    width: 60,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: 70),
                     child: LabeledIconButton(
                       onPressed: handleShare,
                       icon: Icons.share_outlined,
@@ -282,6 +345,185 @@ class Submission extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+const List<String> reactions = [
+  "❤️",
+  "🔥",
+  "🙌",
+  "👏",
+  "👍",
+  "😍",
+  "😮",
+  "😊",
+];
+
+class CommentBottomSheet extends ConsumerStatefulWidget {
+  final String submissionId;
+
+  const CommentBottomSheet({
+    required this.submissionId,
+    super.key,
+  });
+
+  @override
+  ConsumerState<CommentBottomSheet> createState() => _CommentBottomSheetState();
+}
+
+class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
+  final _commentController = TextEditingController();
+  bool _isCommentControllerEmpty = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentController.addListener(() {
+      setState(() {
+        _isCommentControllerEmpty = _commentController.text.isEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void handleComment() {
+    _commentController.clear();
+  }
+
+  void handleReaction(String reaction) {
+    _commentController.text += reaction;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider((auth.currentUser?.uid)!));
+    final textTheme = Theme.of(context).textTheme;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    // if ios, center, if android, left
+                    alignment:
+                        isAndroid ? Alignment.centerLeft : Alignment.center,
+                    child: Padding(
+                      padding: isAndroid
+                          ? EdgeInsets.only(left: 8.0)
+                          : EdgeInsets.zero,
+                      child: Text(
+                        "Comments",
+                        style: textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1.0),
+            Expanded(
+              child: CustomScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    child: EmptyState(
+                      title: "No Comments",
+                      subtitle: "Start the conversation!",
+                      icon: Icons.chat_bubble_outline,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1.0),
+            SafeArea(
+              minimum: EdgeInsets.all(16.0),
+              child: Column(
+                spacing: 16.0,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ...reactions.map((reaction) {
+                        return GestureDetector(
+                          key: ValueKey(reaction),
+                          onTap: () => handleReaction(reaction),
+                          child: Text(
+                            reaction,
+                            style: TextStyle(fontSize: 22.0),
+                          ),
+                        );
+                      })
+                    ],
+                  ),
+                  Row(
+                    spacing: 8.0,
+                    children: [
+                      userAsync.when(
+                        loading: () => const SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        ),
+                        error: (e, _) => const SizedBox(height: 40, width: 40),
+                        data: (user) => CustomImage(
+                          imageProvider: NetworkImage(user!.profileImageUrl),
+                          shape: CustomImageShape.circle,
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                      Expanded(
+                        child: CustomTextField(
+                          controller: _commentController,
+                          hintText: "Add a comment...",
+                          trailingButton: IconButton(
+                            icon: Icon(Icons.send),
+                            onPressed: _isCommentControllerEmpty
+                                ? null
+                                : () => handleComment(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

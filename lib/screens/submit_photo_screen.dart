@@ -9,6 +9,7 @@ import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/widgets/custom_image.dart';
@@ -30,7 +31,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
   int? _submissionImageWidth;
   bool _isLoading = false;
 
-  Future<void> _submitPhoto() async {
+  Future<void> _submitPhoto(context, container) async {
     if (_submissionImage == null) {
       customShowSnackbar(context, "Please select an image.");
       return;
@@ -97,35 +98,54 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
         isLiked: false,
       );
 
-      // note that the following query params must match the
-      // query params used in their respective screens in order
-      // for the refresh to work properly
+      // update prompt list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byPrompt,
+          id: promptId,
+        ),
+        onInitialized: (notifier) => notifier.addSubmission(newSubmission),
+      );
 
-      // update the submission list
-      final promptSubmissions =
-          ref.read(submissionProvider(SubmissionQueryParam(
-        type: SubmissionQueryType.byPrompt,
-        id: promptId,
-      )).notifier);
-      promptSubmissions.addSubmission(newSubmission);
+      // update user list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byUser,
+          id: userId,
+        ),
+        onInitialized: (notifier) => notifier.addSubmission(newSubmission),
+      );
 
-      // update the user submission list
-      final userSubmissions = ref.read(submissionProvider(SubmissionQueryParam(
-        type: SubmissionQueryType.byUser,
-        id: userId,
-      )).notifier);
-      userSubmissions.addSubmission(newSubmission);
+      // update feed list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byRandom,
+        ),
+        onInitialized: (notifier) => notifier.addSubmission(newSubmission),
+      );
 
-      // update the user submission count
-      ref.read(userProvider(userId).notifier).updateUser({
-        "submissionsCount": user.submissionsCount + 1,
-      });
+      // update user submission count
+      updateUserNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        userId: userId,
+        onInitialized: (notifier) => notifier.updateSubmissionsCount(true),
+      );
 
-      // update the prompt submission count
-      final promptNotifier = ref.read(promptsProvider.notifier);
-      promptNotifier.updateSubmissionCount(
-        promptId: promptId,
-        isIncrementing: true,
+      // update prompt submission count
+      updatePromptNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        onInitialized: (notifier) => notifier.updateSubmissionCount(
+          promptId: promptId,
+          isIncrementing: true,
+        ),
       );
 
       // navigate back to the previous screen
@@ -141,7 +161,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final image = await ImageUtils.pickImage();
+      final image = await ImageUtils.pickImage(context);
       if (image == null) return;
 
       final decodedImage = await decodeImageFromList(await image.readAsBytes());
@@ -163,6 +183,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final container = ProviderScope.containerOf(context);
     final userAsync = ref.watch(userProvider(auth.currentUser!.uid));
     final promptsAsync = ref.watch(promptsProvider);
     final colorScheme = Theme.of(context).colorScheme;
@@ -307,6 +328,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                           border: OutlineInputBorder(),
                         ),
                         maxLength: 350,
+                        maxLines: null,
                       ),
                     ),
                     Padding(
@@ -315,7 +337,9 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           FilledButton(
-                            onPressed: _isLoading ? null : _submitPhoto,
+                            onPressed: _isLoading
+                                ? null
+                                : () => _submitPhoto(context, container),
                             child: const Text("Submit Photo"),
                           ),
                         ],

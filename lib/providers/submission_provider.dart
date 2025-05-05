@@ -98,12 +98,6 @@ class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
     }).toList();
 
     state = AsyncData(currentState.copyWith(items: updatedItems));
-
-    await toggleLike(
-      submissionId: submissionId,
-      uid: auth.currentUser!.uid,
-      isLiked: isLiked,
-    );
   }
 
   void addSubmission(SubmissionModel submission) {

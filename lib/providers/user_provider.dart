@@ -11,7 +11,7 @@ class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
     return getUser(userId: arg);
   }
 
-  Future<void> updateUser(Map<String, dynamic> updates) async {
+  void updateUser(Map<String, dynamic> updates) {
     final currentState = state.valueOrNull;
     if (currentState == null) return;
 
@@ -25,6 +25,18 @@ class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
       followersCount: updates['followersCount'],
       followingCount: updates['followingCount'],
       submissionsCount: updates['submissionsCount'],
+    );
+
+    state = AsyncData(updatedUser);
+  }
+
+  void updateSubmissionsCount(bool isIncrementing) {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final updatedUser = currentState.copyWith(
+      submissionsCount:
+          currentState.submissionsCount + (isIncrementing ? 1 : -1),
     );
 
     state = AsyncData(updatedUser);
