@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/screens/tabs/home_screen.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
-import 'package:picture_that/utils/navigate.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
@@ -58,7 +58,7 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final image = await ImageUtils.pickImage();
+      final image = await ImageUtils.pickImage(context);
 
       if (image != null) setState(() => _profileImage = image);
     } catch (e) {

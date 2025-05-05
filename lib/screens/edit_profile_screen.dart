@@ -37,7 +37,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final image = await ImageUtils.pickImage();
+      final image = await ImageUtils.pickImage(context);
 
       if (image != null) setState(() => _profileImage = image);
     } catch (e) {
