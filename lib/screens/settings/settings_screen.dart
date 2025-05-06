@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/screens/authentication/landing_screen.dart';
+import 'package:picture_that/screens/settings/account_settings_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/show_dialog.dart';
@@ -45,9 +46,9 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           SettingsListTile(
             title: "Account",
-            subtitle: "Manage email, password, username",
+            subtitle: "Manage password, delete account",
             icon: Icons.person_outline,
-            onTap: () {},
+            onTap: () => navigate(context, const AccountSettingsScreen()),
           ),
           SettingsListTile(
             title: "Reset Tooltips",

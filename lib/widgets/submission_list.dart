@@ -41,6 +41,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
   final bool? isOnProfileTab;
   final bool? bottomPadding;
   final EmptyState? emptyState;
+  final EdgeInsets? padding;
 
   const SubmissionListSliver({
     required this.submissionState,
@@ -50,6 +51,7 @@ class SubmissionListSliver extends ConsumerStatefulWidget {
     this.isOnProfileTab,
     this.bottomPadding,
     this.emptyState,
+    this.padding,
     super.key,
   });
 
@@ -104,45 +106,48 @@ class _SubmissionListSliverState extends ConsumerState<SubmissionListSliver> {
                   ),
             )
           else
-            SliverList.separated(
-              itemCount: submissionsState.items.length +
-                  (submissionsState.hasNextPage ||
-                          submissionsState.nextPageError != null
-                      ? 1
-                      : 0),
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: 30.0),
-              itemBuilder: (context, index) {
-                if (index == submissionsState.items.length) {
-                  if (submissionsState.isFetchingNextPage) {
-                    return SizedBox(
-                      height: 200.0,
-                      child: OverflowBox(
-                        minHeight: 200.0,
-                        maxHeight: double.infinity,
-                        alignment: Alignment.topCenter,
-                        child: fetchingNextPageSkeleton,
-                      ),
-                    );
-                  } else if (submissionsState.nextPageError != null) {
-                    return EmptyState(
-                      title: "A Problem Occurred",
-                      icon: Icons.error,
-                      subtitle: "Please try again later.",
-                    );
-                  } else {
-                    return const SizedBox.shrink();
+            SliverPadding(
+              padding: widget.padding ?? EdgeInsets.zero,
+              sliver: SliverList.separated(
+                itemCount: submissionsState.items.length +
+                    (submissionsState.hasNextPage ||
+                            submissionsState.nextPageError != null
+                        ? 1
+                        : 0),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 30.0),
+                itemBuilder: (context, index) {
+                  if (index == submissionsState.items.length) {
+                    if (submissionsState.isFetchingNextPage) {
+                      return SizedBox(
+                        height: 200.0,
+                        child: OverflowBox(
+                          minHeight: 200.0,
+                          maxHeight: double.infinity,
+                          alignment: Alignment.topCenter,
+                          child: fetchingNextPageSkeleton,
+                        ),
+                      );
+                    } else if (submissionsState.nextPageError != null) {
+                      return EmptyState(
+                        title: "A Problem Occurred",
+                        icon: Icons.error,
+                        subtitle: "Please try again later.",
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
                   }
-                }
 
-                final submission = submissionsState.items[index];
-                return Submission(
-                  submission: submission,
-                  heroContext: widget.heroContext,
-                  isOnProfileTab: widget.isOnProfileTab,
-                  key: ValueKey(submission.id),
-                );
-              },
+                  final submission = submissionsState.items[index];
+                  return Submission(
+                    submission: submission,
+                    heroContext: widget.heroContext,
+                    isOnProfileTab: widget.isOnProfileTab,
+                    key: ValueKey(submission.id),
+                  );
+                },
+              ),
             ),
           if (widget.bottomPadding == true && submissionsState.items.isNotEmpty)
             SliverToBoxAdapter(

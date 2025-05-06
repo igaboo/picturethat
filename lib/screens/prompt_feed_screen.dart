@@ -63,7 +63,7 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       data: (prompt) {
         if (prompt != null && isToday(prompt.date)) {
           return FloatingActionButton(
-            onPressed: () => navigate(context, SubmitPhotoScreen()),
+            onPressed: () => navigate(context, const SubmitPhotoScreen()),
             backgroundColor: colorScheme.primary,
             foregroundColor: colorScheme.onPrimary,
             child: Icon(Icons.add_photo_alternate_outlined),
@@ -118,6 +118,7 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
                 submissionState: submissions,
                 queryParam: queryParam,
                 bottomPadding: true,
+                padding: const EdgeInsets.only(top: 8.0),
               ),
             ),
           ],

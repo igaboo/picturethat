@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
-import 'package:picture_that/screens/settings_screen.dart';
+import 'package:picture_that/screens/settings/settings_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -109,7 +109,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final isSelf = profileUid == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUid));
 
-    void onEditProfile() => navigate(context, EditProfileScreen());
+    void onEditProfile() => navigate(context, const EditProfileScreen());
 
     void onFollowToggle() {
       // follow user logic here
@@ -139,7 +139,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ? [
                     PopupMenuItem(
                       value: "Settings",
-                      onTap: () => navigate(context, SettingsScreen()),
+                      onTap: () => navigate(context, const SettingsScreen()),
                       child: Row(
                         spacing: 8.0,
                         children: [

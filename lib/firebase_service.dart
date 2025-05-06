@@ -435,3 +435,8 @@ Future<void> deleteComment({required String commentId}) async {
   final docRef = db.collection("comments").doc(commentId);
   await docRef.delete();
 }
+
+// send password reset email
+Future<void> sendPasswordResetEmail({required String email}) async {
+  await auth.sendPasswordResetEmail(email: email);
+}

@@ -55,3 +55,14 @@ String? urlValidator({required String? value}) {
 
   return null;
 }
+
+String? emailValidator({required String? value}) {
+  if (value == null || value.isEmpty) return "Enter your email";
+
+  final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  if (!regex.hasMatch(value)) {
+    return "Enter a valid email address";
+  }
+
+  return null;
+}

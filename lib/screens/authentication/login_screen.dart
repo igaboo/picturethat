@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/screens/authentication/register_screen.dart';
+import 'package:picture_that/screens/forgot_password.dart';
 import 'package:picture_that/screens/tabs/home_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
@@ -46,33 +48,51 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
         child: Form(
           key: _formKey,
           child: Column(
-            spacing: 10.0,
+            spacing: 24.0,
             children: [
-              TextFormField(
-                autofocus: true,
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => textValidator(
-                  value: value,
-                  fieldName: "email",
-                ),
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => textValidator(
-                  value: value,
-                  fieldName: "password",
-                ),
+              Column(
+                children: [
+                  TextFormField(
+                    autofocus: true,
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      helperText: ' ',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => emailValidator(value: value),
+                  ),
+                  const SizedBox(height: 10.0),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      helperText: ' ',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) => textValidator(
+                      value: value,
+                      fieldName: "password",
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => navigate(
+                        context,
+                        const ForgotPasswordScreen(),
+                      ),
+                      child: Text(
+                        "Forgot your password?",
+                        style:
+                            Theme.of(context).textTheme.labelMedium!.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -82,6 +102,10 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                     FilledButton(
                       onPressed: _isLoading ? null : () => _login(),
                       child: Text("Login"),
+                    ),
+                    TextButton(
+                      onPressed: () => navigate(context, RegisterScreen()),
+                      child: Text("Don't have an account?"),
                     ),
                   ],
                 ),

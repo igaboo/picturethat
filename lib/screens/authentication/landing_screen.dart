@@ -62,13 +62,21 @@ class LandingScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 16.0,
                 children: [
-                  FilledButton(
-                    onPressed: () => navigate(context, RegisterScreen()),
-                    child: Text("Create an Account"),
-                  ),
-                  OutlinedButton(
-                    onPressed: () => navigate(context, LoginScreen()),
-                    child: Text("Login"),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FilledButton(
+                        onPressed: () => navigate(
+                          context,
+                          const RegisterScreen(),
+                        ),
+                        child: Text("Create an Account"),
+                      ),
+                      TextButton(
+                        onPressed: () => navigate(context, const LoginScreen()),
+                        child: Text("Or login to your account"),
+                      ),
+                    ],
                   ),
                   RichText(
                     textAlign: TextAlign.center,
