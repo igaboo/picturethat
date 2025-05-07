@@ -1,5 +1,7 @@
 # Picture That
 
+> Note that the app currently builds for the beta api version of android, Baklava, v36.
+
 #### [Final Project Concept](https://docs.google.com/document/d/1uOVQO4H-M1n7Ux5_mvusL-wJXAoJFcKMRCs43kdkYew/edit?tab=t.0)
 
 #### [Project UIs](https://www.figma.com/design/7OAvCetqN7YnPSup5wCfjv/Picture-That?node-id=3-2)
