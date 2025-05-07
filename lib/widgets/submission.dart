@@ -193,14 +193,14 @@ class Submission extends ConsumerWidget {
       );
 
       // update feed list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
-          type: SubmissionQueryType.byRandom,
-        ),
-        onInitialized: onInitialized,
-      );
+      // updateSubmissionNotifierIfInitialized(
+      //   context: context,
+      //   ref: ref,
+      //   queryParam: SubmissionQueryParam(
+      //     type: SubmissionQueryType.byRandom,
+      //   ),
+      //   onInitialized: onInitialized,
+      // );
 
       // update submission count for prompt
       updatePromptNotifierIfInitialized(

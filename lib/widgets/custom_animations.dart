@@ -5,8 +5,9 @@ class HopRotateTransition extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;
 
-  final peakScale = 2.5;
+  final peakScale = 3.5;
   final peakOffsetY = -3.0;
+  final peakOffsetX = 1.0;
   final maxRotationRadians = math.pi / 30;
   final riseCurve = Curves.easeInOut;
   final fallCurve = Curves.easeInOut;
@@ -49,6 +50,19 @@ class HopRotateTransition extends StatelessWidget {
       ),
     ]);
 
+    final positionTweenX = TweenSequence([
+      TweenSequenceItem(
+        tween: Tween(begin: Offset.zero, end: Offset(peakOffsetX, 0.0))
+            .chain(CurveTween(curve: riseCurve)),
+        weight: 50.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: Offset(peakOffsetX, 0.0), end: Offset.zero)
+            .chain(CurveTween(curve: fallCurve)),
+        weight: 50.0,
+      ),
+    ]);
+
     final rotationTween = TweenSequence([
       TweenSequenceItem(
         tween: Tween(begin: 0.0, end: randomRotationAngle),
@@ -61,12 +75,15 @@ class HopRotateTransition extends StatelessWidget {
     ]).chain(CurveTween(curve: rotationCurve));
 
     return SlideTransition(
-      position: positionTween.animate(animation),
-      child: ScaleTransition(
-        scale: scaleTween.animate(animation),
-        child: RotationTransition(
-          turns: rotationTween.animate(animation),
-          child: child,
+      position: positionTweenX.animate(animation),
+      child: SlideTransition(
+        position: positionTween.animate(animation),
+        child: ScaleTransition(
+          scale: scaleTween.animate(animation),
+          child: RotationTransition(
+            turns: rotationTween.animate(animation),
+            child: child,
+          ),
         ),
       ),
     );

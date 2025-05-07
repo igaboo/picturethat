@@ -122,14 +122,14 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
       );
 
       // update feed list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
-          type: SubmissionQueryType.byRandom,
-        ),
-        onInitialized: (notifier) => notifier.addSubmission(newSubmission),
-      );
+      // updateSubmissionNotifierIfInitialized(
+      //   context: context,
+      //   ref: ref,
+      //   queryParam: SubmissionQueryParam(
+      //     type: SubmissionQueryType.byRandom,
+      //   ),
+      //   onInitialized: (notifier) => notifier.addSubmission(newSubmission),
+      // );
 
       // update user submission count
       updateUserNotifierIfInitialized(

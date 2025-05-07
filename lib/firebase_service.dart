@@ -238,14 +238,17 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
       break;
     case SubmissionQueryType.byRandom:
       // get top liked submissions in the last week
+      // not including the current user's submissions
       final now = DateTime.now();
       final startDate = now.subtract(const Duration(days: 7));
       final cutoff = Timestamp.fromDate(startDate.toUtc());
 
       query = query
+          .where("userId", isNotEqualTo: auth.currentUser?.uid)
           .where("date", isGreaterThan: cutoff)
           .orderBy("likes", descending: true)
-          .orderBy("date", descending: true);
+          .orderBy("date", descending: true)
+          .orderBy("userId", descending: true);
 
       break;
   }
