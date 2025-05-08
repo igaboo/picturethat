@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
-import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
@@ -12,24 +10,7 @@ import 'package:picture_that/widgets/submission.dart';
 final fetchingNextPageSkeleton = CustomSkeletonizer(
   child: Submission(
     heroContext: "skeleton",
-    submission: SubmissionModel(
-      id: "skeleton",
-      date: DateTime.now(),
-      image: SubmissionImageModel(
-        url: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-        height: 200,
-        width: 300,
-      ),
-      caption: "skeleton caption",
-      isLiked: false,
-      likes: [],
-      prompt: PromptSubmissionModel(
-        id: "skeleton",
-        title: "skeleton prompt",
-      ),
-      user: getDummyUser(),
-      commentsCount: 0,
-    ),
+    submission: getDummySubmission(),
   ),
 );
 

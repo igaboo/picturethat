@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/prompt_model.dart';
+import 'package:picture_that/models/relationship_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
@@ -72,13 +73,11 @@ Future<UserModel?> getUser({required String userId}) async {
   if (!userDoc.exists) return null;
 
   final followersCount = await getDocumentCount(
-    query:
-        db.collection("relationships").where("followingUid", isEqualTo: userId),
+    query: db.collection("relationships").where("following", isEqualTo: userId),
   );
 
   final followingCount = await getDocumentCount(
-    query:
-        db.collection("relationships").where("followerUid", isEqualTo: userId),
+    query: db.collection("relationships").where("follower", isEqualTo: userId),
   );
 
   final submissionsCount = await getDocumentCount(
@@ -194,6 +193,7 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   required SubmissionQueryParam queryParam,
   required int limit,
   DocumentSnapshot? lastDocument,
+  List<RelationshipModel>? following,
 }) async {
   Query query = db.collection("submissions");
   switch (queryParam.type) {
@@ -208,32 +208,21 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
           .orderBy("date", descending: true);
       break;
     case SubmissionQueryType.byFollowing:
-      // note that this is a bit inefficient, but it works for now
-      // in the future (once the relationship_provider is implemented)
-      // we can skip the relationship query and just get the submissions
-      // from the followed users
 
-      // also, firebase has a limitation of 30 whereIn clauses,
+      // firebase has a limitation of 30 whereIn clauses,
       // so this will only work for 30 followed users.
       // in the future, we need to switch to a different
       // database (SQL, supabase) to support more than 30 followers.
 
-      final snapshot = await db
-          .collection("relationships")
-          .where("followerUid", isEqualTo: auth.currentUser?.uid)
-          .get();
+      final followedUsers = following?.map((u) => u.following).toList() ?? [];
 
-      final followedUsers = snapshot.docs
-          .map((user) => user.data()["followingUid"] as String)
-          .toList();
-
-      if (followedUsers.isNotEmpty) {
-        query = query
-            .where("userId", whereIn: followedUsers)
-            .orderBy("date", descending: true);
-      } else {
+      if (followedUsers.isEmpty) {
         return (items: <SubmissionModel>[], lastDoc: null);
       }
+
+      query = query
+          .where("userId", whereIn: followedUsers)
+          .orderBy("date", descending: true);
 
       break;
     case SubmissionQueryType.byRandom:
@@ -442,4 +431,52 @@ Future<void> deleteComment({required String commentId}) async {
 // send password reset email
 Future<void> sendPasswordResetEmail({required String email}) async {
   await auth.sendPasswordResetEmail(email: email);
+}
+
+// fetch all users relationships, both followers and following
+Future<({List<RelationshipModel> followers, List<RelationshipModel> following})>
+    getRelationships() async {
+  final relationshipsSnapshot = await db
+      .collection("relationships")
+      .where(Filter.or(
+        Filter("follower", isEqualTo: auth.currentUser?.uid),
+        Filter("following", isEqualTo: auth.currentUser?.uid),
+      ))
+      .get();
+
+  final followers = <RelationshipModel>[];
+  final following = <RelationshipModel>[];
+
+  for (final doc in relationshipsSnapshot.docs) {
+    final data = doc.data();
+
+    data["follower"] == auth.currentUser?.uid
+        ? following.add(RelationshipModel.fromMap(data))
+        : followers.add(RelationshipModel.fromMap(data));
+  }
+
+  return (followers: followers, following: following);
+}
+
+// create a relationship
+Future<RelationshipModel> createRelationship(String following) async {
+  final docRef = db.collection("relationships").doc();
+
+  await docRef.set({
+    "id": docRef.id,
+    "follower": auth.currentUser?.uid,
+    "following": following,
+  });
+
+  return RelationshipModel(
+    id: docRef.id,
+    follower: auth.currentUser!.uid,
+    following: following,
+  );
+}
+
+// delete a relationship
+Future<void> deleteRelationship(String id) async {
+  final docRef = db.collection("relationships").doc(id);
+  await docRef.delete();
 }

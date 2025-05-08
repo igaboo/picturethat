@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:picture_that/utils/constants.dart';
 
 class PromptModel {
   String id;
@@ -53,6 +54,18 @@ class PromptModel {
   }
 }
 
+PromptModel getDummyPrompt({index = 0}) {
+  return PromptModel(
+    id: "dummy$index",
+    title: "dummy prompt",
+    submissionCount: 0,
+    imageUrl: dummyImageUrl,
+    imageAuthorUrl: dummyUrl,
+    imageAuthorName: "dummy author",
+    date: DateTime.now().subtract(Duration(days: index)),
+  );
+}
+
 class PromptSubmissionModel {
   String id;
   String title;
@@ -68,4 +81,11 @@ class PromptSubmissionModel {
       title: data['title'],
     );
   }
+}
+
+PromptSubmissionModel getDummyPromptSubmission({index = 0}) {
+  return PromptSubmissionModel(
+    id: "dummy$index",
+    title: "dummy prompt",
+  );
 }

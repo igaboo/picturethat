@@ -8,20 +8,11 @@ import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/submission_list.dart';
 
-final titleSkeleton = CustomSkeletonizer(
-  child: TitleText(
-    prompt: PromptModel(
-      id: "skeleton",
-      title: "skeleton title",
-      date: DateTime.now(),
-      imageAuthorName: "skeleton",
-      imageAuthorUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-      imageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-      submissionCount: 0,
-    ),
-  ),
+final appBarTitleSkeleton = CustomSkeletonizer(
+  child: TitleText(prompt: getDummyPrompt()),
 );
 
 class PromptFeedScreen extends ConsumerStatefulWidget {
@@ -41,43 +32,34 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final promptAsync = ref.watch(promptProvider(widget.promptId));
-    final colorScheme = Theme.of(context).colorScheme;
-
     final queryParam = SubmissionQueryParam(
       type: SubmissionQueryType.byPrompt,
       id: widget.promptId,
     );
 
+    final promptAsync = ref.watch(promptProvider(widget.promptId));
     final submissionsAsync = ref.watch(submissionProvider(queryParam));
+    final prompt = promptAsync.asData?.value;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final fab = (prompt != null && isToday(prompt.date))
+        ? FloatingActionButton(
+            onPressed: () => navigate(const SubmitPhotoScreen()),
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            child: Icon(Icons.add_photo_alternate_outlined),
+          )
+        : null;
 
     Future<void> refreshSubmissions() async {
       ref.invalidate(submissionProvider(queryParam));
       await ref.read(submissionProvider(queryParam).future);
     }
 
-    Widget? fab;
-    fab = promptAsync.when(
-      loading: () => null,
-      error: (e, _) => null,
-      data: (prompt) {
-        if (prompt != null && isToday(prompt.date)) {
-          return FloatingActionButton(
-            onPressed: () => navigate(context, const SubmitPhotoScreen()),
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-            child: Icon(Icons.add_photo_alternate_outlined),
-          );
-        } else {
-          return null;
-        }
-      },
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: promptAsync.when(
-          loading: () => titleSkeleton,
+          loading: () => appBarTitleSkeleton,
           error: (e, _) => Text("Error: $e"),
           data: (prompt) => TitleText(prompt: prompt),
         ),
@@ -107,13 +89,24 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       floatingActionButton: fab,
       resizeToAvoidBottomInset: false,
       body: submissionsAsync.when(
-        loading: () => skeleton,
+        loading: () => submissionListSkeleton,
         error: (e, _) => Center(child: Text("Error: $e")),
         data: (submissions) => Stack(
           children: [
             RefreshIndicator(
               onRefresh: refreshSubmissions,
               child: SubmissionListSliver(
+                emptyState: isToday(prompt?.date)
+                    ? EmptyState(
+                        icon: Icons.hide_image,
+                        title: "No Submissions",
+                        subtitle: "Be the first to submit your photo!",
+                        action: (
+                          label: "Upload Photo",
+                          onPressed: () => navigate(const SubmitPhotoScreen())
+                        ),
+                      )
+                    : null,
                 heroContext: widget.promptId,
                 submissionState: submissions,
                 queryParam: queryParam,

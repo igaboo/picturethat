@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,26 +15,20 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  bool _isLoading = false;
 
   void _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
 
     try {
       await sendPasswordResetEmail(email: _emailController.text);
 
-      if (mounted) {
-        Navigator.pop(context);
-        customShowSnackbar(
-          context,
-          "Password reset email sent to ${_emailController.text}.",
-        );
-      }
+      customShowSnackbar(
+        "Password reset email sent to ${_emailController.text}.",
+      );
+
+      navigateBack();
     } catch (e) {
-      if (mounted) customShowSnackbar(context, "Error: $e");
-    } finally {
-      setState(() => _isLoading = false);
+      customShowSnackbar("Error: $e");
     }
   }
 
@@ -69,9 +65,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FilledButton(
-                      onPressed: _isLoading ? null : () => _resetPassword(),
-                      child: Text("Send Reset Email"),
+                    CustomButton(
+                      label: "Send Reset Email",
+                      onPressed: _resetPassword,
                     ),
                   ],
                 ),

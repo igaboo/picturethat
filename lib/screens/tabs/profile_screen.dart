@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
 import 'package:picture_that/screens/settings/settings_screen.dart';
+import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
+import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/empty_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
@@ -26,55 +29,20 @@ import 'package:picture_that/widgets/submission_list.dart';
 
 final profileImageSize = 150.0;
 
-final skeleton = CustomSkeletonizer(
+final profileSkeleton = CustomSkeletonizer(
   child: ListView(
     physics: const NeverScrollableScrollPhysics(),
     children: [
       ProfileHeader(
-        user: UserModel(
-          uid: "skeleton",
-          firstName: "skeleton",
-          lastName: "skeleton",
-          username: "skeleton",
-          followersCount: 100,
-          followingCount: 100,
-          submissionsCount: 100,
-          profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-        ),
+        user: getDummyUser(),
         isSelf: false,
         onEditProfile: () {},
-        onFollowToggle: () {},
+        toggleFollow: () {},
         onShare: () {},
       ),
       Submission(
         heroContext: "skeleton${DateTime.now().toString()}",
-        submission: SubmissionModel(
-          id: "skeleton",
-          date: DateTime.now(),
-          image: SubmissionImageModel(
-            url: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-            height: 200,
-            width: 300,
-          ),
-          caption: "skeleton",
-          isLiked: false,
-          likes: [],
-          prompt: PromptSubmissionModel(
-            id: "skeleton",
-            title: "skeleton",
-          ),
-          user: UserModel(
-            uid: "skeleton",
-            firstName: "skeleton",
-            lastName: "skeleton",
-            followersCount: 0,
-            followingCount: 0,
-            submissionsCount: 0,
-            profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-            username: "skeleton",
-          ),
-          commentsCount: 0,
-        ),
+        submission: getDummySubmission(),
       ),
     ],
   ),
@@ -109,11 +77,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final isSelf = profileUid == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUid));
 
-    void onEditProfile() => navigate(context, const EditProfileScreen());
-
-    void onFollowToggle() {
-      // follow user logic here
-    }
+    void onEditProfile() => navigate(const EditProfileScreen());
 
     void onShare() {
       // this url is just a placeholder, replace with actual url
@@ -139,7 +103,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ? [
                     PopupMenuItem(
                       value: "Settings",
-                      onTap: () => navigate(context, const SettingsScreen()),
+                      onTap: () => navigate(const SettingsScreen()),
                       child: Row(
                         spacing: 8.0,
                         children: [
@@ -169,7 +133,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       body: Stack(
         children: [
           userAsync.when(
-            loading: () => skeleton,
+            loading: () => profileSkeleton,
             error: (e, _) => Text("Error: $e"),
             data: (user) {
               if (user == null) return const Text("No user found");
@@ -193,9 +157,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               return RefreshIndicator(
                 onRefresh: refreshSubmissions,
                 child: feedAsync.when(
-                  loading: () => skeleton,
+                  loading: () => profileSkeleton,
                   error: (e, _) => Text("Error: $e"),
                   data: (submissions) => SubmissionListSliver(
+                    emptyState: isSelf
+                        ? EmptyState(
+                            title: "No Submissions",
+                            icon: Icons.hide_image,
+                            subtitle:
+                                "You haven't submitted any photos yet. Upload your first photo to today's prompt!",
+                            action: (
+                              label: "Upload Photo",
+                              onPressed: () {
+                                navigate(const SubmitPhotoScreen());
+                              }
+                            ),
+                          )
+                        : null,
                     heroContext: profileUid,
                     isOnProfileTab: isSelf,
                     submissionState: submissions,
@@ -205,7 +183,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       user: user,
                       isSelf: isSelf,
                       onEditProfile: onEditProfile,
-                      onFollowToggle: onFollowToggle,
+                      toggleFollow: () async =>
+                          await toggleFollow(context, ref, profileUid),
                       onShare: onShare,
                     ),
                   ),
@@ -232,24 +211,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 }
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends ConsumerWidget {
   final UserModel user;
   final bool isSelf;
   final VoidCallback onEditProfile;
-  final VoidCallback onFollowToggle;
+  final VoidCallback toggleFollow;
   final VoidCallback onShare;
 
   const ProfileHeader({
     required this.user,
     required this.isSelf,
     required this.onEditProfile,
-    required this.onFollowToggle,
+    required this.toggleFollow,
     required this.onShare,
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // ensures widget is rebuilt when user is followed or unfollowed
+    ref.watch(relationshipProvider);
+    final relationshipNotifier = ref.watch(relationshipProvider.notifier);
+    final isFollowing = relationshipNotifier.isFollowing(user.uid);
+    final isFollower = relationshipNotifier.isFollower(user.uid);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -335,13 +320,10 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigate(
-                    context,
-                    FollowersScreen(
-                      type: FollowersScreenType.followers,
-                      userId: user.uid,
-                    ),
-                  ),
+                  onPressed: () => navigate(FollowersScreen(
+                    type: FollowersScreenType.followers,
+                    userId: user.uid,
+                  )),
                   child: Column(
                     children: [
                       Text(
@@ -362,13 +344,10 @@ class ProfileHeader extends StatelessWidget {
               ),
               Expanded(
                 child: TextButton(
-                  onPressed: () => navigate(
-                    context,
-                    FollowersScreen(
-                      type: FollowersScreenType.following,
-                      userId: user.uid,
-                    ),
-                  ),
+                  onPressed: () => navigate(FollowersScreen(
+                    type: FollowersScreenType.following,
+                    userId: user.uid,
+                  )),
                   child: Column(
                     children: [
                       Text(
@@ -389,17 +368,25 @@ class ProfileHeader extends StatelessWidget {
             spacing: 16.0,
             children: [
               Expanded(
-                child: FilledButton(
-                  onPressed: isSelf ? onEditProfile : onFollowToggle,
-                  child: Text(
-                    isSelf ? "Edit Profile" : "Follow",
-                  ),
+                child: CustomButton(
+                  label: isSelf
+                      ? "Edit Profile"
+                      : isFollowing
+                          ? "Unfollow"
+                          : "Follow${isFollower ? " back" : ""}",
+                  onPressed: isSelf ? onEditProfile : toggleFollow,
+                  type: isSelf
+                      ? CustomButtonType.outlined
+                      : isFollowing
+                          ? CustomButtonType.outlined
+                          : CustomButtonType.filled,
                 ),
               ),
               Expanded(
-                child: OutlinedButton(
+                child: CustomButton(
+                  label: "Share",
                   onPressed: onShare,
-                  child: Text("Share"),
+                  type: CustomButtonType.outlined,
                 ),
               ),
             ],

@@ -29,10 +29,10 @@ class CommentModel {
 
 CommentModel getDummyComment({index = 0}) {
   return CommentModel(
-    id: "skeleton",
-    submissionId: "skeleton",
+    id: "dummy$index",
+    submissionId: "dummy",
     date: DateTime.now(),
-    text: "skeleton comment",
+    text: "dummy comment",
     user: getDummyUser(index: index),
   );
 }

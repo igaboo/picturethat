@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/screens/tabs/prompts_screen.dart';
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  ConsumerState<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   int _currentIndex = 0;
   PageController? _pageController;
 
@@ -25,6 +27,9 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+
+    // initialize relationship_provider
+    ref.read(relationshipProvider);
   }
 
   @override

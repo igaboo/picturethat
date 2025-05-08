@@ -5,13 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
-
-// todo
-// - update state rather than invalidate the provider on success
 
 final profileImageSize = 150.0;
 
@@ -41,7 +40,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       if (image != null) setState(() => _profileImage = image);
     } catch (e) {
-      if (mounted) customShowSnackbar(context, e);
+      customShowSnackbar(e);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -50,7 +49,6 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void _updateProfile() async {
     try {
       if (!_formKey.currentState!.validate()) return;
-      setState(() => _isLoading = true);
 
       // check if username has changed, and if so, check if it's available
       final currentUser = ref.read(userProvider((auth.currentUser!.uid))).value;
@@ -85,11 +83,9 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'profileImageUrl': newValues['profileImageUrl'],
       });
 
-      if (mounted) Navigator.pop(context);
+      navigateBack();
     } catch (e) {
-      if (mounted) customShowSnackbar(context, e);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      customShowSnackbar(e);
     }
   }
 
@@ -228,9 +224,9 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        FilledButton(
-                          onPressed: _isLoading ? null : () => _updateProfile(),
-                          child: Text("Save Changes"),
+                        CustomButton(
+                          label: "Save Changes",
+                          onPressed: _updateProfile,
                         ),
                       ],
                     ),

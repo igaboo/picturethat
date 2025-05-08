@@ -7,17 +7,8 @@ import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/prompt.dart';
 
-final fetchingNextPageSkelton = CustomSkeletonizer(
-  child: Prompt(
-    prompt: PromptModel(
-      id: "skeleton",
-      title: "skeleton",
-      date: DateTime.now().subtract(const Duration(days: 1)),
-      submissionCount: 0,
-      imageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-      imageAuthorName: "skeleton",
-    ),
-  ),
+final fetchingNextPageSkeleton = CustomSkeletonizer(
+  child: Prompt(prompt: getDummyPrompt(index: 1)),
 );
 
 class PromptList extends ConsumerStatefulWidget {
@@ -92,7 +83,7 @@ class _PromptListState extends ConsumerState<PromptList> {
                       minHeight: 100.0,
                       maxHeight: double.infinity,
                       alignment: Alignment.topCenter,
-                      child: fetchingNextPageSkelton,
+                      child: fetchingNextPageSkeleton,
                     ),
                   );
                 } else if (promptState.nextPageError != null) {

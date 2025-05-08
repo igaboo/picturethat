@@ -8,7 +8,6 @@ import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/custom_image.dart';
-import 'package:picture_that/widgets/submission.dart';
 
 class Comment extends ConsumerWidget {
   final CommentModel comment;
@@ -50,14 +49,12 @@ class Comment extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () {
-            navigate(context, ProfileScreen(userId: comment.user.uid));
-          },
+          onTap: () => navigate(ProfileScreen(userId: comment.user.uid)),
           child: CustomImage(
             imageProvider: NetworkImage(comment.user.profileImageUrl),
             shape: CustomImageShape.circle,
-            width: 30,
-            height: 30,
+            width: 40,
+            height: 40,
           ),
         ),
         Expanded(
@@ -68,10 +65,9 @@ class Comment extends ConsumerWidget {
                 spacing: 8.0,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      navigate(
-                          context, ProfileScreen(userId: comment.user.uid));
-                    },
+                    onTap: () => navigate(
+                      ProfileScreen(userId: comment.user.uid),
+                    ),
                     child: Text(
                       "@${comment.user.username}",
                       style: textTheme.bodyMedium!.copyWith(

@@ -19,7 +19,7 @@ class AccountSettingsScreen extends StatelessWidget {
             title: "Reset Password",
             subtitle: "Send a password reset email",
             icon: Icons.key,
-            onTap: () => navigate(context, const ForgotPasswordScreen()),
+            onTap: () => navigate(const ForgotPasswordScreen()),
           ),
           SettingsListTile(
             title: "Delete Account",

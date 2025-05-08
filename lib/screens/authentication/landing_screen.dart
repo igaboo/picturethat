@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:picture_that/screens/authentication/login_screen.dart';
 import 'package:picture_that/screens/authentication/register_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LandingScreen extends StatelessWidget {
@@ -65,16 +66,14 @@ class LandingScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      FilledButton(
-                        onPressed: () => navigate(
-                          context,
-                          const RegisterScreen(),
-                        ),
-                        child: Text("Create an Account"),
+                      CustomButton(
+                        label: "Create an Account",
+                        onPressed: () => navigate(const RegisterScreen()),
                       ),
-                      TextButton(
-                        onPressed: () => navigate(context, const LoginScreen()),
-                        child: Text("Or login to your account"),
+                      CustomButton(
+                        label: "Or login to your account",
+                        type: CustomButtonType.text,
+                        onPressed: () => navigate(const LoginScreen()),
                       ),
                     ],
                   ),

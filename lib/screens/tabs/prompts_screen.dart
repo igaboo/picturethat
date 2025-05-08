@@ -9,22 +9,13 @@ import 'package:picture_that/widgets/custom_tooltip.dart';
 import 'package:picture_that/widgets/prompt.dart';
 import 'package:picture_that/widgets/prompt_list.dart';
 
-final skeleton = CustomSkeletonizer(
+final promptsListSkeleton = CustomSkeletonizer(
   child: ListView.separated(
-    itemBuilder: (context, index) {
-      return Prompt(
-        prompt: PromptModel(
-          id: "skeleton",
-          title: "skeleton",
-          date: DateTime.now().subtract(Duration(days: index)),
-          submissionCount: 0,
-          imageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-          imageAuthorName: "skeleton",
-        ),
-      );
-    },
+    itemCount: 3,
     separatorBuilder: (context, index) => SizedBox(height: 30.0),
-    itemCount: 10,
+    itemBuilder: (context, index) {
+      return Prompt(prompt: getDummyPrompt(index: index));
+    },
   ),
 );
 
@@ -54,7 +45,7 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0.0),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => navigate(context, const SubmitPhotoScreen()),
+        onPressed: () => navigate(const SubmitPhotoScreen()),
         label: Text("Submit Today's Prompt"),
         icon: Icon(Icons.add_photo_alternate_outlined),
         backgroundColor: colorScheme.primary,
@@ -67,7 +58,7 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
           RefreshIndicator(
             onRefresh: _refreshPrompts,
             child: promptsAsync.when(
-              loading: () => skeleton,
+              loading: () => promptsListSkeleton,
               error: (e, _) => Center(child: Text("Error: $e")),
               data: (prompts) => PromptList(promptState: prompts),
             ),

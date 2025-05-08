@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:picture_that/utils/helpers.dart';
 
 class ImageViewerScreen extends StatelessWidget {
   final ImageProvider imageProvider;
@@ -22,7 +23,7 @@ class ImageViewerScreen extends StatelessWidget {
             colorScheme.surface.withAlpha(0), // fixes toolbar text color
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: navigateBack,
           icon: const Icon(Icons.close),
           color: Colors.white,
           style: IconButton.styleFrom(

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/main.dart';
+import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 
@@ -15,6 +19,8 @@ void updateSubmissionNotifierIfInitialized({
   required SubmissionQueryParam queryParam,
   required Function(SubmissionNotifier) onInitialized,
 }) {
+  if (context.mounted == false) return;
+
   final container = ProviderScope.containerOf(context);
   final provider = submissionProvider(queryParam);
   final isInitialized = container.exists(provider);
@@ -31,6 +37,8 @@ void updateUserNotifierIfInitialized({
   required String userId,
   required Function(UserNotifier) onInitialized,
 }) {
+  if (context.mounted == false) return;
+
   final container = ProviderScope.containerOf(context);
   final provider = userProvider(userId);
   final isInitialized = container.exists(provider);
@@ -46,6 +54,8 @@ void updatePromptNotifierIfInitialized({
   required WidgetRef ref,
   required Function(PromptNotifier) onInitialized,
 }) {
+  if (context.mounted == false) return;
+
   final container = ProviderScope.containerOf(context);
   final provider = promptsProvider;
   final isInitialized = container.exists(provider);
@@ -54,6 +64,64 @@ void updatePromptNotifierIfInitialized({
     final notifier = ref.read(provider.notifier);
     onInitialized(notifier);
   }
+}
+
+void updateCommentCountHelper({
+  required BuildContext context,
+  required WidgetRef ref,
+  required bool isIncrementing,
+  required SubmissionModel submission,
+}) {
+  if (context.mounted == false) return;
+
+  void onInitialized(SubmissionNotifier notifier) {
+    notifier.updateCommentCount(
+      submissionId: submission.id,
+      isIncrementing: isIncrementing,
+    );
+  }
+
+  // update count for prompt submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byPrompt,
+      id: submission.prompt.id,
+    ),
+    onInitialized: onInitialized,
+  );
+
+  // update count for user submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byUser,
+      id: submission.user.uid,
+    ),
+    onInitialized: onInitialized,
+  );
+
+  // update count for discover feed submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byRandom,
+    ),
+    onInitialized: onInitialized,
+  );
+
+  // update count for following feed submission
+  updateSubmissionNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    queryParam: SubmissionQueryParam(
+      type: SubmissionQueryType.byFollowing,
+    ),
+    onInitialized: onInitialized,
+  );
 }
 
 ///
@@ -214,26 +282,33 @@ String getFormattedUnit({
 /// Navigation helpers
 ///
 
-void navigate(BuildContext context, Widget screen) {
-  if (ModalRoute.of(context)?.settings.name == screen.runtimeType.toString()) {
-    return;
-  }
+void navigate(Widget screen) {
+  final context = navigatorKey.currentContext!;
 
-  Navigator.push(
-    context,
+  final routeName = screen.runtimeType.toString();
+  final currentRouteName = ModalRoute.of(context)?.settings.name;
+  if (currentRouteName == routeName) return;
+
+  navigatorKey.currentState?.push(
     MaterialPageRoute(
       builder: (context) => screen,
-      settings: RouteSettings(name: screen.runtimeType.toString()),
+      settings: RouteSettings(name: routeName),
     ),
   );
 }
 
-void navigateAndDisableBack(BuildContext context, Widget screen) {
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => screen),
+void navigateAndDisableBack(Widget screen) {
+  navigatorKey.currentState?.pushAndRemoveUntil(
+    MaterialPageRoute(
+      builder: (context) => screen,
+      settings: RouteSettings(name: screen.runtimeType.toString()),
+    ),
     (route) => false,
   );
+}
+
+void navigateBack<T>({T? result}) {
+  navigatorKey.currentState?.pop(result);
 }
 
 ///
@@ -261,4 +336,51 @@ String getCleanUrl(String url) {
   url = url.replaceFirst(RegExp(r'^(https?:\/\/)?(www\.)?'), '');
   final match = RegExp(r'^[^\/]+\/[^\/]+').firstMatch(url);
   return match != null ? match.group(0)! : url.split('/')[0];
+}
+
+///
+/// Relationship helpers
+///
+
+Future<void> toggleFollow(
+  BuildContext context,
+  WidgetRef ref,
+  String profileUid,
+) async {
+  if (context.mounted == false) return;
+
+  final notifier = ref.read(relationshipProvider.notifier);
+  final isFollowing = notifier.isFollowing(profileUid);
+
+  if (isFollowing) {
+    final relationship = notifier.getRelationship(profileUid);
+    if (relationship == null) return;
+
+    await deleteRelationship(relationship.id);
+    notifier.removeRelationship(profileUid);
+  } else {
+    final relationship = await createRelationship(profileUid);
+    notifier.addRelationship(relationship);
+  }
+
+  // update profile to show the new following count
+  updateUserNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    userId: auth.currentUser!.uid,
+    onInitialized: (notifier) => notifier.updateFollowingCount(!isFollowing),
+  );
+
+  // update their profile to show the new follower count
+  updateUserNotifierIfInitialized(
+    context: context,
+    ref: ref,
+    userId: profileUid,
+    onInitialized: (notifier) => notifier.updateFollowersCount(!isFollowing),
+  );
+
+  // invalidate the following feed
+  ref.invalidate(submissionProvider(
+    SubmissionQueryParam(type: SubmissionQueryType.byFollowing),
+  ));
 }

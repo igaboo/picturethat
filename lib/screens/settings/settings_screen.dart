@@ -17,22 +17,19 @@ class SettingsScreen extends ConsumerWidget {
     try {
       await signOut();
 
-      if (context.mounted) navigateAndDisableBack(context, LandingScreen());
+      navigateAndDisableBack(LandingScreen());
     } catch (e) {
-      if (context.mounted) customShowSnackbar(context, e);
+      customShowSnackbar(e);
     }
   }
 
-  void _handleResetTooltips(BuildContext context) async {
+  void _handleResetTooltips() async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.clear();
 
-    if (context.mounted) {
-      customShowSnackbar(
-        context,
-        "Tooltips reset successfully! Please restart the app to see changes.",
-      );
-    }
+    customShowSnackbar(
+      "Tooltips reset successfully! Please restart the app to see changes.",
+    );
   }
 
   @override
@@ -48,13 +45,13 @@ class SettingsScreen extends ConsumerWidget {
             title: "Account",
             subtitle: "Manage password, delete account",
             icon: Icons.person_outline,
-            onTap: () => navigate(context, const AccountSettingsScreen()),
+            onTap: () => navigate(const AccountSettingsScreen()),
           ),
           SettingsListTile(
             title: "Reset Tooltips",
             subtitle: "Reset all tooltips to show again",
             icon: Icons.refresh,
-            onTap: () => _handleResetTooltips(context),
+            onTap: _handleResetTooltips,
           ),
           SettingsListTile(
             title: "Logout",

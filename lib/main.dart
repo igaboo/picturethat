@@ -4,6 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'package:picture_that/auth_wrapper.dart';
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -29,6 +34,8 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.yellow,
       ),
       home: AuthWrapper(),
+      scaffoldMessengerKey: scaffoldMessengerKey,
+      navigatorKey: navigatorKey,
     );
   }
 }

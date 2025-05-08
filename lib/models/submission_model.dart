@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/utils/constants.dart';
 
 class SubmissionImageModel {
   String url;
@@ -20,6 +21,14 @@ class SubmissionImageModel {
       width: data['width'],
     );
   }
+}
+
+SubmissionImageModel getDummySubmissionImage() {
+  return SubmissionImageModel(
+    url: dummyImageUrl,
+    height: 200,
+    width: 300,
+  );
 }
 
 class SubmissionModel {
@@ -82,4 +91,18 @@ class SubmissionModel {
       commentsCount: data['commentsCount'],
     );
   }
+}
+
+SubmissionModel getDummySubmission({index = 0}) {
+  return SubmissionModel(
+    id: "dummy$index",
+    date: DateTime.now(),
+    image: getDummySubmissionImage(),
+    caption: "dummy caption",
+    isLiked: false,
+    likes: [],
+    prompt: getDummyPromptSubmission(),
+    user: getDummyUser(),
+    commentsCount: 0,
+  );
 }

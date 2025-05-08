@@ -1,8 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:picture_that/main.dart';
 import 'package:picture_that/utils/helpers.dart';
 
-void customShowSnackbar(BuildContext context, dynamic e) {
+void customShowSnackbar(
+  dynamic e, {
+  SnackBarAction? action,
+}) {
   String errorMessage;
 
   if (e is FirebaseAuthException) {
@@ -13,10 +17,11 @@ void customShowSnackbar(BuildContext context, dynamic e) {
     errorMessage = e.toString();
   }
 
-  ScaffoldMessenger.of(context).showSnackBar(
+  scaffoldMessengerKey.currentState?.showSnackBar(
     SnackBar(
       content: Text(errorMessage),
       behavior: SnackBarBehavior.floating,
+      action: action,
     ),
   );
 }

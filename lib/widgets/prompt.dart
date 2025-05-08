@@ -23,10 +23,7 @@ class Prompt extends StatelessWidget {
     bool isTodaysPrompt = isToday(prompt.date!);
 
     return GestureDetector(
-      onTap: () => navigate(
-        context,
-        PromptFeedScreen(promptId: prompt.id),
-      ),
+      onTap: () => navigate(PromptFeedScreen(promptId: prompt.id)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -157,10 +154,7 @@ class Prompt extends StatelessWidget {
                       Visibility(
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
-                          onPressed: () => navigate(
-                            context,
-                            SubmitPhotoScreen(),
-                          ),
+                          onPressed: () => navigate(SubmitPhotoScreen()),
                           icon: Icon(Icons.add_photo_alternate_outlined),
                         ),
                       ),

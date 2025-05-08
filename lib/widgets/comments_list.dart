@@ -9,8 +9,6 @@ import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/submission.dart';
 
-final test = getDummyComment();
-
 final fetchingNextPageSkeleton = CustomSkeletonizer(
     child: SizedBox(
   height: 100.0,
@@ -18,7 +16,7 @@ final fetchingNextPageSkeleton = CustomSkeletonizer(
     minHeight: 100.0,
     maxHeight: 500.0,
     alignment: Alignment.topCenter,
-    child: skeleton,
+    child: commentsListSkeleton,
   ),
 ));
 

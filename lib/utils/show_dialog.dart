@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picture_that/utils/helpers.dart';
 
 void customShowDialog({
   required BuildContext context,
@@ -16,13 +17,13 @@ void customShowDialog({
         content: Text(content),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: navigateBack,
             child: Text(cancelText ?? "Cancel"),
           ),
           TextButton(
             onPressed: () {
               onPressed();
-              Navigator.of(context).pop();
+              navigateBack();
             },
             child: Text(buttonText ?? "Okay"),
           )

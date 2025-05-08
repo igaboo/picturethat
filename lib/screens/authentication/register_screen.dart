@@ -11,6 +11,7 @@ import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
 final profileImageSize = 150.0;
@@ -36,7 +37,6 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _register() async {
     try {
       if (!_formKey.currentState!.validate()) return;
-      setState(() => _isLoading = true);
 
       await signUpWithEmailAndPassword(
         email: _emailController.text,
@@ -47,11 +47,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
         profileImage: _profileImage,
       );
 
-      if (mounted) navigateAndDisableBack(context, Home());
+      if (mounted) navigateAndDisableBack(Home());
     } catch (e) {
-      if (mounted) customShowSnackbar(context, e);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      customShowSnackbar(e);
     }
   }
 
@@ -63,12 +61,9 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
 
       if (image != null) setState(() => _profileImage = image);
     } catch (e) {
-      if (mounted) {
-        customShowSnackbar(
-          context,
-          "An error occurred while selecting an image. Please try again.",
-        );
-      }
+      customShowSnackbar(
+        "An error occurred while selecting an image. Please try again.",
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -223,13 +218,14 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      FilledButton(
-                        onPressed: _isLoading ? null : () => _register(),
-                        child: Text("Create an Account"),
+                      CustomButton(
+                        label: "Create an Account",
+                        onPressed: _register,
                       ),
-                      TextButton(
-                        onPressed: () => navigate(context, const LoginScreen()),
-                        child: Text("Already have an account?"),
+                      CustomButton(
+                        label: "Already have an account?",
+                        onPressed: () => navigate(const LoginScreen()),
+                        type: CustomButtonType.text,
                       ),
                     ],
                   ),

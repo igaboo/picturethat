@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/submission_model.dart';
-import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/screens/search_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
@@ -12,45 +11,19 @@ import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/submission.dart';
 import 'package:picture_that/widgets/submission_list.dart';
 
-final skeleton = CustomSkeletonizer(
+final submissionListSkeleton = CustomSkeletonizer(
   child: ListView.separated(
+    itemCount: 3,
+    separatorBuilder: (context, index) => SizedBox(height: 30.0),
     itemBuilder: (context, index) {
       return Padding(
         padding: const EdgeInsets.only(top: 8.0),
         child: Submission(
           heroContext: "skeleton$index",
-          submission: SubmissionModel(
-            id: "skeleton",
-            date: DateTime.now(),
-            image: SubmissionImageModel(
-              url: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-              height: 200,
-              width: 300,
-            ),
-            caption: "skeleton caption",
-            isLiked: false,
-            likes: [],
-            prompt: PromptSubmissionModel(
-              id: "skeleton",
-              title: "skeleton prompt",
-            ),
-            user: UserModel(
-              uid: "skeleton",
-              firstName: "skeleton",
-              lastName: "skeleton",
-              followersCount: 0,
-              followingCount: 0,
-              submissionsCount: 0,
-              profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-              username: "skeleton",
-            ),
-            commentsCount: 0,
-          ),
+          submission: getDummySubmission(index: index),
         ),
       );
     },
-    separatorBuilder: (context, index) => SizedBox(height: 30.0),
-    itemCount: 3,
   ),
 );
 
@@ -101,6 +74,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isFollowingEmpty =
+        ref.watch(relationshipProvider).valueOrNull?.following.isEmpty;
 
     final bool isFollowingFeed = _currentPageIndex == 0;
     final String tooltipId =
@@ -132,7 +107,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () async => navigate(context, const SearchScreen()),
+            onPressed: () async => navigate(const SearchScreen()),
           ),
         ],
       ),
@@ -147,6 +122,18 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 key: const ValueKey('following_feed'),
                 queryType: SubmissionQueryType.byFollowing,
                 heroContextPrefix: "following",
+                emptyState: isFollowingEmpty == true
+                    ? EmptyState(
+                        title: "No Following",
+                        subtitle:
+                            "You are not following anyone yet. Check out the Discover feed, or search for users by their username!",
+                        icon: Icons.people,
+                        action: (
+                          label: "Visit Discover Feed",
+                          onPressed: () => _onSegmentSelected({1}),
+                        ),
+                      )
+                    : null,
               ),
               FeedPageContent(
                 key: const ValueKey('discover_feed'),
@@ -175,11 +162,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 class FeedPageContent extends ConsumerStatefulWidget {
   final SubmissionQueryType queryType;
   final String heroContextPrefix;
+  final EmptyState? emptyState;
 
   const FeedPageContent({
     required Key key,
     required this.queryType,
     required this.heroContextPrefix,
+    this.emptyState,
   }) : super(key: key);
 
   @override
@@ -206,14 +195,16 @@ class _FeedPageContentState extends ConsumerState<FeedPageContent>
     return RefreshIndicator(
       onRefresh: refreshSubmissions,
       child: submissionsAsync.when(
-        loading: () => skeleton,
+        loading: () => submissionListSkeleton,
         error: (e, _) => EmptyState(
           title: "Error",
           subtitle: "An error occurred while loading submissions.",
           icon: Icons.error,
+          action: (label: "Retry", onPressed: refreshSubmissions),
         ),
         data: (submissions) {
           return SubmissionListSliver(
+            emptyState: widget.emptyState,
             heroContext: widget.heroContextPrefix,
             submissionState: submissions,
             queryParam: queryParam,

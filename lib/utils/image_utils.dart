@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:picture_that/utils/helpers.dart';
 
 const options = [
   (name: "Camera", icon: Icons.camera_alt, source: ImageSource.camera),
@@ -26,7 +27,7 @@ class ImageUtils {
                   return SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: () => Navigator.of(context).pop(option.source),
+                      onPressed: () => navigateBack(result: option.source),
                       style: FilledButton.styleFrom(
                         minimumSize: Size.fromHeight(50),
                         shape: RoundedRectangleBorder(

@@ -1,27 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/user_model.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_text_field.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
-final skeleton = CustomSkeletonizer(
+final searchResultListSkeleton = CustomSkeletonizer(
   child: ListView.builder(
     itemCount: 10,
     itemBuilder: (context, index) => SearchResultItem(
-        user: UserSearchResultModel(
-      uid: "skeleton",
-      firstName: "skeleton",
-      lastName: "skeleton",
-      username: "skeleton",
-      profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-    )),
+      user: getDummyUserSearchResult(index: index),
+    ),
   ),
 );
 
@@ -75,10 +73,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
       setState(() => _searchResults = results);
     } catch (e) {
-      if (mounted) {
-        customShowSnackbar(context, e);
-        setState(() => _searchResults = []);
-      }
+      customShowSnackbar(e);
+      if (mounted) setState(() => _searchResults = []);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -96,7 +92,7 @@ class _SearchScreenState extends State<SearchScreen> {
           autocorrect: false,
           autofocus: true,
           leadingButton: IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: navigateBack,
             icon: const Icon(Icons.arrow_back),
           ),
           trailingButton: _searchController.text.isNotEmpty
@@ -112,7 +108,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchResults() {
-    if (_isLoading) return skeleton;
+    if (_isLoading) return searchResultListSkeleton;
 
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
       return EmptyState(
@@ -139,7 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-class SearchResultItem extends StatelessWidget {
+class SearchResultItem extends ConsumerWidget {
   final UserSearchResultModel user;
 
   const SearchResultItem({
@@ -148,7 +144,14 @@ class SearchResultItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // ensures widget is rebuilt when user is followed or
+    ref.watch(relationshipProvider);
+    final relationshipNotifier = ref.watch(relationshipProvider.notifier);
+    final isFollowing = relationshipNotifier.isFollowing(user.uid);
+    final isFollower = relationshipNotifier.isFollower(user.uid);
+    final isSelf = user.uid == auth.currentUser?.uid;
+
     return ListTile(
       leading: CustomImage(
         key: ValueKey(user.uid),
@@ -157,9 +160,23 @@ class SearchResultItem extends StatelessWidget {
         width: 40,
         height: 40,
       ),
+      trailing: isSelf
+          ? null
+          : SizedBox(
+              width: 130,
+              child: CustomButton(
+                label: isFollowing
+                    ? "Unfollow"
+                    : "Follow${isFollower ? " back" : ""}",
+                onPressed: () => toggleFollow(context, ref, user.uid),
+                type: isFollowing
+                    ? CustomButtonType.outlined
+                    : CustomButtonType.filled,
+              ),
+            ),
       title: Text("${user.firstName} ${user.lastName}"),
       subtitle: Text("@${user.username}"),
-      onTap: () => navigate(context, ProfileScreen(userId: user.uid)),
+      onTap: () => navigate(ProfileScreen(userId: user.uid)),
     );
   }
 }

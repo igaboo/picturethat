@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picture_that/models/relationship_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/providers/auth_provider.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 
 enum SubmissionQueryType { byUser, byPrompt, byFollowing, byRandom }
 
@@ -34,27 +36,31 @@ class SubmissionQueryParam {
   int get hashCode => type.hashCode ^ (id?.hashCode ?? 0);
 }
 
-Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
-    getSubmissionsAdapter({
-  required SubmissionQueryParam arg,
-  required int limit,
-  DocumentSnapshot? lastDocument,
-}) {
-  return getSubmissions(
-    queryParam: arg,
-    limit: limit,
-    lastDocument: lastDocument,
-  );
-}
-
 class SubmissionNotifier extends PaginatedFamilyAsyncNotifier<SubmissionModel,
     SubmissionQueryParam> {
   @override
   int get pageSize => 3;
 
   @override
-  FetchPageWithArg<SubmissionModel, SubmissionQueryParam> get fetchPage =>
-      getSubmissionsAdapter;
+  FetchPageWithArg<SubmissionModel, SubmissionQueryParam> get fetchPage => ({
+        required SubmissionQueryParam arg,
+        required int limit,
+        DocumentSnapshot? lastDocument,
+      }) async {
+        List<RelationshipModel>? following = [];
+        if (arg.type == SubmissionQueryType.byFollowing) {
+          await ref.read(relationshipProvider.future).then((value) {
+            following = value.following;
+          });
+        }
+
+        return await getSubmissions(
+          queryParam: arg,
+          limit: limit,
+          lastDocument: lastDocument,
+          following: following,
+        );
+      };
 
   @override
   Future<PaginationState<SubmissionModel>> build(

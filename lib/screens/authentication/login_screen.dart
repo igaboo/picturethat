@@ -7,6 +7,7 @@ import 'package:picture_that/screens/tabs/home_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/text_validation.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -19,23 +20,19 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
 
   void _login() async {
     try {
       if (!_formKey.currentState!.validate()) return;
-      setState(() => _isLoading = true);
 
       await signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
 
-      if (mounted) navigateAndDisableBack(context, Home());
+      if (mounted) navigateAndDisableBack(Home());
     } catch (e) {
-      if (mounted) customShowSnackbar(context, e);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      customShowSnackbar(e);
     }
   }
 
@@ -79,10 +76,7 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
-                      onTap: () => navigate(
-                        context,
-                        const ForgotPasswordScreen(),
-                      ),
+                      onTap: () => navigate(const ForgotPasswordScreen()),
                       child: Text(
                         "Forgot your password?",
                         style:
@@ -99,13 +93,14 @@ class LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FilledButton(
-                      onPressed: _isLoading ? null : () => _login(),
-                      child: Text("Login"),
+                    CustomButton(
+                      label: "Login",
+                      onPressed: _login,
                     ),
-                    TextButton(
-                      onPressed: () => navigate(context, RegisterScreen()),
-                      child: Text("Don't have an account?"),
+                    CustomButton(
+                      label: "Don't have an account?",
+                      onPressed: () => navigate(RegisterScreen()),
+                      type: CustomButtonType.text,
                     ),
                   ],
                 ),

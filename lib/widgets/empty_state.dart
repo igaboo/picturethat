@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:picture_that/widgets/custom_button.dart';
+
+typedef EmptyStateAction = ({
+  String label,
+  VoidCallback? onPressed,
+});
 
 class EmptyState extends StatelessWidget {
   final String title;
   final IconData icon;
   final String? subtitle;
+  final EmptyStateAction? action;
 
   const EmptyState({
     required this.title,
     required this.icon,
     this.subtitle,
+    this.action,
     super.key,
   });
 
@@ -42,10 +50,19 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (subtitle != null)
-              Text(
-                subtitle!,
-                style: textTheme.bodyMedium,
-                textAlign: TextAlign.center,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: Text(
+                  subtitle!,
+                  style: textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            if (action != null)
+              CustomButton(
+                label: action!.label,
+                onPressed: action!.onPressed,
+                type: CustomButtonType.text,
               ),
           ],
         ),

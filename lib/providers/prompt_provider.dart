@@ -58,7 +58,11 @@ final promptProvider =
   // ensures auth state is loaded, will reset all state when auth changes
   ref.watch(authProvider);
 
-  final prompt = await getPrompt(promptId: promptId);
+  final promptsAsync = ref.watch(promptsProvider);
+  final promptInList = promptsAsync.valueOrNull?.items
+      .cast<PromptModel?>()
+      .firstWhere((p) => p?.id == promptId, orElse: () => null);
 
-  return prompt;
+  if (promptInList != null) return promptInList;
+  return await getPrompt(promptId: promptId);
 });

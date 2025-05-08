@@ -1,3 +1,5 @@
+import 'package:picture_that/utils/constants.dart';
+
 class UserModel {
   final String uid;
   final String firstName;
@@ -65,6 +67,19 @@ class UserModel {
   }
 }
 
+UserModel getDummyUser({index = 0}) {
+  return UserModel(
+    uid: "dummy$index",
+    firstName: "dummy",
+    lastName: "user",
+    username: "dummyuser",
+    profileImageUrl: dummyImageUrl,
+    followersCount: 0,
+    followingCount: 0,
+    submissionsCount: 0,
+  );
+}
+
 class UserSearchResultModel {
   final String uid;
   final String firstName;
@@ -97,15 +112,12 @@ class UserSearchResultModel {
   }
 }
 
-UserModel getDummyUser({index = 0}) {
-  return UserModel(
+UserSearchResultModel getDummyUserSearchResult({index = 0}) {
+  return UserSearchResultModel(
     uid: "dummy$index",
     firstName: "dummy",
-    lastName: "user",
-    username: "dummyuser",
-    profileImageUrl: "https://dummyimage.com/1x1/0011ff/0011ff.png",
-    followersCount: 0,
-    followingCount: 0,
-    submissionsCount: 0,
+    lastName: "dummy",
+    username: "dummy",
+    profileImageUrl: dummyImageUrl,
   );
 }
