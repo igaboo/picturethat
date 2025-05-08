@@ -41,6 +41,28 @@ class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
 
     state = AsyncData(updatedUser);
   }
+
+  void updateFollowingCount(bool isIncrementing) {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final updatedUser = currentState.copyWith(
+      followingCount: currentState.followingCount + (isIncrementing ? 1 : -1),
+    );
+
+    state = AsyncData(updatedUser);
+  }
+
+  void updateFollowersCount(bool isIncrementing) {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return;
+
+    final updatedUser = currentState.copyWith(
+      followersCount: currentState.followersCount + (isIncrementing ? 1 : -1),
+    );
+
+    state = AsyncData(updatedUser);
+  }
 }
 
 final userProvider =

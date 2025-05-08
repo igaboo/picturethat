@@ -5,10 +5,12 @@ import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/providers/comment_provider.dart';
+import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
+import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
@@ -20,19 +22,9 @@ import 'package:picture_that/widgets/custom_text_field.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/labeled_icon_button.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-const List<String> reactions = [
-  "❤️",
-  "🔥",
-  "🙌",
-  "👏",
-  "👍",
-  "😍",
-  "😮",
-  "😊",
-];
-
-final skeleton = CustomSkeletonizer(
+final commentsListSkeleton = CustomSkeletonizer(
   child: ListView.separated(
     itemCount: 10,
     separatorBuilder: (context, index) => const SizedBox(height: 16.0),
@@ -45,51 +37,14 @@ final skeleton = CustomSkeletonizer(
   ),
 );
 
-void updateCommentCountHelper({
-  required BuildContext context,
-  required WidgetRef ref,
-  required bool isIncrementing,
-  required SubmissionModel submission,
-}) {
-  void onInitialized(SubmissionNotifier notifier) {
-    notifier.updateCommentCount(
-      submissionId: submission.id,
-      isIncrementing: isIncrementing,
-    );
-  }
-
-  // update count for prompt submission
-  updateSubmissionNotifierIfInitialized(
-    context: context,
-    ref: ref,
-    queryParam: SubmissionQueryParam(
-      type: SubmissionQueryType.byPrompt,
-      id: submission.prompt.id,
-    ),
-    onInitialized: onInitialized,
-  );
-
-  // update count for user submission
-  updateSubmissionNotifierIfInitialized(
-    context: context,
-    ref: ref,
-    queryParam: SubmissionQueryParam(
-      type: SubmissionQueryType.byUser,
-      id: submission.user.uid,
-    ),
-    onInitialized: onInitialized,
-  );
-
-  // update count for feed submission
-  updateSubmissionNotifierIfInitialized(
-    context: context,
-    ref: ref,
-    queryParam: SubmissionQueryParam(
-      type: SubmissionQueryType.byRandom,
-    ),
-    onInitialized: onInitialized,
-  );
-}
+final profileImageSkeleton = CustomSkeletonizer(
+  child: CustomImage(
+    imageProvider: const NetworkImage(dummyImageUrl),
+    shape: CustomImageShape.circle,
+    width: 40,
+    height: 40,
+  ),
+);
 
 class Submission extends ConsumerWidget {
   final SubmissionModel submission;
@@ -105,13 +60,19 @@ class Submission extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(relationshipProvider);
+    final isFollowing = ref
+        .read(relationshipProvider.notifier)
+        .isFollowing(submission.user.uid);
+
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final isSelf = submission.user.uid == auth.currentUser?.uid;
 
     void navigateToProfile(String userId) {
       if (isOnProfileTab == true) return;
-      navigate(context, ProfileScreen(userId: userId));
+      navigate(ProfileScreen(userId: userId));
     }
 
     void handleLike() {
@@ -121,6 +82,13 @@ class Submission extends ConsumerWidget {
           isLiked: submission.isLiked,
         );
       }
+
+      // update firestore (no await, not necessary)
+      toggleLike(
+        submissionId: submission.id,
+        uid: auth.currentUser!.uid,
+        isLiked: submission.isLiked,
+      );
 
       // update prompt list
       updateSubmissionNotifierIfInitialized(
@@ -144,7 +112,7 @@ class Submission extends ConsumerWidget {
         onInitialized: onInitialized,
       );
 
-      // update feed list
+      // update discover feed list
       updateSubmissionNotifierIfInitialized(
         context: context,
         ref: ref,
@@ -154,11 +122,14 @@ class Submission extends ConsumerWidget {
         onInitialized: onInitialized,
       );
 
-      // update firestore
-      toggleLike(
-        submissionId: submission.id,
-        uid: auth.currentUser!.uid,
-        isLiked: submission.isLiked,
+      // update following feed list
+      updateSubmissionNotifierIfInitialized(
+        context: context,
+        ref: ref,
+        queryParam: SubmissionQueryParam(
+          type: SubmissionQueryType.byFollowing,
+        ),
+        onInitialized: onInitialized,
       );
     }
 
@@ -192,16 +163,6 @@ class Submission extends ConsumerWidget {
         onInitialized: onInitialized,
       );
 
-      // update feed list
-      // updateSubmissionNotifierIfInitialized(
-      //   context: context,
-      //   ref: ref,
-      //   queryParam: SubmissionQueryParam(
-      //     type: SubmissionQueryType.byRandom,
-      //   ),
-      //   onInitialized: onInitialized,
-      // );
-
       // update submission count for prompt
       updatePromptNotifierIfInitialized(
         context: context,
@@ -221,7 +182,7 @@ class Submission extends ConsumerWidget {
       );
     }
 
-    void handleComment() {
+    void showCommentSheet() {
       // open bottom sheet
       showModalBottomSheet(
         context: context,
@@ -256,13 +217,61 @@ class Submission extends ConsumerWidget {
             spacing: 10.0,
             children: [
               GestureDetector(
-                onTap: () => navigateToProfile(submission.user.uid),
-                child: CustomImage(
-                  key: ValueKey(submission.user.profileImageUrl),
-                  imageProvider: NetworkImage(submission.user.profileImageUrl),
-                  shape: CustomImageShape.circle,
-                  width: 30,
-                  height: 30,
+                onTap: () async {
+                  if (!isFollowing && !isSelf) {
+                    await toggleFollow(context, ref, submission.user.uid);
+
+                    customShowSnackbar(
+                      "Now following @${submission.user.username}",
+                      action: SnackBarAction(
+                        label: "Undo",
+                        onPressed: () => toggleFollow(
+                          context,
+                          ref,
+                          submission.user.uid,
+                        ),
+                      ),
+                    );
+
+                    return;
+                  }
+
+                  navigateToProfile(submission.user.uid);
+                },
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CustomImage(
+                      key: ValueKey(submission.user.profileImageUrl),
+                      imageProvider:
+                          NetworkImage(submission.user.profileImageUrl),
+                      shape: CustomImageShape.circle,
+                      width: 40,
+                      height: 40,
+                    ),
+                    if (!isFollowing && !isSelf)
+                      Positioned(
+                        bottom: -3,
+                        right: -3,
+                        child: Skeleton.ignore(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colorScheme.primary,
+                              border: Border.all(
+                                color: colorScheme.surface,
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 18,
+                              color: colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      )
+                  ],
                 ),
               ),
               Expanded(
@@ -280,7 +289,6 @@ class Submission extends ConsumerWidget {
                     ),
                     GestureDetector(
                       onTap: () => navigate(
-                        context,
                         PromptFeedScreen(promptId: submission.prompt.id),
                       ),
                       child: Text(submission.prompt.title),
@@ -371,7 +379,7 @@ class Submission extends ConsumerWidget {
                   ConstrainedBox(
                     constraints: BoxConstraints(minWidth: 70),
                     child: LabeledIconButton(
-                      onPressed: handleComment,
+                      onPressed: showCommentSheet,
                       icon: Icons.chat_bubble_outline,
                       label: submission.commentsCount.toString(),
                     ),
@@ -498,7 +506,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
         curve: Curves.easeInOutQuint,
       );
     } catch (e) {
-      if (mounted) customShowSnackbar(context, e);
+      customShowSnackbar(e);
     } finally {
       setState(() => _isLoading = false);
     }
@@ -558,7 +566,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       icon: Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: navigateBack,
                     ),
                   ),
                 ],
@@ -571,7 +579,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                 child: commentsAsync.when(
                   loading: () => Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: skeleton,
+                    child: commentsListSkeleton,
                   ),
                   error: (e, _) => const EmptyState(
                     title: "Error",
@@ -596,7 +604,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ...reactions.map((reaction) {
+                      ...commentReactions.map((reaction) {
                         return GestureDetector(
                           key: ValueKey(reaction),
                           onTap: () => handleReaction(reaction),
@@ -612,16 +620,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                     spacing: 8.0,
                     children: [
                       userAsync.when(
-                        loading: () => const SizedBox(
-                          height: 40,
-                          width: 40,
-                          child: Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                        ),
+                        loading: () => profileImageSkeleton,
                         error: (e, _) => const SizedBox(height: 40, width: 40),
                         data: (user) => CustomImage(
                           imageProvider: NetworkImage(user!.profileImageUrl),
