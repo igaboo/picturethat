@@ -77,15 +77,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     final isFollowingEmpty =
         ref.watch(relationshipProvider).valueOrNull?.following.isEmpty;
 
-    final bool isFollowingFeed = _currentPageIndex == 0;
-    final String tooltipId =
-        isFollowingFeed ? "followingTooltip" : "discoverTooltip";
-    final String tooltipTitle =
-        isFollowingFeed ? "Following Feed" : "Discover Feed";
-    final String tooltipMessage = isFollowingFeed
-        ? "Here, you will see the latest submissions from users you follow."
-        : "Here, you will see the top submissions from all users from within the past week.";
-
     return Scaffold(
       appBar: AppBar(
         title: SegmentedButton<int>(
@@ -134,24 +125,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                         ),
                       )
                     : null,
+                tooltip: CustomTooltip(
+                  tooltipId: "followingTooltip",
+                  title: "Following Feed",
+                  message:
+                      "Here, you will see the latest submissions from users you follow.",
+                ),
               ),
               FeedPageContent(
                 key: const ValueKey('discover_feed'),
                 queryType: SubmissionQueryType.byRandom,
                 heroContextPrefix: "discover",
+                tooltip: CustomTooltip(
+                  tooltipId: "discoverTooltip",
+                  title: "Discover Feed",
+                  message:
+                      "Here, you will see the top submissions from all users from within the past week.",
+                ),
               ),
             ],
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: CustomTooltip(
-              key: ValueKey(tooltipId),
-              tooltipId: tooltipId,
-              title: tooltipTitle,
-              message: tooltipMessage,
-            ),
           ),
         ],
       ),
@@ -162,12 +154,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 class FeedPageContent extends ConsumerStatefulWidget {
   final SubmissionQueryType queryType;
   final String heroContextPrefix;
+  final CustomTooltip tooltip;
   final EmptyState? emptyState;
 
   const FeedPageContent({
     required Key key,
     required this.queryType,
     required this.heroContextPrefix,
+    required this.tooltip,
     this.emptyState,
   }) : super(key: key);
 
@@ -192,27 +186,37 @@ class _FeedPageContentState extends ConsumerState<FeedPageContent>
       await ref.read(submissionProvider(queryParam).future);
     }
 
-    return RefreshIndicator(
-      onRefresh: refreshSubmissions,
-      child: submissionsAsync.when(
-        loading: () => submissionListSkeleton,
-        error: (e, _) => EmptyState(
-          title: "Error",
-          subtitle: "An error occurred while loading submissions.",
-          icon: Icons.error,
-          action: (label: "Retry", onPressed: refreshSubmissions),
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: refreshSubmissions,
+          child: submissionsAsync.when(
+            loading: () => submissionListSkeleton,
+            error: (e, _) => EmptyState(
+              title: "Error",
+              subtitle: "An error occurred while loading submissions.",
+              icon: Icons.error,
+              action: (label: "Retry", onPressed: refreshSubmissions),
+            ),
+            data: (submissions) {
+              return SubmissionListSliver(
+                emptyState: widget.emptyState,
+                heroContext: widget.heroContextPrefix,
+                submissionState: submissions,
+                queryParam: queryParam,
+                bottomPadding: true,
+                padding: const EdgeInsets.only(top: 8.0),
+              );
+            },
+          ),
         ),
-        data: (submissions) {
-          return SubmissionListSliver(
-            emptyState: widget.emptyState,
-            heroContext: widget.heroContextPrefix,
-            submissionState: submissions,
-            queryParam: queryParam,
-            bottomPadding: true,
-            padding: const EdgeInsets.only(top: 8.0),
-          );
-        },
-      ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: widget.tooltip,
+        ),
+      ],
     );
   }
 }
