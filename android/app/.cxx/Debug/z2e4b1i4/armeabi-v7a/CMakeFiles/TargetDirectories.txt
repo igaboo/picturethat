@@ -1,2 +1,0 @@
-/Users/jaden/School/spr25/cins467/picturethat/android/app/.cxx/Debug/z2e4b1i4/armeabi-v7a/CMakeFiles/edit_cache.dir
-/Users/jaden/School/spr25/cins467/picturethat/android/app/.cxx/Debug/z2e4b1i4/armeabi-v7a/CMakeFiles/rebuild_cache.dir
