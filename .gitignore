@@ -36,7 +36,6 @@ migrate_working_dir/
 # Android related
 /android/app/.cxx/
 
-
 # Symbolication related
 app.*.symbols
 
@@ -59,3 +58,6 @@ node_modules/
 
 # generate-submissions
 serviceAccountKey.json
+
+# functions
+functions/lib
