@@ -54,7 +54,9 @@ class EmptyState extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Text(
                   subtitle!,
-                  style: textTheme.bodyMedium,
+                  style: textTheme.bodyMedium!.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),

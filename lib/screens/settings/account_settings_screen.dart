@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:picture_that/screens/forgot_password.dart';
+import 'package:picture_that/screens/settings/delete_account_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
 
 class AccountSettingsScreen extends StatelessWidget {
@@ -25,14 +25,7 @@ class AccountSettingsScreen extends StatelessWidget {
             title: "Delete Account",
             subtitle: "Delete all data and images",
             icon: Icons.delete_outline,
-            onTap: () => customShowDialog(
-              context: context,
-              title: "Delete Account",
-              content:
-                  "Are you sure you want to delete your account? All images will be permanently deleted. This cannot be undone.",
-              onPressed: () {},
-              buttonText: "Delete",
-            ),
+            onTap: () => navigate(const DeleteAccountScreen()),
             color: Colors.red,
           ),
         ],

@@ -75,10 +75,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final isFollowingEmpty =
-        ref.watch(relationshipProvider).valueOrNull?.following.isEmpty;
+        ref.watch(relationshipProvider).valueOrNull?.following.isEmpty == true;
+
+    final title = isFollowingEmpty ? "Not Following Anyone" : "No Submissions";
+    final subtitle = isFollowingEmpty
+        ? "Check out the Discover feed to find new users, or search by their username!"
+        : "The users you follow haven't uploaded anything yet. Once they do you'll see their submissions here.";
+    final icon = isFollowingEmpty ? Icons.people : Icons.hide_image;
+    final action = (
+      label: "Visit Discover Feed",
+      onPressed: () => _onSegmentSelected({1}),
+    );
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: SegmentedButton<int>(
           segments: const [
             ButtonSegment(
@@ -113,18 +124,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 key: const ValueKey('following_feed'),
                 queryType: SubmissionQueryType.byFollowing,
                 heroContextPrefix: "following",
-                emptyState: isFollowingEmpty == true
-                    ? EmptyState(
-                        title: "No Following",
-                        subtitle:
-                            "You are not following anyone yet. Check out the Discover feed, or search for users by their username!",
-                        icon: Icons.people,
-                        action: (
-                          label: "Visit Discover Feed",
-                          onPressed: () => _onSegmentSelected({1}),
-                        ),
-                      )
-                    : null,
+                emptyState: EmptyState(
+                  title: title,
+                  subtitle: subtitle,
+                  icon: icon,
+                  action: action,
+                ),
                 tooltip: CustomTooltip(
                   tooltipId: "followingTooltip",
                   title: "Following Feed",

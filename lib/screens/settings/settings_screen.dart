@@ -60,7 +60,10 @@ class SettingsScreen extends ConsumerWidget {
               context: context,
               title: "Logout",
               content: "Are you sure you want to logout?",
-              onPressed: () => _logout(context),
+              onPressed: () {
+                _logout(context);
+                navigateAndDisableBack(LandingScreen());
+              },
               buttonText: "Logout",
             ),
             color: Colors.red,

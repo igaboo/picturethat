@@ -480,3 +480,49 @@ Future<void> deleteRelationship(String id) async {
   final docRef = db.collection("relationships").doc(id);
   await docRef.delete();
 }
+
+Future<void> deleteAccount() async {
+  final userId = auth.currentUser?.uid;
+  if (userId == null) return;
+
+  // delete all the users submissions, comments, and relationships
+  final batch = db.batch();
+
+  final userDocRef = db.collection("users").doc(userId);
+  final submissionsSnapshot = await db
+      .collection("submissions")
+      .where("userId", isEqualTo: userId)
+      .get();
+  final commentsSnapshot =
+      await db.collection("comments").where("userId", isEqualTo: userId).get();
+  final relationshipsSnapshot = await db
+      .collection("relationships")
+      .where(Filter.or(
+        Filter("follower", isEqualTo: auth.currentUser?.uid),
+        Filter("following", isEqualTo: auth.currentUser?.uid),
+      ))
+      .get();
+
+  // delete all user documents in firestore
+  for (final doc in submissionsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  for (final doc in commentsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  for (final doc in relationshipsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  batch.delete(userDocRef);
+  await batch.commit();
+
+  // delete all user images in storage
+  final userStorageRef = storage.ref().child("users/$userId");
+  final listResult = await userStorageRef.listAll();
+  for (final item in listResult.items) {
+    await item.delete();
+  }
+
+  // delete user auth
+  await auth.currentUser?.delete();
+}

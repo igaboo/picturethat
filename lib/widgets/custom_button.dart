@@ -8,12 +8,16 @@ class CustomButton extends StatefulWidget {
   final Function()? onPressed;
   final CustomButtonType? type;
   final bool? disabled;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   const CustomButton({
     required this.label,
     required this.onPressed,
     this.disabled = false,
     this.type = CustomButtonType.filled,
+    this.backgroundColor,
+    this.foregroundColor,
     super.key,
   });
 
@@ -56,17 +60,24 @@ class _CustomButtonState extends State<CustomButton> {
     switch (widget.type) {
       case CustomButtonType.outlined:
         return OutlinedButton(
+          key: ValueKey("outlined"),
           onPressed: isDisabled ? null : handleOnPressed,
           child: child,
         );
       case CustomButtonType.text:
         return TextButton(
+          key: ValueKey("text"),
           onPressed: isDisabled ? null : handleOnPressed,
           child: child,
         );
       default:
         return FilledButton(
+          key: ValueKey("filled"),
           onPressed: isDisabled ? null : handleOnPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: widget.backgroundColor,
+            foregroundColor: widget.foregroundColor,
+          ),
           child: child,
         );
     }
