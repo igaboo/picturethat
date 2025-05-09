@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:picture_that/screens/image_viewer_screen.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 
 enum CustomImageShape { squircle, circle }
 
@@ -95,11 +96,13 @@ class CustomImageViewer extends StatelessWidget {
   final CustomImage customImage;
   final Object? heroTag;
   final VoidCallback? onDoubleTap;
+  final CustomButton? button;
 
   const CustomImageViewer({
     required this.customImage,
     this.heroTag,
     this.onDoubleTap,
+    this.button,
     super.key,
   });
 
@@ -116,6 +119,7 @@ class CustomImageViewer extends StatelessWidget {
               return ImageViewerScreen(
                 imageProvider: customImage.imageProvider,
                 heroTag: heroTag,
+                button: button,
               );
             },
             transitionsBuilder:

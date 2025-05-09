@@ -18,7 +18,7 @@ import 'package:picture_that/widgets/comment.dart';
 import 'package:picture_that/widgets/comments_list.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
-import 'package:picture_that/widgets/custom_text_field.dart';
+import 'package:picture_that/widgets/custom_text_input.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/labeled_icon_button.dart';
 import 'package:share_plus/share_plus.dart';
@@ -180,6 +180,8 @@ class Submission extends ConsumerWidget {
         userId: submission.user.uid,
         onInitialized: (notifier) => notifier.updateSubmissionsCount(false),
       );
+
+      navigateBack();
     }
 
     void showCommentSheet() {
@@ -630,7 +632,7 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
                         ),
                       ),
                       Expanded(
-                        child: CustomTextField(
+                        child: CustomTextInput(
                           controller: _commentController,
                           hintText: "Add a comment...",
                           trailingButton: IconButton(

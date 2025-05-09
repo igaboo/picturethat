@@ -1,51 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:picture_that/utils/text_validation.dart';
 
 class CustomTextField extends StatelessWidget {
-  final String hintText;
+  final String label;
   final TextEditingController controller;
-  final Function(String)? onChanged;
-  final IconButton? leadingButton;
-  final IconButton? trailingButton;
+  final String? Function(String?)? validator;
+  final bool? obscureText;
   final bool? autofocus;
   final bool? autocorrect;
+  final bool? multiline;
+  final int? maxLength;
+  final Widget? prefix;
 
   const CustomTextField({
-    required this.hintText,
+    required this.label,
     required this.controller,
-    this.onChanged,
-    this.leadingButton,
-    this.trailingButton,
+    this.validator,
+    this.obscureText,
     this.autofocus,
     this.autocorrect,
+    this.multiline,
+    this.maxLength,
+    this.prefix,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(150.0), // Rounded corners
-      ),
-      child: Row(
-        children: [
-          leadingButton != null ? leadingButton! : const SizedBox(width: 16.0),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              autofocus: autofocus ?? false,
-              autocorrect: autocorrect ?? true,
-              decoration: InputDecoration(
-                hintText: hintText,
-                border: InputBorder.none,
+    return TextFormField(
+      controller: controller,
+      validator: validator ??
+          (value) => textValidator(
+                value: value,
+                fieldName: label.toLowerCase(),
               ),
-              onChanged: onChanged,
-            ),
-          ),
-          if (trailingButton != null) trailingButton!,
-        ],
+      obscureText: obscureText ?? false,
+      autofocus: autofocus ?? false,
+      autocorrect: autocorrect ?? true,
+      maxLines: multiline == true ? null : 1,
+      maxLength: maxLength,
+      decoration: InputDecoration(
+        labelText: label,
+        helperText: ' ',
+        border: const OutlineInputBorder(),
+        prefix: prefix,
       ),
     );
   }

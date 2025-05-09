@@ -4,6 +4,7 @@ import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -50,14 +51,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 style: textTheme.bodyLarge,
               ),
               SizedBox(height: 16.0),
-              TextFormField(
-                autofocus: true,
+              CustomTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  helperText: "",
-                  border: OutlineInputBorder(),
-                ),
+                label: "Email",
+                autofocus: true,
                 validator: (value) => emailValidator(value: value),
               ),
               Padding(

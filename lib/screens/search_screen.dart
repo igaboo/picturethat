@@ -10,7 +10,7 @@ import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
-import 'package:picture_that/widgets/custom_text_field.dart';
+import 'package:picture_that/widgets/custom_text_input.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 
@@ -85,7 +85,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: CustomTextField(
+        title: CustomTextInput(
           controller: _searchController,
           hintText: "Search for users...",
           onChanged: (value) => _onSearchChanged(value),

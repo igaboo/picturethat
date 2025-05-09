@@ -11,6 +11,7 @@ import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 
 final profileImageSize = 150.0;
 
@@ -160,63 +161,36 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
-                        child: TextFormField(
+                        child: CustomTextField(
                           controller: _firstNameController,
-                          decoration: const InputDecoration(
-                            labelText: "First Name",
-                            helperText: ' ',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) => textValidator(
-                            value: value,
-                            fieldName: "first name",
-                          ),
+                          label: "First Name",
                         ),
                       ),
                       Expanded(
-                        child: TextFormField(
+                        child: CustomTextField(
                           controller: _lastNameController,
-                          decoration: const InputDecoration(
-                            labelText: "Last Name",
-                            helperText: ' ',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) => textValidator(
-                            value: value,
-                            fieldName: "last name",
-                          ),
+                          label: "Last Name",
                         ),
                       ),
                     ],
                   ),
-                  TextFormField(
+                  CustomTextField(
                     controller: _usernameController,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: "Username",
-                      helperText: ' ',
-                      border: OutlineInputBorder(),
-                      prefix: Text("@"),
-                    ),
+                    label: "Username",
+                    prefix: const Text("@"),
                     validator: (value) => usernameValidator(value: value),
                   ),
-                  TextFormField(
+                  CustomTextField(
                     controller: _bioController,
-                    decoration: const InputDecoration(
-                      labelText: "Bio",
-                      helperText: ' ',
-                      border: OutlineInputBorder(),
-                    ),
+                    label: "Bio",
                     maxLength: 150,
-                    maxLines: null,
+                    multiline: true,
+                    validator: (value) => null,
                   ),
-                  TextFormField(
+                  CustomTextField(
                     controller: _urlController,
-                    decoration: const InputDecoration(
-                      labelText: "Website",
-                      helperText: ' ',
-                      border: OutlineInputBorder(),
-                    ),
+                    label: "Website",
                     validator: (value) => urlValidator(value: value),
                   ),
                   Padding(

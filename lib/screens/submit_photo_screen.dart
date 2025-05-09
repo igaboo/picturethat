@@ -17,6 +17,7 @@ import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 
 final headerSkeleton = CustomSkeletonizer(
   child: SubmitPhotoScreenHeader(
@@ -274,15 +275,11 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10.0),
-              child: TextFormField(
+              child: CustomTextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: "Photo Description",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
-                ),
+                label: "Photo Description",
                 maxLength: 350,
-                maxLines: null,
+                multiline: true,
               ),
             ),
             Padding(

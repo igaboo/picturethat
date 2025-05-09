@@ -247,6 +247,15 @@ class ProfileHeader extends ConsumerWidget {
       children: [
         CustomImageViewer(
           heroTag: user.uid,
+          button: isSelf
+              ? CustomButton(
+                  label: "Update Profile Image",
+                  onPressed: () {
+                    navigateBack();
+                    navigate(const EditProfileScreen());
+                  },
+                )
+              : null,
           customImage: CustomImage(
             key: ValueKey(user.uid),
             imageProvider: NetworkImage(user.profileImageUrl),

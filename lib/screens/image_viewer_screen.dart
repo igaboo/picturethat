@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:picture_that/utils/helpers.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 
 class ImageViewerScreen extends StatelessWidget {
   final ImageProvider imageProvider;
   final Object? heroTag;
+  final CustomButton? button;
 
   const ImageViewerScreen({
     required this.imageProvider,
     required this.heroTag,
+    this.button,
     super.key,
   });
 
@@ -32,16 +35,28 @@ class ImageViewerScreen extends StatelessWidget {
         ),
       ),
       body: ClipRect(
-        child: Center(
-          child: PhotoView(
-            imageProvider: imageProvider,
-            heroAttributes:
-                heroTag != null ? PhotoViewHeroAttributes(tag: heroTag!) : null,
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 2,
-            initialScale: PhotoViewComputedScale.contained,
-            backgroundDecoration: BoxDecoration(color: colorScheme.surface),
-          ),
+        child: Stack(
+          children: [
+            Center(
+              child: PhotoView(
+                imageProvider: imageProvider,
+                heroAttributes: heroTag != null
+                    ? PhotoViewHeroAttributes(tag: heroTag!)
+                    : null,
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
+                initialScale: PhotoViewComputedScale.contained,
+                backgroundDecoration: BoxDecoration(color: colorScheme.surface),
+              ),
+            ),
+            if (button != null)
+              Positioned(
+                bottom: 60,
+                left: 60,
+                right: 60,
+                child: button!,
+              ),
+          ],
         ),
       ),
     );

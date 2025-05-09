@@ -13,6 +13,7 @@ import 'package:picture_that/utils/image_utils.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 
 final profileImageSize = 150.0;
 
@@ -137,34 +138,22 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ),
                 ),
-                TextFormField(
+                CustomTextField(
                   controller: _emailController,
+                  label: "Email",
                   autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: "Email",
-                    helperText: ' ',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) => emailValidator(value: value),
                 ),
-                TextFormField(
+                CustomTextField(
                   controller: _passwordController,
+                  label: "Password",
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Password",
-                    helperText: ' ',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) => passwordValidator(value: value),
                 ),
-                TextFormField(
+                CustomTextField(
                   controller: _passwordConfirmController,
+                  label: "Confirm Password",
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Confirm Password",
-                    helperText: ' ',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) => confirmPasswordValidator(
                     value: value,
                     password: _passwordController.text,
@@ -175,42 +164,24 @@ class RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Expanded(
-                      child: TextFormField(
+                      child: CustomTextField(
                         controller: _firstNameController,
-                        decoration: const InputDecoration(
-                          labelText: "First Name",
-                          helperText: ' ',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) => textValidator(
-                          value: value,
-                          fieldName: "first name",
-                        ),
+                        label: "First Name",
                       ),
                     ),
                     Expanded(
-                      child: TextFormField(
+                      child: CustomTextField(
                         controller: _lastNameController,
-                        decoration: const InputDecoration(
-                          labelText: "Last Name",
-                          helperText: ' ',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) => textValidator(
-                          value: value,
-                          fieldName: "last name",
-                        ),
+                        label: "Last Name",
                       ),
                     ),
                   ],
                 ),
-                TextFormField(
+                CustomTextField(
                   controller: _usernameController,
-                  decoration: const InputDecoration(
-                      labelText: "Username",
-                      helperText: ' ',
-                      border: OutlineInputBorder(),
-                      prefix: Text("@")),
+                  autocorrect: false,
+                  label: "Username",
+                  prefix: const Text("@"),
                   validator: (value) => usernameValidator(value: value),
                 ),
                 Padding(
