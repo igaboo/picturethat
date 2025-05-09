@@ -15,6 +15,7 @@ class SettingsScreen extends ConsumerWidget {
 
   void _logout(BuildContext context) async {
     try {
+      googleSignIn.disconnect();
       await signOut();
 
       navigateAndDisableBack(LandingScreen());
@@ -34,7 +35,6 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(context, ref) {
-    final textTheme = Theme.of(context).textTheme;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -68,6 +68,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             color: Colors.red,
           ),
+          Divider(height: 1),
           FutureBuilder(
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) {
@@ -75,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
               if (packageInfo == null) return const SizedBox();
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14.0),
+                padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -86,12 +87,11 @@ class SettingsScreen extends ConsumerWidget {
                             : "assets/splash_screen_light.png",
                       ),
                       fit: BoxFit.cover,
-                      width: 40,
-                      height: 40,
+                      width: 35,
+                      height: 35,
                     ),
                     Text(
                       "You are using Picture That v${packageInfo.version}",
-                      style: textTheme.bodySmall,
                     ),
                   ],
                 ),

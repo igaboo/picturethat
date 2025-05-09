@@ -25,6 +25,7 @@ dependencies:
   skeletonizer: ^1.4.3
   flutter_launcher_icons: ^0.14.3
   share_plus: ^11.0.0
+  google_sign_in: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -37,6 +38,7 @@ flutter:
     - assets/hero.png
     - assets/splash_screen_light.png
     - assets/splash_screen_dark.png
+    - assets/google.png
 
 # make sure to run `dart run flutter_native_splash:create`
 flutter_native_splash:

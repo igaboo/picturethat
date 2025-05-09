@@ -327,6 +327,8 @@ String getErrorMessage(String errorCode) {
       return "Too many requests. Please try again later.";
     case "weak-password":
       return "Please enter a stronger password.";
+    case "user-mismatch":
+      return "That was the wrong google account. Please try again.";
     default:
       return "An unknown error occurred. Please try again later.";
   }

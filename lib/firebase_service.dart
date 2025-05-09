@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/prompt_model.dart';
@@ -12,6 +15,7 @@ import 'package:picture_that/providers/submission_provider.dart';
 final FirebaseAuth auth = FirebaseAuth.instance;
 final FirebaseFirestore db = FirebaseFirestore.instance;
 final FirebaseStorage storage = FirebaseStorage.instance;
+GoogleSignIn googleSignIn = GoogleSignIn();
 
 // sign up with email & password
 Future<void> signUpWithEmailAndPassword({
@@ -60,6 +64,58 @@ Future<void> signInWithEmailAndPassword({
     email: email,
     password: password,
   );
+}
+
+Future<void> signInWithGoogle() async {
+  final googleUser = await googleSignIn.signIn();
+  if (googleUser == null) return;
+
+  final googleAuth = await googleUser.authentication;
+  final credential = GoogleAuthProvider.credential(
+    accessToken: googleAuth.accessToken,
+    idToken: googleAuth.idToken,
+  );
+
+  final userCredential = await auth.signInWithCredential(credential);
+  final additionalUserInfo = userCredential.additionalUserInfo;
+
+  if (additionalUserInfo?.isNewUser == true) {
+    final firstName = additionalUserInfo?.profile!["given_name"] ?? "";
+    final lastName = additionalUserInfo?.profile!["family_name"] ?? "";
+
+    await uploadDocument(id: userCredential.user!.uid, path: "users", data: {
+      "uid": userCredential.user?.uid,
+      "firstName": firstName,
+      "lastName": lastName,
+      "username": await generateUniqueUsername(firstName, lastName),
+      "bio": "",
+      "url": "",
+      "profileImageUrl": googleUser.photoUrl,
+    });
+  }
+}
+
+Future<String> generateUniqueUsername(
+  String firstName,
+  String lastName,
+) async {
+  String base =
+      (firstName + lastName).toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  String username = base;
+  int attempt = 0;
+
+  final usersRef = db.collection("users");
+
+  while (true) {
+    final existing =
+        await usersRef.where("username", isEqualTo: username).get();
+    if (existing.docs.isEmpty) break;
+
+    attempt++;
+    username = "$base${Random().nextInt(1000) + attempt}";
+  }
+
+  return username;
 }
 
 // sign out

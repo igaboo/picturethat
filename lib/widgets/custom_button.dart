@@ -10,6 +10,8 @@ class CustomButton extends StatefulWidget {
   final bool? disabled;
   final Color? backgroundColor;
   final Color? foregroundColor;
+  final Color? outlineColor;
+  final Widget? prefix;
 
   const CustomButton({
     required this.label,
@@ -18,6 +20,8 @@ class CustomButton extends StatefulWidget {
     this.type = CustomButtonType.filled,
     this.backgroundColor,
     this.foregroundColor,
+    this.outlineColor,
+    this.prefix,
     super.key,
   });
 
@@ -55,7 +59,14 @@ class _CustomButtonState extends State<CustomButton> {
             width: 16,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : Text(widget.label);
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 8.0,
+            children: [
+              if (widget.prefix != null) widget.prefix!,
+              Text(widget.label)
+            ],
+          );
 
     switch (widget.type) {
       case CustomButtonType.outlined:
@@ -77,6 +88,9 @@ class _CustomButtonState extends State<CustomButton> {
           style: FilledButton.styleFrom(
             backgroundColor: widget.backgroundColor,
             foregroundColor: widget.foregroundColor,
+            side: widget.outlineColor != null
+                ? BorderSide(color: widget.outlineColor!)
+                : null,
           ),
           child: child,
         );

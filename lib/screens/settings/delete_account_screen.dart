@@ -7,6 +7,7 @@ import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/text_validation.dart';
 import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/custom_text_field.dart';
 
 class DeleteAccountScreen extends StatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -20,16 +21,41 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // most of this should be in the firebase_service.dart file
   void handleDelete() async {
-    if (!_formKey.currentState!.validate()) return;
+    final providerId = auth.currentUser?.providerData[0].providerId;
+    final isEmailProvider = providerId == "password";
 
-    final email = _emailController.text;
-    final password = _passwordController.text;
+    AuthCredential? credential;
+
+    if (isEmailProvider) {
+      if (!_formKey.currentState!.validate()) return;
+
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+    } else {
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.disconnect();
+      }
+
+      final googleUser = await googleSignIn.signIn();
+      final googleAuth = await googleUser?.authentication;
+
+      if (googleAuth == null) return;
+
+      credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+    }
 
     try {
-      await auth.currentUser?.reauthenticateWithCredential(
-        EmailAuthProvider.credential(email: email, password: password),
-      );
+      await auth.currentUser?.reauthenticateWithCredential(credential);
 
       await customShowDialog(
         context: context,
@@ -45,11 +71,15 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       );
     } catch (e) {
       customShowSnackbar(e);
+      return;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final providerId = auth.currentUser?.providerData[0].providerId;
+    final isEmailProvider = providerId == "password";
+
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -64,37 +94,33 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
             spacing: 10.0,
             children: [
               Text(
-                "Please enter your email and password to confirm account deletion.",
+                isEmailProvider
+                    ? "Please enter your email and password to delete your account."
+                    : "Please sign in through Google once again to delete your account.",
                 style: textTheme.bodyLarge,
               ),
               SizedBox(height: 16.0),
-              TextFormField(
-                controller: _emailController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
+              if (isEmailProvider) ...[
+                CustomTextField(
+                  controller: _emailController,
+                  label: "Email",
+                  autofocus: true,
+                  validator: (value) => emailValidator(value: value),
                 ),
-                validator: (value) => emailValidator(value: value),
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  helperText: ' ',
-                  border: OutlineInputBorder(),
+                CustomTextField(
+                  controller: _passwordController,
+                  label: "Password",
+                  obscureText: true,
+                  validator: (value) => passwordValidator(value: value),
                 ),
-                validator: (value) => passwordValidator(value: value),
-              ),
+              ],
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     CustomButton(
-                      label: "Delete Account",
+                      label: "Authenticate and Delete",
                       onPressed: handleDelete,
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,

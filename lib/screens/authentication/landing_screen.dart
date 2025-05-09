@@ -1,7 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:picture_that/screens/authentication/login_screen.dart';
+import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/screens/authentication/register_screen.dart';
+import 'package:picture_that/screens/tabs/home_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -67,13 +68,27 @@ class LandingScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       CustomButton(
-                        label: "Create an Account",
-                        onPressed: () => navigate(const RegisterScreen()),
+                        label: "Continue with Google",
+                        onPressed: () async {
+                          await googleSignIn
+                              .signOut(); // ensures account selection screen
+                          await signInWithGoogle();
+
+                          navigateAndDisableBack(Home());
+                        },
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        outlineColor: Colors.black.withAlpha(50),
+                        prefix: Image.asset(
+                          "assets/google.png",
+                          width: 20,
+                          height: 20,
+                        ),
                       ),
                       CustomButton(
-                        label: "Or login to your account",
+                        label: "Or continue with email",
+                        onPressed: () => navigate(const RegisterScreen()),
                         type: CustomButtonType.text,
-                        onPressed: () => navigate(const LoginScreen()),
                       ),
                     ],
                   ),
