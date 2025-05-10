@@ -17,7 +17,75 @@ final FirebaseFirestore db = FirebaseFirestore.instance;
 final FirebaseStorage storage = FirebaseStorage.instance;
 GoogleSignIn googleSignIn = GoogleSignIn();
 
-// sign up with email & password
+//
+// miscellaneous
+//
+
+/// generate a unique username based on name
+Future<String> generateUniqueUsername(String firstName, String lastName) async {
+  String base =
+      (firstName + lastName).toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  String username = base;
+  int attempt = 0;
+
+  while (true) {
+    if (await isUsernameAvailable(username)) break;
+
+    attempt++;
+    username = "$base${Random().nextInt(1000) + attempt}";
+  }
+
+  return username;
+}
+
+// check if username is available
+Future<bool> isUsernameAvailable(String username) async {
+  final query =
+      await db.collection("users").where("username", isEqualTo: username).get();
+  return query.docs.isEmpty;
+}
+
+//
+// Authentication
+//
+
+/// get a google credential
+Future<AuthCredential?> getGoogleCredential() async {
+  if (await googleSignIn.isSignedIn()) await googleSignIn.disconnect();
+
+  final googleUser = await googleSignIn.signIn();
+  final googleAuth = await googleUser?.authentication;
+
+  if (googleAuth == null) return null;
+
+  return GoogleAuthProvider.credential(
+    accessToken: googleAuth.accessToken,
+    idToken: googleAuth.idToken,
+  );
+}
+
+/// get an email & password credential
+Future<AuthCredential> getEmailPasswordCredential({
+  required String email,
+  required String password,
+}) async {
+  return EmailAuthProvider.credential(
+    email: email,
+    password: password,
+  );
+}
+
+/// link a login provider
+Future<void> linkProvider(AuthCredential credential) async {
+  await auth.currentUser?.linkWithCredential(credential);
+}
+
+/// unlink a login provider
+Future<void> unlinkProvider(String providerId) async {
+  await auth.currentUser?.unlink(providerId);
+}
+
+/// sign up with email & password
 Future<void> signUpWithEmailAndPassword({
   required String email,
   required String password,
@@ -30,7 +98,7 @@ Future<void> signUpWithEmailAndPassword({
     throw Exception("Select a profile image before continuing");
   }
 
-  if (!(await isUsernameAvailable(username: username))) {
+  if (!(await isUsernameAvailable(username))) {
     throw Exception("Username is already taken");
   }
 
@@ -55,7 +123,7 @@ Future<void> signUpWithEmailAndPassword({
   });
 }
 
-// sign in with email & password
+/// sign in with email & password
 Future<void> signInWithEmailAndPassword({
   required String email,
   required String password,
@@ -66,15 +134,12 @@ Future<void> signInWithEmailAndPassword({
   );
 }
 
-Future<void> signInWithGoogle() async {
-  final googleUser = await googleSignIn.signIn();
-  if (googleUser == null) return;
+/// sign in/up with google
+Future<AuthCredential?> signInWithGoogle() async {
+  if (await googleSignIn.isSignedIn()) await googleSignIn.disconnect();
 
-  final googleAuth = await googleUser.authentication;
-  final credential = GoogleAuthProvider.credential(
-    accessToken: googleAuth.accessToken,
-    idToken: googleAuth.idToken,
-  );
+  final credential = await getGoogleCredential();
+  if (credential == null) return null;
 
   final userCredential = await auth.signInWithCredential(credential);
   final additionalUserInfo = userCredential.additionalUserInfo;
@@ -90,40 +155,120 @@ Future<void> signInWithGoogle() async {
       "username": await generateUniqueUsername(firstName, lastName),
       "bio": "",
       "url": "",
-      "profileImageUrl": googleUser.photoUrl,
+      "profileImageUrl": userCredential.user?.photoURL,
     });
   }
+
+  return credential;
 }
 
-Future<String> generateUniqueUsername(
-  String firstName,
-  String lastName,
-) async {
-  String base =
-      (firstName + lastName).toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-  String username = base;
-  int attempt = 0;
-
-  final usersRef = db.collection("users");
-
-  while (true) {
-    final existing =
-        await usersRef.where("username", isEqualTo: username).get();
-    if (existing.docs.isEmpty) break;
-
-    attempt++;
-    username = "$base${Random().nextInt(1000) + attempt}";
-  }
-
-  return username;
-}
-
-// sign out
+/// sign out
 Future<void> signOut() async {
+  if (await googleSignIn.isSignedIn()) await googleSignIn.disconnect();
+
   await auth.signOut();
 }
 
-// get user given user id
+/// send password reset email
+Future<void> sendPasswordResetEmail({required String email}) async {
+  await auth.sendPasswordResetEmail(email: email);
+}
+
+/// delete user account, and all related data
+Future<void> deleteAccount() async {
+  final userId = auth.currentUser?.uid;
+  if (userId == null) return;
+
+  // delete all the users submissions, comments, and relationships
+  final batch = db.batch();
+
+  final userDocRef = db.collection("users").doc(userId);
+  final submissionsSnapshot = await db
+      .collection("submissions")
+      .where("userId", isEqualTo: userId)
+      .get();
+  final commentsSnapshot =
+      await db.collection("comments").where("userId", isEqualTo: userId).get();
+  final relationshipsSnapshot = await db
+      .collection("relationships")
+      .where(Filter.or(
+        Filter("follower", isEqualTo: auth.currentUser?.uid),
+        Filter("following", isEqualTo: auth.currentUser?.uid),
+      ))
+      .get();
+
+  // delete user auth
+  await auth.currentUser?.delete();
+
+  // delete all user documents in firestore
+  for (final doc in submissionsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  for (final doc in commentsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  for (final doc in relationshipsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  batch.delete(userDocRef);
+  await batch.commit();
+
+  // delete all user images in storage
+  final userStorageRef = storage.ref().child("users/$userId");
+  final listResult = await userStorageRef.listAll();
+
+  await Future.wait(
+    listResult.items.map((item) async {
+      await item.delete();
+    }),
+  );
+}
+
+//
+// storage
+//
+
+/// upload image to storage
+Future<String> uploadImage({
+  required String path,
+  required XFile image,
+}) async {
+  final imgRef = storage.ref().child(
+        "users/${auth.currentUser?.uid}/$path",
+      );
+  await imgRef.putData(await image.readAsBytes());
+  return await imgRef.getDownloadURL();
+}
+
+/// delete image from storage
+Future<void> deleteImage({required String path}) async {
+  final imgRef = storage.ref().child(
+        "users/${auth.currentUser?.uid}/$path",
+      );
+  await imgRef.delete();
+}
+
+//
+// Firestore
+//
+
+/// upload document to firestore
+Future<void> uploadDocument({
+  String? id,
+  required String path,
+  required Map<String, dynamic> data,
+}) async {
+  await db.collection(path).doc(id).set(data);
+}
+
+/// get count of documents from a query
+Future<int> getDocumentCount({required Query query}) async {
+  final countQuery = query.count();
+  final AggregateQuerySnapshot snapshot = await countQuery.get();
+  return snapshot.count ?? 0;
+}
+
+/// get user given user id
 Future<UserModel?> getUser({required String userId}) async {
   DocumentSnapshot userDoc = await db.collection("users").doc(userId).get();
   if (!userDoc.exists) return null;
@@ -150,7 +295,7 @@ Future<UserModel?> getUser({required String userId}) async {
   return UserModel.fromMap(userData);
 }
 
-// update user profile
+/// update user profile
 Future<Map<String, dynamic>> updateUserProfile({
   String? firstName,
   String? lastName,
@@ -159,7 +304,7 @@ Future<Map<String, dynamic>> updateUserProfile({
   String? url,
   XFile? profileImage,
 }) async {
-  if (username != null && !(await isUsernameAvailable(username: username))) {
+  if (username != null && !(await isUsernameAvailable(username))) {
     throw Exception("Username is already taken");
   }
 
@@ -176,55 +321,14 @@ Future<Map<String, dynamic>> updateUserProfile({
     if (profileImageUrl != null) "profileImageUrl": profileImageUrl,
   };
 
-  await db.collection("users").doc(auth.currentUser?.uid).update(newValues);
+  if (newValues.isNotEmpty) {
+    await db.collection("users").doc(auth.currentUser?.uid).update(newValues);
+  }
 
   return newValues;
 }
 
-// check if username is available
-Future<bool> isUsernameAvailable({required String username}) async {
-  final query =
-      await db.collection("users").where("username", isEqualTo: username).get();
-  return query.docs.isEmpty;
-}
-
-// upload image to storage
-Future<String> uploadImage({
-  required String path,
-  required XFile image,
-}) async {
-  final imgRef = storage.ref().child(
-        "users/${auth.currentUser?.uid}/$path",
-      );
-  await imgRef.putData(await image.readAsBytes());
-  return await imgRef.getDownloadURL();
-}
-
-// delete image from storage
-Future<void> deleteImage({required String path}) async {
-  final imgRef = storage.ref().child(
-        "users/${auth.currentUser?.uid}/$path",
-      );
-  await imgRef.delete();
-}
-
-// upload document to firestore
-Future<void> uploadDocument({
-  String? id,
-  required String path,
-  required Map<String, dynamic> data,
-}) async {
-  await db.collection(path).doc(id).set(data);
-}
-
-// get count of documents from a query
-Future<int> getDocumentCount({required Query query}) async {
-  final countQuery = query.count();
-  final AggregateQuerySnapshot snapshot = await countQuery.get();
-  return snapshot.count ?? 0;
-}
-
-// toggle like on submission
+/// toggle like on submission
 Future<void> toggleLike({
   required String submissionId,
   required String uid,
@@ -243,7 +347,7 @@ Future<void> toggleLike({
   }
 }
 
-// get submissions from a query
+/// get submissions from a query
 Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
     getSubmissions({
   required SubmissionQueryParam queryParam,
@@ -329,7 +433,7 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   return (items: items, lastDoc: docs.last);
 }
 
-// get a single prompt
+/// get a single prompt
 Future<PromptModel?> getPrompt({required String promptId}) async {
   final snapshot = await db.collection("prompts").doc(promptId).get();
   if (!snapshot.exists) return null;
@@ -344,7 +448,7 @@ Future<PromptModel?> getPrompt({required String promptId}) async {
   return PromptModel.fromMap(promptData);
 }
 
-// get a page of prompts
+/// get a page of prompts
 Future<({List<PromptModel> items, DocumentSnapshot? lastDoc})> getPrompts({
   required int limit,
   DocumentSnapshot? lastDocument,
@@ -386,7 +490,7 @@ Future<({List<PromptModel> items, DocumentSnapshot? lastDoc})> getPrompts({
   return (items: items, lastDoc: docs.last);
 }
 
-// get a list of users from a username query
+/// get a list of users from a username query
 Future<List<UserSearchResultModel>> searchUsers({required String query}) async {
   final snapshot = await db
       .collection("users")
@@ -400,7 +504,12 @@ Future<List<UserSearchResultModel>> searchUsers({required String query}) async {
       .toList();
 }
 
-// delete a submission
+/// add a submission
+Future<void> createSubmission({required SubmissionModel submission}) async {
+  // move function from submit_photo_screen.dart to here
+}
+
+/// delete a submission
 Future<void> deleteSubmission({required String submissionId}) async {
   final docRef = db.collection("submissions").doc(submissionId);
 
@@ -422,10 +531,7 @@ Future<void> deleteSubmission({required String submissionId}) async {
   ]);
 }
 
-// add a submission
-Future<void> createSubmission({required SubmissionModel submission}) async {}
-
-// get comments
+/// get comments
 Future<({List<CommentModel> items, DocumentSnapshot? lastDoc})> getComments({
   required String submissionId,
   required int limit,
@@ -459,7 +565,7 @@ Future<({List<CommentModel> items, DocumentSnapshot? lastDoc})> getComments({
   return (items: items, lastDoc: docs.last);
 }
 
-// add a comment
+/// add a comment
 Future<String> createComment({
   required String submissionId,
   required String userId,
@@ -478,18 +584,13 @@ Future<String> createComment({
   return docRef.id;
 }
 
-// delete a comment
+/// delete a comment
 Future<void> deleteComment({required String commentId}) async {
   final docRef = db.collection("comments").doc(commentId);
   await docRef.delete();
 }
 
-// send password reset email
-Future<void> sendPasswordResetEmail({required String email}) async {
-  await auth.sendPasswordResetEmail(email: email);
-}
-
-// fetch all users relationships, both followers and following
+/// fetch all users relationships, both followers and following
 Future<({List<RelationshipModel> followers, List<RelationshipModel> following})>
     getRelationships() async {
   final relationshipsSnapshot = await db
@@ -514,7 +615,7 @@ Future<({List<RelationshipModel> followers, List<RelationshipModel> following})>
   return (followers: followers, following: following);
 }
 
-// create a relationship
+/// create a relationship
 Future<RelationshipModel> createRelationship(String following) async {
   final docRef = db.collection("relationships").doc();
 
@@ -531,54 +632,12 @@ Future<RelationshipModel> createRelationship(String following) async {
   );
 }
 
-// delete a relationship
+/// delete a relationship
 Future<void> deleteRelationship(String id) async {
   final docRef = db.collection("relationships").doc(id);
   await docRef.delete();
 }
 
-Future<void> deleteAccount() async {
-  final userId = auth.currentUser?.uid;
-  if (userId == null) return;
-
-  // delete all the users submissions, comments, and relationships
-  final batch = db.batch();
-
-  final userDocRef = db.collection("users").doc(userId);
-  final submissionsSnapshot = await db
-      .collection("submissions")
-      .where("userId", isEqualTo: userId)
-      .get();
-  final commentsSnapshot =
-      await db.collection("comments").where("userId", isEqualTo: userId).get();
-  final relationshipsSnapshot = await db
-      .collection("relationships")
-      .where(Filter.or(
-        Filter("follower", isEqualTo: auth.currentUser?.uid),
-        Filter("following", isEqualTo: auth.currentUser?.uid),
-      ))
-      .get();
-
-  // delete all user documents in firestore
-  for (final doc in submissionsSnapshot.docs) {
-    batch.delete(doc.reference);
-  }
-  for (final doc in commentsSnapshot.docs) {
-    batch.delete(doc.reference);
-  }
-  for (final doc in relationshipsSnapshot.docs) {
-    batch.delete(doc.reference);
-  }
-  batch.delete(userDocRef);
-  await batch.commit();
-
-  // delete all user images in storage
-  final userStorageRef = storage.ref().child("users/$userId");
-  final listResult = await userStorageRef.listAll();
-  for (final item in listResult.items) {
-    await item.delete();
-  }
-
-  // delete user auth
-  await auth.currentUser?.delete();
-}
+//
+// Notifications
+//

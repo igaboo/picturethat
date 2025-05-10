@@ -53,20 +53,39 @@ class _CustomButtonState extends State<CustomButton> {
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.disabled == true || isLoading;
-    final child = isLoading
-        ? const SizedBox(
-            height: 16,
+
+    Widget child = Text(widget.label);
+
+    if (widget.prefix != null) {
+      child = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 8.0,
+        children: [
+          widget.prefix!,
+          Text(widget.label),
+        ],
+      );
+    }
+
+    if (isLoading) {
+      child = Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
             width: 16,
+            height: 16,
             child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          Visibility(
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            visible: false,
+            child: child,
           )
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 8.0,
-            children: [
-              if (widget.prefix != null) widget.prefix!,
-              Text(widget.label)
-            ],
-          );
+        ],
+      );
+    }
 
     switch (widget.type) {
       case CustomButtonType.outlined:

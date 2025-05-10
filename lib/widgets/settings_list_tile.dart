@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 class SettingsListTile extends StatelessWidget {
   final String title;
   final String? subtitle;
-  final IconData icon;
+  final Widget? leading;
+  final Widget? trailing;
   final Color? color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const SettingsListTile({
     required this.title,
     this.subtitle,
-    required this.icon,
+    this.leading,
+    this.trailing,
     this.color,
-    required this.onTap,
+    this.onTap,
     super.key,
   });
 
@@ -22,8 +24,10 @@ class SettingsListTile extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 32.0, vertical: 14.0),
-      leading: Icon(icon, color: color ?? colorScheme.onSurface),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 32.0, vertical: 14.0),
+      leading: leading,
+      trailing: trailing,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

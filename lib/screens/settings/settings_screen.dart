@@ -1,37 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/screens/authentication/landing_screen.dart';
 import 'package:picture_that/screens/settings/account_settings_screen.dart';
+import 'package:picture_that/screens/settings/behavior_settings_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/utils/show_snackbar.dart';
-import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
-
-  void _logout(BuildContext context) async {
-    try {
-      googleSignIn.disconnect();
-      await signOut();
-
-      navigateAndDisableBack(LandingScreen());
-    } catch (e) {
-      customShowSnackbar(e);
-    }
-  }
-
-  void _handleResetTooltips() async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.clear();
-
-    customShowSnackbar(
-      "Tooltips reset successfully! Please restart the app to see changes.",
-    );
-  }
 
   @override
   Widget build(context, ref) {
@@ -44,31 +20,15 @@ class SettingsScreen extends ConsumerWidget {
           SettingsListTile(
             title: "Account",
             subtitle: "Manage password, delete account",
-            icon: Icons.person_outline,
+            leading: const Icon(Icons.person),
             onTap: () => navigate(const AccountSettingsScreen()),
           ),
           SettingsListTile(
-            title: "Reset Tooltips",
-            subtitle: "Reset all tooltips to show again",
-            icon: Icons.refresh,
-            onTap: _handleResetTooltips,
+            title: "Behavior",
+            subtitle: "Manage screen behavior, tooltips",
+            leading: const Icon(Icons.settings),
+            onTap: () => navigate(const BehaviorSettingsScreen()),
           ),
-          SettingsListTile(
-            title: "Logout",
-            icon: Icons.login_outlined,
-            onTap: () => customShowDialog(
-              context: context,
-              title: "Logout",
-              content: "Are you sure you want to logout?",
-              onPressed: () {
-                _logout(context);
-                navigateAndDisableBack(LandingScreen());
-              },
-              buttonText: "Logout",
-            ),
-            color: Colors.red,
-          ),
-          Divider(height: 1),
           FutureBuilder(
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) {
@@ -76,17 +36,14 @@ class SettingsScreen extends ConsumerWidget {
               if (packageInfo == null) return const SizedBox();
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image(
-                      image: AssetImage(
-                        isDarkMode
-                            ? "assets/splash_screen_dark.png"
-                            : "assets/splash_screen_light.png",
-                      ),
-                      fit: BoxFit.cover,
+                      image: AssetImage(isDarkMode
+                          ? "assets/splash_screen_dark.png"
+                          : "assets/splash_screen_light.png"),
                       width: 35,
                       height: 35,
                     ),

@@ -4,3 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final authProvider = StreamProvider<User?>((ref) {
   return FirebaseAuth.instance.authStateChanges();
 });
+
+final userChangesProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.userChanges();
+});

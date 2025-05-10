@@ -24,6 +24,7 @@ Future<void> customShowDialog({
           ),
           TextButton(
             onPressed: () async {
+              navigateBack();
               await onPressed();
             },
             child: Text(buttonText ?? "Okay"),

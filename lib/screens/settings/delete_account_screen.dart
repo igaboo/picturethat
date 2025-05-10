@@ -18,10 +18,9 @@ class DeleteAccountScreen extends StatefulWidget {
 
 class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // most of this should be in the firebase_service.dart file
+  // most of this can be moved into the firebase_service.dart file
   void handleDelete() async {
     final providerId = auth.currentUser?.providerData[0].providerId;
     final isEmailProvider = providerId == "password";
@@ -30,29 +29,17 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
 
     if (isEmailProvider) {
       if (!_formKey.currentState!.validate()) return;
-
-      final email = _emailController.text;
       final password = _passwordController.text;
 
       credential = EmailAuthProvider.credential(
-        email: email,
+        email: auth.currentUser?.email ?? "",
         password: password,
       );
     } else {
-      if (await googleSignIn.isSignedIn()) {
-        await googleSignIn.disconnect();
-      }
-
-      final googleUser = await googleSignIn.signIn();
-      final googleAuth = await googleUser?.authentication;
-
-      if (googleAuth == null) return;
-
-      credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+      credential = await getGoogleCredential();
     }
+
+    if (credential == null) return;
 
     try {
       await auth.currentUser?.reauthenticateWithCredential(credential);
@@ -95,25 +82,19 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
             children: [
               Text(
                 isEmailProvider
-                    ? "Please enter your email and password to delete your account."
-                    : "Please sign in through Google once again to delete your account.",
+                    ? "For your security, please enter your password to delete your account."
+                    : "For your security, please sign in through Google to delete your account.",
                 style: textTheme.bodyLarge,
               ),
               SizedBox(height: 16.0),
-              if (isEmailProvider) ...[
-                CustomTextField(
-                  controller: _emailController,
-                  label: "Email",
-                  autofocus: true,
-                  validator: (value) => emailValidator(value: value),
-                ),
+              if (isEmailProvider)
                 CustomTextField(
                   controller: _passwordController,
                   label: "Password",
+                  autofocus: true,
                   obscureText: true,
                   validator: (value) => passwordValidator(value: value),
                 ),
-              ],
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(

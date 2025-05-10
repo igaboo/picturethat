@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
+import 'package:picture_that/screens/notifications_screen.dart';
 import 'package:picture_that/screens/settings/settings_screen.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
@@ -65,6 +66,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   bool get wantKeepAlive => true;
 
+  void onEditProfile() => navigate(const EditProfileScreen());
+
+  void onShare(UserModel? user, bool isSelf) {
+    // this url is just a placeholder, replace with actual url
+    // in future when deep linking is implemented
+    final url = "https://picturethat.com/${user?.username}";
+    final subject = isSelf ? "my" : "${user?.firstName}'s";
+
+    SharePlus.instance.share(ShareParams(
+      text: "Check out $subject profile on Picture That: $url",
+    ));
+  }
+
+  void onReportUser() {
+    // report user logic here
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -77,26 +95,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final isSelf = profileUid == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUid));
 
-    void onEditProfile() => navigate(const EditProfileScreen());
-
-    void onShare() {
-      // this url is just a placeholder, replace with actual url
-      // in future when deep linking is implemented
-      final url = "https://picturethat.com/${userAsync.value?.username}";
-      final subject = isSelf ? "my" : "${userAsync.value?.firstName}'s";
-
-      SharePlus.instance.share(ShareParams(
-        text: "Check out $subject profile on Picture That: $url",
-      ));
-    }
-
-    void onReportUser() {
-      // report user logic here
-    }
-
     return Scaffold(
       appBar: AppBar(
         actions: [
+          if (isSelf)
+            IconButton(
+              onPressed: () => navigate(const NotificationsScreen()),
+              icon: Icon(Icons.notifications_outlined),
+            ),
           PopupMenuButton(
             icon: Icon(Icons.more_vert),
             itemBuilder: (context) => isSelf
@@ -185,7 +191,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       onEditProfile: onEditProfile,
                       toggleFollow: () async =>
                           await toggleFollow(context, ref, profileUid),
-                      onShare: onShare,
+                      onShare: () => onShare(user, isSelf),
                     ),
                   ),
                 ),

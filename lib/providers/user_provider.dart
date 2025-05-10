@@ -3,11 +3,14 @@ import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/providers/auth_provider.dart';
 
-class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
+class UserNotifier extends FamilyAsyncNotifier<UserModel?, String?> {
   @override
-  Future<UserModel?> build(String arg) async {
+  Future<UserModel?> build(String? arg) async {
     // ensures auth state is loaded, will reset all state when auth changes
     ref.watch(authProvider);
+
+    if (arg == null) return null;
+
     return getUser(userId: arg);
   }
 
@@ -66,6 +69,6 @@ class UserNotifier extends FamilyAsyncNotifier<UserModel?, String> {
 }
 
 final userProvider =
-    AsyncNotifierProvider.family<UserNotifier, UserModel?, String>(
+    AsyncNotifierProvider.family<UserNotifier, UserModel?, String?>(
   () => UserNotifier(),
 );

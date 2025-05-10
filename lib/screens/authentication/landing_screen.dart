@@ -14,6 +14,7 @@ class LandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0), // hides header
@@ -46,7 +47,7 @@ class LandingScreen extends StatelessWidget {
                     style: textTheme.displaySmall,
                   ),
                   Text(
-                    "A new photo prompt daily—capture it your way, share your work, and explore others’ interpretations.",
+                    "A new photo prompt daily—capture it your way, share your work, and explore others' interpretations.",
                     textAlign: TextAlign.center,
                     style: textTheme.bodyLarge,
                   ),
@@ -67,14 +68,27 @@ class LandingScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (!isAndroid)
+                        CustomButton(
+                          label: "Continue with Apple",
+                          onPressed: () {},
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          outlineColor: Colors.black.withAlpha(50),
+                          prefix: Image.asset(
+                            "assets/apple.png",
+                            width: 20,
+                            height: 20,
+                          ),
+                        ),
                       CustomButton(
                         label: "Continue with Google",
                         onPressed: () async {
-                          await googleSignIn
-                              .signOut(); // ensures account selection screen
-                          await signInWithGoogle();
+                          final credential = await signInWithGoogle();
 
-                          navigateAndDisableBack(Home());
+                          if (credential != null) {
+                            navigateAndDisableBack(Home());
+                          }
                         },
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,

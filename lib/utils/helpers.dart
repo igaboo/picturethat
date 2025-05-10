@@ -329,6 +329,8 @@ String getErrorMessage(String errorCode) {
       return "Please enter a stronger password.";
     case "user-mismatch":
       return "That was the wrong google account. Please try again.";
+    case "credential-already-in-use":
+      return "This provider is already linked to another account.";
     default:
       return "An unknown error occurred. Please try again later.";
   }
