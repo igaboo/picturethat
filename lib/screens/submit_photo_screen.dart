@@ -47,7 +47,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
     }
 
     final prompts = ref.read(promptsProvider).value!;
-    final user = ref.watch(userProvider(auth.currentUser!.uid)).value;
+    final user = ref.watch(userProvider(auth.currentUser?.uid)).value;
 
     try {
       final userId = auth.currentUser!.uid;
@@ -176,7 +176,7 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userProvider(auth.currentUser!.uid));
+    final userAsync = ref.watch(userProvider(auth.currentUser?.uid));
     final promptsAsync = ref.watch(promptsProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;

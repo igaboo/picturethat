@@ -180,8 +180,6 @@ class Submission extends ConsumerWidget {
         userId: submission.user.uid,
         onInitialized: (notifier) => notifier.updateSubmissionsCount(false),
       );
-
-      navigateBack();
     }
 
     void showCommentSheet() {

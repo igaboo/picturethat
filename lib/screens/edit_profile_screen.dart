@@ -52,7 +52,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (!_formKey.currentState!.validate()) return;
 
       // check if username has changed, and if so, check if it's available
-      final currentUser = ref.read(userProvider((auth.currentUser!.uid))).value;
+      final currentUser = ref.read(userProvider((auth.currentUser?.uid))).value;
       final newUsername = _usernameController.text;
       final isUsernameChanged = currentUser?.username != newUsername;
 
@@ -75,7 +75,7 @@ class EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
 
       // update local user state
-      ref.read(userProvider(auth.currentUser!.uid).notifier).updateUser({
+      ref.read(userProvider(auth.currentUser?.uid).notifier).updateUser({
         'firstName': newValues['firstName'],
         'lastName': newValues['lastName'],
         'username': newValues['username'],
