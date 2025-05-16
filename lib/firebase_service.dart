@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -111,7 +112,7 @@ Future<void> signUpWithEmailAndPassword({
   );
 
   await uploadFcmToken(
-    await messaging.getToken(),
+    await getFcmToken(),
     userId: credential.user?.uid,
   );
 
@@ -142,7 +143,7 @@ Future<void> signInWithEmailAndPassword({
   );
 
   await uploadFcmToken(
-    await messaging.getToken(),
+    await getFcmToken(),
     userId: credential.user?.uid,
   );
 }
@@ -158,7 +159,7 @@ Future<AuthCredential?> signInWithGoogle() async {
   final additionalUserInfo = userCredential.additionalUserInfo;
 
   await uploadFcmToken(
-    await messaging.getToken(),
+    await getFcmToken(),
     userId: userCredential.user?.uid,
   );
 
@@ -183,7 +184,7 @@ Future<AuthCredential?> signInWithGoogle() async {
 /// sign out
 Future<void> signOut() async {
   if (await googleSignIn.isSignedIn()) await googleSignIn.disconnect();
-  await deleteFcmToken(await messaging.getToken()); // delete device token
+  await deleteFcmToken(await getFcmToken()); // delete device token
   await auth.signOut();
 }
 
@@ -756,6 +757,14 @@ Future<void> initializeFcm() async {
     //   ),
     // );
   });
+}
+
+Future<String?> getFcmToken() async {
+  // if ios emulator return null
+  // remove this when apple dev account is created
+  // and apns is configured
+  if (Platform.isIOS) return null;
+  return await messaging.getToken();
 }
 
 /// get device token and upload to firestore
