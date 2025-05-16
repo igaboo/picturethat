@@ -80,8 +80,6 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     final userAsync = ref.watch(userProvider(auth.currentUser?.uid));
     final userChangesAsync = ref.watch(userChangesProvider);
     final providers = userChangesAsync.asData?.value?.providerData;
@@ -123,15 +121,7 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             },
           ),
           Divider(),
-          Padding(
-            padding: const EdgeInsets.only(left: 32.0, right: 32.0, top: 16.0),
-            child: Text(
-              "Connected Accounts",
-              style: textTheme.titleSmall!.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          SettingsListHeader(title: "Login Providers"),
           SettingsListTile(
             title: "Google",
             subtitle: googleProvider?.email ?? "Not connected",
@@ -162,6 +152,7 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
               type: CustomButtonType.text,
             ),
           ),
+          SettingsListHeader(title: "Your Account"),
           if (emailProvider != null)
             SettingsListTile(
               title: "Reset Password",

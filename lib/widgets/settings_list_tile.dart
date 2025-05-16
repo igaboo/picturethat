@@ -50,3 +50,27 @@ class SettingsListTile extends StatelessWidget {
     );
   }
 }
+
+class SettingsListHeader extends StatelessWidget {
+  final String title;
+
+  const SettingsListHeader({
+    required this.title,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 32.0, right: 32.0, top: 16.0),
+      child: Text(
+        title,
+        style: textTheme.titleSmall!.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+}

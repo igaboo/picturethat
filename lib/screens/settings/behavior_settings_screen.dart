@@ -21,6 +21,7 @@ class BehaviorSettingsScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Behavior Settings")),
       body: ListView(
         children: [
+          SettingsListHeader(title: "Miscellaneous"),
           SettingsListTile(
             title: "Reset Tooltips",
             subtitle: "Show all tooltips again",

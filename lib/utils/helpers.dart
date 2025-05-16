@@ -376,7 +376,7 @@ Future<void> updateLastSeenNotifications() async {
 }
 
 Future<DateTime?> getLastSeenNotifications() async {
-  final lastSeen = await getString('lastSeenNotifications');
+  final lastSeen = await getString('lastSeenNotifications') ?? "";
   if (lastSeen.isEmpty) return null;
 
   return DateTime.tryParse(lastSeen);

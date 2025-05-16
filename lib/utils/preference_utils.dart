@@ -3,9 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // in the future it might be best to append the key with the userId
 // so that multiple users on the same device won't share the same preferences
 
-Future<String> getString(String key) async {
+Future<String?> getString(String key) async {
   final preferences = await SharedPreferences.getInstance();
-  return preferences.getString(key) ?? '';
+  return preferences.getString(key);
 }
 
 Future<void> setString(String key, String value) async {

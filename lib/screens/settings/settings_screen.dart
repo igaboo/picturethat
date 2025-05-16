@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:picture_that/screens/settings/account_settings_screen.dart';
+import 'package:picture_that/screens/settings/app_appearance_settings.dart';
 import 'package:picture_that/screens/settings/behavior_settings_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
@@ -28,6 +29,12 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: "Manage screen behavior, tooltips",
             leading: const Icon(Icons.settings),
             onTap: () => navigate(const BehaviorSettingsScreen()),
+          ),
+          SettingsListTile(
+            title: "App Appearance",
+            subtitle: "Change app theme",
+            leading: const Icon(Icons.palette),
+            onTap: () => navigate(const AppAppearanceScreen()),
           ),
           FutureBuilder(
             future: PackageInfo.fromPlatform(),
