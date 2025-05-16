@@ -727,6 +727,10 @@ Future<void> deleteRelationship(String id) async {
   await docRef.delete();
 }
 
+//
+// Notifications
+//
+
 /// get a list of notifications from "notifications" collection
 Future<({List<NotificationModel> items, DocumentSnapshot? lastDoc})>
     getNotifications({
@@ -755,10 +759,6 @@ Future<({List<NotificationModel> items, DocumentSnapshot? lastDoc})>
 
   return (items: items, lastDoc: docs.last);
 }
-
-//
-// Notifications
-//
 
 /// initialize firebase cloud messaging
 ///
