@@ -1,6 +1,6 @@
 # Picture That
 
-> Note that the app currently builds for the beta api version of android, Baklava, v36.
+> Note that the app has been testing using Android 14, 15, and 16.
 
 #### [Final Project Concept](https://docs.google.com/document/d/1uOVQO4H-M1n7Ux5_mvusL-wJXAoJFcKMRCs43kdkYew/edit?tab=t.0)
 
