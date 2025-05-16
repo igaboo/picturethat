@@ -19,6 +19,7 @@ class Prompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     bool isTodaysPrompt = isToday(prompt.date!);
 
@@ -28,11 +29,12 @@ class Prompt extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 5.0,
           children: [
             Padding(
-              padding:
-                  EdgeInsets.symmetric(vertical: isTodaysPrompt ? 14.0 : 0.0),
+              padding: EdgeInsets.only(
+                top: isTodaysPrompt ? 16.0 : 0.0,
+                bottom: isTodaysPrompt ? 10.0 : 5.0,
+              ),
               child: Text(
                 getFormattedDate(prompt.date!),
                 style: isTodaysPrompt
@@ -155,7 +157,11 @@ class Prompt extends StatelessWidget {
                         visible: isTodaysPrompt,
                         child: IconButton.filled(
                           onPressed: () => navigate(SubmitPhotoScreen()),
-                          icon: Icon(Icons.add_photo_alternate_outlined),
+                          icon: Icon(Icons.add_a_photo),
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.primaryContainer,
+                            foregroundColor: colorScheme.onPrimaryContainer,
+                          ),
                         ),
                       ),
                     ],

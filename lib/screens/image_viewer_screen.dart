@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/widgets/custom_button.dart';
 
 class ImageViewerScreen extends StatelessWidget {
   final ImageProvider imageProvider;
   final Object? heroTag;
-  final CustomButton? button;
+  final List<Widget>? actions;
 
   const ImageViewerScreen({
     required this.imageProvider,
     required this.heroTag,
-    this.button,
+    this.actions,
     super.key,
   });
 
@@ -49,12 +48,19 @@ class ImageViewerScreen extends StatelessWidget {
                 backgroundDecoration: BoxDecoration(color: colorScheme.surface),
               ),
             ),
-            if (button != null)
+            if (actions != null)
               Positioned(
-                bottom: 60,
-                left: 60,
-                right: 60,
-                child: button!,
+                bottom: 16.0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    spacing: 10.0,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: actions!,
+                  ),
+                ),
               ),
           ],
         ),

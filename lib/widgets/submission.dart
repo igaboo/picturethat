@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +18,7 @@ import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/widgets/comment.dart';
 import 'package:picture_that/widgets/comments_list.dart';
+import 'package:picture_that/widgets/custom_button.dart';
 import 'package:picture_that/widgets/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/custom_text_input.dart';
@@ -23,6 +26,11 @@ import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/labeled_icon_button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+///
+/// TODO:
+/// - Move user avatar-follow widget to a separate widget
+///
 
 final commentsListSkeleton = CustomSkeletonizer(
   child: ListView.separated(
@@ -46,7 +54,7 @@ final profileImageSkeleton = CustomSkeletonizer(
   ),
 );
 
-class Submission extends ConsumerWidget {
+class Submission extends ConsumerStatefulWidget {
   final SubmissionModel submission;
   final String? heroContext;
   final bool? isOnProfileTab;
@@ -59,116 +67,109 @@ class Submission extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Submission> createState() => _SubmissionState();
+}
+
+class _SubmissionState extends ConsumerState<Submission> {
+  Timer? _debounce;
+
+  @override
+  Widget build(BuildContext context) {
     ref.watch(relationshipProvider);
     final isFollowing = ref
         .read(relationshipProvider.notifier)
-        .isFollowing(submission.user.uid);
+        .isFollowing(widget.submission.user.uid);
 
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final isSelf = submission.user.uid == auth.currentUser?.uid;
+    final isSelf = widget.submission.user.uid == auth.currentUser?.uid;
 
     void navigateToProfile(String userId) {
-      if (isOnProfileTab == true) return;
+      if (widget.isOnProfileTab == true) return;
       navigate(ProfileScreen(userId: userId));
     }
 
     void handleLike() {
+      final isLiked = widget.submission.isLiked;
+
       void onInitialized(SubmissionNotifier notifier) {
         notifier.toggleSubmissionLike(
-          submissionId: submission.id,
-          isLiked: submission.isLiked,
+          submissionId: widget.submission.id,
+          isLiked: isLiked,
         );
       }
 
-      // update firestore (no await, not necessary)
-      toggleLike(
-        submissionId: submission.id,
-        uid: auth.currentUser!.uid,
-        isLiked: submission.isLiked,
-      );
+      // debounce toggleLike to prevent multiple calls
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        // update firestore (no await, not necessary)
+        toggleLike(
+          submissionId: widget.submission.id,
+          uid: auth.currentUser!.uid,
+          isLiked: isLiked,
+        );
+      });
 
-      // update prompt list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+      // update submission state
+      for (final q in [
+        SubmissionQueryParam(
           type: SubmissionQueryType.byPrompt,
-          id: submission.prompt.id,
+          id: widget.submission.prompt.id,
         ),
-        onInitialized: onInitialized,
-      );
-
-      // update user list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+        SubmissionQueryParam(
           type: SubmissionQueryType.byUser,
-          id: submission.user.uid,
+          id: widget.submission.user.uid,
         ),
-        onInitialized: onInitialized,
-      );
-
-      // update discover feed list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+        SubmissionQueryParam(
           type: SubmissionQueryType.byRandom,
         ),
-        onInitialized: onInitialized,
-      );
-
-      // update following feed list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+        SubmissionQueryParam(
           type: SubmissionQueryType.byFollowing,
         ),
-        onInitialized: onInitialized,
-      );
+      ]) {
+        updateSubmissionNotifierIfInitialized(
+          context: context,
+          ref: ref,
+          queryParam: q,
+          onInitialized: onInitialized,
+        );
+      }
     }
 
     void handleDelete() async {
       void onInitialized(SubmissionNotifier notifier) {
-        notifier.deleteSubmission(submission.id);
+        notifier.deleteSubmission(widget.submission.id);
       }
 
       // update firestore
-      await deleteSubmission(submissionId: submission.id);
+      await deleteSubmission(submissionId: widget.submission.id);
 
-      // update prompt list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+      // update submission state
+      for (final q in [
+        SubmissionQueryParam(
           type: SubmissionQueryType.byPrompt,
-          id: submission.prompt.id,
+          id: widget.submission.prompt.id,
         ),
-        onInitialized: onInitialized,
-      );
-
-      // update user list
-      updateSubmissionNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        queryParam: SubmissionQueryParam(
+        SubmissionQueryParam(
           type: SubmissionQueryType.byUser,
-          id: submission.user.uid,
+          id: widget.submission.user.uid,
         ),
-        onInitialized: onInitialized,
-      );
+      ]) {
+        updateSubmissionNotifierIfInitialized(
+          context: context,
+          ref: ref,
+          queryParam: q,
+          onInitialized: onInitialized,
+        );
+      }
 
       // update submission count for prompt
       updatePromptNotifierIfInitialized(
         context: context,
         ref: ref,
         onInitialized: (notifier) => notifier.updateSubmissionCount(
-          promptId: submission.prompt.id,
+          promptId: widget.submission.prompt.id,
           isIncrementing: false,
         ),
       );
@@ -177,7 +178,7 @@ class Submission extends ConsumerWidget {
       updateUserNotifierIfInitialized(
         context: context,
         ref: ref,
-        userId: submission.user.uid,
+        userId: widget.submission.user.uid,
         onInitialized: (notifier) => notifier.updateSubmissionsCount(false),
       );
     }
@@ -186,7 +187,7 @@ class Submission extends ConsumerWidget {
       // open bottom sheet
       showModalBottomSheet(
         context: context,
-        builder: (context) => CommentBottomSheet(submission: submission),
+        builder: (context) => CommentBottomSheet(submission: widget.submission),
         isScrollControlled: true,
         useSafeArea: true,
         shape: RoundedRectangleBorder(
@@ -200,8 +201,8 @@ class Submission extends ConsumerWidget {
     void handleShare() {
       // this url is just a placeholder, replace with actual url
       // in future when deep linking is implemented
-      final url = "https://picturethat.com/submission/${submission.id}";
-      final subject = isSelf ? "my" : "${submission.user.firstName}'s";
+      final url = "https://picturethat.com/submission/${widget.submission.id}";
+      final subject = isSelf ? "my" : "${widget.submission.user.firstName}'s";
 
       SharePlus.instance.share(ShareParams(
         text: "Check out $subject photo on Picture That: $url",
@@ -219,16 +220,17 @@ class Submission extends ConsumerWidget {
               GestureDetector(
                 onTap: () async {
                   if (!isFollowing && !isSelf) {
-                    await toggleFollow(context, ref, submission.user.uid);
+                    await toggleFollow(
+                        context, ref, widget.submission.user.uid);
 
                     customShowSnackbar(
-                      "Now following @${submission.user.username}",
+                      "Now following @${widget.submission.user.username}",
                       action: SnackBarAction(
                         label: "Undo",
                         onPressed: () => toggleFollow(
                           context,
                           ref,
-                          submission.user.uid,
+                          widget.submission.user.uid,
                         ),
                       ),
                     );
@@ -236,15 +238,15 @@ class Submission extends ConsumerWidget {
                     return;
                   }
 
-                  navigateToProfile(submission.user.uid);
+                  navigateToProfile(widget.submission.user.uid);
                 },
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
                     CustomImage(
-                      key: ValueKey(submission.user.profileImageUrl),
+                      key: ValueKey(widget.submission.user.profileImageUrl),
                       imageProvider:
-                          NetworkImage(submission.user.profileImageUrl),
+                          NetworkImage(widget.submission.user.profileImageUrl),
                       shape: CustomImageShape.circle,
                       width: 40,
                       height: 40,
@@ -279,9 +281,10 @@ class Submission extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => navigateToProfile(submission.user.uid),
+                      onTap: () =>
+                          navigateToProfile(widget.submission.user.uid),
                       child: Text(
-                        "@${submission.user.username}",
+                        "@${widget.submission.user.username}",
                         style: textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -289,9 +292,9 @@ class Submission extends ConsumerWidget {
                     ),
                     GestureDetector(
                       onTap: () => navigate(
-                        PromptFeedScreen(promptId: submission.prompt.id),
+                        PromptFeedScreen(promptId: widget.submission.prompt.id),
                       ),
-                      child: Text(submission.prompt.title),
+                      child: Text(widget.submission.prompt.title),
                     ),
                   ],
                 ),
@@ -347,15 +350,24 @@ class Submission extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: CustomImageViewer(
+            actions: [
+              CustomButton(
+                label: "Leave a Comment",
+                onPressed: showCommentSheet,
+              ),
+              IconButton.filledTonal(
+                icon: const Icon(Icons.share),
+                onPressed: handleShare,
+              ),
+            ],
             onDoubleTap: handleLike,
-            heroTag: "${heroContext}_${submission.id}",
+            heroTag: "${widget.heroContext}_${widget.submission.id}",
             customImage: CustomImage(
-              key: ValueKey(submission.image.url),
-              imageProvider: NetworkImage(submission.image.url),
-              width: submission.image.width.toDouble(),
-              height: submission.image.height.toDouble(),
+              key: ValueKey(widget.submission.image.url),
+              imageProvider: NetworkImage(widget.submission.image.url),
+              width: widget.submission.image.width.toDouble(),
+              height: widget.submission.image.height.toDouble(),
               maxWidth: MediaQuery.of(context).size.width - 10.0,
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
             ),
           ),
         ),
@@ -372,8 +384,8 @@ class Submission extends ConsumerWidget {
                       onPressed: handleLike,
                       icon: Icons.favorite_outline,
                       selectedIcon: Icons.favorite,
-                      label: "${submission.likes.length}",
-                      isSelected: submission.isLiked,
+                      label: "${widget.submission.likes.length}",
+                      isSelected: widget.submission.isLiked,
                     ),
                   ),
                   ConstrainedBox(
@@ -381,7 +393,7 @@ class Submission extends ConsumerWidget {
                     child: LabeledIconButton(
                       onPressed: showCommentSheet,
                       icon: Icons.chat_bubble_outline,
-                      label: submission.commentsCount.toString(),
+                      label: widget.submission.commentsCount.toString(),
                     ),
                   ),
                   ConstrainedBox(
@@ -394,7 +406,7 @@ class Submission extends ConsumerWidget {
                 ],
               ),
             ),
-            if (submission.caption?.isNotEmpty == true)
+            if (widget.submission.caption?.isNotEmpty == true)
               Padding(
                 padding:
                     const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 5.0),
@@ -403,16 +415,16 @@ class Submission extends ConsumerWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: "@${submission.user.username} ",
+                        text: "@${widget.submission.user.username} ",
                         style: textTheme.bodyMedium!.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                         recognizer: TapGestureRecognizer()
-                          ..onTap =
-                              () => navigateToProfile(submission.user.uid),
+                          ..onTap = () =>
+                              navigateToProfile(widget.submission.user.uid),
                       ),
                       TextSpan(
-                        text: submission.caption!,
+                        text: widget.submission.caption!,
                         style: textTheme.bodyMedium,
                       ),
                     ],
@@ -422,7 +434,7 @@ class Submission extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                getTimeElapsed(submission.date),
+                getTimeElapsed(widget.submission.date),
                 style: textTheme.bodySmall,
               ),
             ),

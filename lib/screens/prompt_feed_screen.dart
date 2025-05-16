@@ -40,14 +40,11 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
     final promptAsync = ref.watch(promptProvider(widget.promptId));
     final submissionsAsync = ref.watch(submissionProvider(queryParam));
     final prompt = promptAsync.asData?.value;
-    final colorScheme = Theme.of(context).colorScheme;
 
     final fab = (prompt != null && isToday(prompt.date))
         ? FloatingActionButton(
             onPressed: () => navigate(const SubmitPhotoScreen()),
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-            child: Icon(Icons.add_photo_alternate_outlined),
+            child: Icon(Icons.add_a_photo),
           )
         : null;
 
@@ -91,30 +88,22 @@ class _FeedScreenState extends ConsumerState<PromptFeedScreen> {
       body: submissionsAsync.when(
         loading: () => submissionListSkeleton,
         error: (e, _) => Center(child: Text("Error: $e")),
-        data: (submissions) => Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: refreshSubmissions,
-              child: SubmissionListSliver(
-                emptyState: isToday(prompt?.date)
-                    ? EmptyState(
-                        icon: Icons.hide_image,
-                        title: "No Submissions",
-                        subtitle: "Be the first to submit your photo!",
-                        action: (
-                          label: "Upload Photo",
-                          onPressed: () => navigate(const SubmitPhotoScreen())
-                        ),
-                      )
-                    : null,
-                heroContext: widget.promptId,
-                submissionState: submissions,
-                queryParam: queryParam,
-                bottomPadding: true,
-                padding: const EdgeInsets.only(top: 8.0),
-              ),
-            ),
-          ],
+        data: (submissions) => RefreshIndicator(
+          onRefresh: refreshSubmissions,
+          child: SubmissionListSliver(
+            emptyState: isToday(prompt?.date)
+                ? EmptyState(
+                    icon: Icons.hide_image,
+                    title: "No Submissions",
+                    subtitle: "Be the first to submit your photo!",
+                  )
+                : null,
+            heroContext: widget.promptId,
+            submissionState: submissions,
+            queryParam: queryParam,
+            bottomPadding: true,
+            padding: const EdgeInsets.only(top: 8.0),
+          ),
         ),
       ),
     );

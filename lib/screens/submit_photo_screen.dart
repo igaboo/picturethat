@@ -190,111 +190,115 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
         leading: const BackButton(),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          bottom: 16.0,
-        ),
-        child: Column(
-          spacing: 10.0,
-          children: [
-            userAsync.when(
-              loading: () => headerSkeleton,
-              error: (e, _) => Center(child: Text("error: $e")),
-              data: (user) => promptsAsync.when(
-                loading: () => headerSkeleton,
-                error: (e, _) => Center(child: Text("error: $e")),
-                data: (prompts) => SubmitPhotoScreenHeader(
-                  user: user,
-                  promptTitle: prompts.items[0].title,
+        child: SafeArea(
+          minimum: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            spacing: 10.0,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: userAsync.when(
+                  loading: () => headerSkeleton,
+                  error: (e, _) => Center(child: Text("error: $e")),
+                  data: (user) => promptsAsync.when(
+                    loading: () => headerSkeleton,
+                    error: (e, _) => Center(child: Text("error: $e")),
+                    data: (prompts) => SubmitPhotoScreenHeader(
+                      user: user,
+                      promptTitle: prompts.items[0].title,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            GestureDetector(
-              onTap: _isLoading ? null : () => _selectSubmissionImage(),
-              child: Column(
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: maxImageHeight,
-                      maxWidth: maxImageWidth,
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        _submissionImage == null
-                            ? Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20.0),
-                                  color: colorScheme.surfaceContainer,
-                                  border: Border.all(
-                                    color: colorScheme.surfaceContainerHighest,
+              GestureDetector(
+                onTap: _isLoading ? null : () => _selectSubmissionImage(),
+                child: Column(
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: _submissionImageHeight?.toDouble() ??
+                            maxImageHeight,
+                        maxWidth:
+                            _submissionImageWidth?.toDouble() ?? maxImageWidth,
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          _submissionImage == null
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    color: colorScheme.surfaceContainer,
+                                    border: Border.all(
+                                      color:
+                                          colorScheme.surfaceContainerHighest,
+                                    ),
                                   ),
-                                ),
-                                child: Center(
-                                  child: !_isLoading
-                                      ? Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.image,
-                                              size: 60,
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
-                                            ),
-                                            Text(
-                                              "Select an image",
-                                              style: textTheme.labelLarge!
-                                                  .copyWith(
+                                  child: Center(
+                                    child: !_isLoading
+                                        ? Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.image,
+                                                size: 60,
                                                 color: colorScheme
                                                     .onSurfaceVariant,
                                               ),
-                                            ),
-                                          ],
-                                        )
-                                      : const SizedBox(),
+                                              Text(
+                                                "Select an image",
+                                                style: textTheme.labelLarge!
+                                                    .copyWith(
+                                                  color: colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(),
+                                  ),
+                                )
+                              : CustomImage(
+                                  key: ValueKey(_submissionImage?.path),
+                                  imageProvider:
+                                      FileImage(File(_submissionImage!.path)),
+                                  shape: CustomImageShape.squircle,
+                                  width: _submissionImageWidth!.toDouble(),
+                                  height: _submissionImageHeight!.toDouble(),
+                                  maxWidth: maxImageWidth,
                                 ),
-                              )
-                            : CustomImage(
-                                key: ValueKey(_submissionImage?.path),
-                                imageProvider:
-                                    FileImage(File(_submissionImage!.path)),
-                                shape: CustomImageShape.squircle,
-                                width: _submissionImageWidth!.toDouble(),
-                                height: _submissionImageHeight!.toDouble(),
-                                maxHeight: maxImageHeight,
-                                maxWidth: maxImageWidth,
-                              ),
-                        if (_isLoading) CircularProgressIndicator(),
-                      ],
+                          if (_isLoading) CircularProgressIndicator(),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
-              child: CustomTextField(
-                controller: _descriptionController,
-                label: "Photo Description",
-                maxLength: 350,
-                multiline: true,
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 10.0, horizontal: 16.0),
+                child: CustomTextField(
+                  controller: _descriptionController,
+                  label: "Photo Description",
+                  maxLength: 350,
+                  multiline: true,
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  CustomButton(
-                    label: "Submit Photo",
-                    onPressed: _submitPhoto,
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    CustomButton(
+                      label: "Submit Photo",
+                      onPressed: _submitPhoto,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:picture_that/screens/image_viewer_screen.dart';
-import 'package:picture_that/widgets/custom_button.dart';
 
 enum CustomImageShape { squircle, circle }
 
@@ -10,7 +9,7 @@ class CustomImage extends StatelessWidget {
   final double height;
   final CustomImageShape shape;
   final double? maxWidth;
-  final double? maxHeight;
+  final double? borderRadius;
 
   const CustomImage({
     required this.imageProvider,
@@ -18,7 +17,7 @@ class CustomImage extends StatelessWidget {
     required this.height,
     this.shape = CustomImageShape.squircle,
     this.maxWidth,
-    this.maxHeight,
+    this.borderRadius,
     super.key,
   });
 
@@ -27,21 +26,17 @@ class CustomImage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final borderColor = colorScheme.surfaceContainerHighest;
     final placeholderColor = colorScheme.surfaceContainerLow;
-    final borderRadius = (shape == CustomImageShape.squircle)
-        ? BorderRadius.circular(20.0)
+    final adjustedBorderRadius = (shape == CustomImageShape.squircle)
+        ? BorderRadius.circular(borderRadius ?? 20.0)
         : null;
 
     double scaledWidth = width;
     double scaledHeight = height;
-    if (maxHeight != null) {
-      double scale = maxHeight! / height;
-      scaledHeight = height * scale;
-      scaledWidth = width * scale;
-    }
-    if (maxWidth != null && scaledWidth > scaledHeight) {
-      double scale = maxWidth! / scaledWidth;
+
+    if (maxWidth != null) {
+      final aspectRatio = width / height;
       scaledWidth = maxWidth!;
-      scaledHeight = scaledHeight * scale;
+      scaledHeight = scaledWidth / aspectRatio;
     }
 
     Widget imageWidget = Image(
@@ -74,7 +69,8 @@ class CustomImage extends StatelessWidget {
     if (shape == CustomImageShape.circle) {
       clippedImage = ClipOval(child: imageWidget);
     } else {
-      clippedImage = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
+      clippedImage =
+          ClipRRect(borderRadius: adjustedBorderRadius!, child: imageWidget);
     }
 
     Widget borderedContainer = Container(
@@ -82,7 +78,7 @@ class CustomImage extends StatelessWidget {
         shape: shape == CustomImageShape.circle
             ? BoxShape.circle
             : BoxShape.rectangle,
-        borderRadius: borderRadius,
+        borderRadius: adjustedBorderRadius,
         border: Border.all(color: borderColor),
       ),
       child: clippedImage,
@@ -96,13 +92,13 @@ class CustomImageViewer extends StatelessWidget {
   final CustomImage customImage;
   final Object? heroTag;
   final VoidCallback? onDoubleTap;
-  final CustomButton? button;
+  final List<Widget>? actions;
 
   const CustomImageViewer({
     required this.customImage,
     this.heroTag,
     this.onDoubleTap,
-    this.button,
+    this.actions,
     super.key,
   });
 
@@ -119,7 +115,7 @@ class CustomImageViewer extends StatelessWidget {
               return ImageViewerScreen(
                 imageProvider: customImage.imageProvider,
                 heroTag: heroTag,
-                button: button,
+                actions: actions,
               );
             },
             transitionsBuilder:

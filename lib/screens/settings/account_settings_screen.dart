@@ -8,6 +8,7 @@ import 'package:picture_that/screens/authentication/landing_screen.dart';
 import 'package:picture_that/screens/forgot_password.dart';
 import 'package:picture_that/screens/settings/connect_email_provider_screen.dart';
 import 'package:picture_that/screens/settings/delete_account_screen.dart';
+import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
@@ -99,13 +100,13 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             loading: () => CircularProgressIndicator(),
             error: (error, _) => Text("Error: $error"),
             data: (user) {
-              if (user == null) return const SizedBox.shrink();
-
               return SettingsListTile(
-                title: "${user.firstName} ${user.lastName}",
-                subtitle: "@${user.username}",
+                title: "${user?.firstName} ${user?.lastName}",
+                subtitle: "@${user?.username}",
                 leading: CustomImage(
-                  imageProvider: NetworkImage(user.profileImageUrl),
+                  imageProvider: user?.profileImageUrl == null
+                      ? defaultProfileImage
+                      : NetworkImage(user?.profileImageUrl ?? dummyImageUrl),
                   width: 55,
                   height: 55,
                   shape: CustomImageShape.circle,
