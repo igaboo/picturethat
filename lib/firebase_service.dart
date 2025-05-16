@@ -318,6 +318,36 @@ Future<UserModel?> getUser({required String userId}) async {
   return UserModel.fromMap(userData);
 }
 
+/// Get list of users who follow the given userId
+Future<List<UserSearchResultModel>> getRelationshipsForUser({
+  required String userId,
+  required bool getFollowers, // true to get followers, false to get following
+}) async {
+  final queryField = getFollowers ? "following" : "follower";
+  final resultField = getFollowers ? "follower" : "following";
+
+  final relationshipDocs = await db
+      .collection("relationships")
+      .where(queryField, isEqualTo: userId)
+      .get();
+
+  final userIds =
+      relationshipDocs.docs.map((doc) => doc[resultField] as String).toList();
+
+  if (userIds.isEmpty) return [];
+
+  final userDocs = await db
+      .collection("users")
+      .where(FieldPath.documentId, whereIn: userIds)
+      .get();
+
+  return userDocs.docs.map((doc) {
+    final data = doc.data();
+    data["uid"] = doc.id; // Include uid from doc.id
+    return UserSearchResultModel.fromMap(data);
+  }).toList();
+}
+
 /// update user profile
 Future<Map<String, dynamic>> updateUserProfile({
   String? firstName,
