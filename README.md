@@ -22,6 +22,8 @@
 
 [Firebase Documentation](https://firebase.google.com/docs/flutter)
 
+[Firebase Messaging Documentation](https://firebase.google.com/docs/cloud-messaging)
+
 [Code with Andrea](https://codewithandrea.com)
 
 #### Packages
@@ -49,3 +51,5 @@
 [skeletonizer](https://pub.dev/packages/skeletonizer)
 
 [share_plus](https://pub.dev/packages/share_plus)
+
+[google_sign_in](https://pub.dev/packages/google_sign_in)
