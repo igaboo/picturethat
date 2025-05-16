@@ -108,7 +108,6 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
       // update prompt list
       updateSubmissionNotifierIfInitialized(
-        context: context,
         ref: ref,
         queryParam: SubmissionQueryParam(
           type: SubmissionQueryType.byPrompt,
@@ -119,7 +118,6 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
       // update user list
       updateSubmissionNotifierIfInitialized(
-        context: context,
         ref: ref,
         queryParam: SubmissionQueryParam(
           type: SubmissionQueryType.byUser,
@@ -130,7 +128,6 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
       // update user submission count
       updateUserNotifierIfInitialized(
-        context: context,
         ref: ref,
         userId: userId,
         onInitialized: (notifier) => notifier.updateSubmissionsCount(true),
@@ -138,7 +135,6 @@ class _SubmitPhotoScreenState extends ConsumerState<SubmitPhotoScreen> {
 
       // update prompt submission count
       updatePromptNotifierIfInitialized(
-        context: context,
         ref: ref,
         onInitialized: (notifier) => notifier.updateSubmissionCount(
           promptId: promptId,

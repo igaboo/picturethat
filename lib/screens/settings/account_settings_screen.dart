@@ -52,7 +52,6 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         }
 
         await customShowDialog(
-          context: context,
           title: "Disconnect Account",
           content:
               "Are you sure you want to disconnect your $providerName account?",
@@ -114,7 +113,6 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                 trailing: IconButton(
                   icon: const Icon(Icons.logout),
                   onPressed: () => customShowDialog(
-                    context: context,
                     title: "Logout",
                     content: "Are you sure you want to logout?",
                     onPressed: _logout,

@@ -91,96 +91,99 @@ class _SubmissionState extends ConsumerState<Submission> {
     }
 
     void handleLike() {
+      final promptId = widget.submission.prompt.id;
+      final userId = widget.submission.user.uid;
+      final submissionId = widget.submission.id;
       final isLiked = widget.submission.isLiked;
 
-      void onInitialized(SubmissionNotifier notifier) {
-        notifier.toggleSubmissionLike(
-          submissionId: widget.submission.id,
-          isLiked: isLiked,
-        );
-      }
+      try {
+        // debounce toggleLike to prevent multiple calls
+        if (_debounce?.isActive ?? false) _debounce!.cancel();
+        _debounce = Timer(const Duration(milliseconds: 500), () {
+          // update firestore (no await, not necessary)
+          toggleLike(
+            submissionId: submissionId,
+            uid: auth.currentUser!.uid,
+            isLiked: isLiked,
+          );
+        });
 
-      // debounce toggleLike to prevent multiple calls
-      if (_debounce?.isActive ?? false) _debounce!.cancel();
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        // update firestore (no await, not necessary)
-        toggleLike(
-          submissionId: widget.submission.id,
-          uid: auth.currentUser!.uid,
-          isLiked: isLiked,
-        );
-      });
-
-      // update submission state
-      for (final q in [
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byPrompt,
-          id: widget.submission.prompt.id,
-        ),
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byUser,
-          id: widget.submission.user.uid,
-        ),
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byRandom,
-        ),
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byFollowing,
-        ),
-      ]) {
-        updateSubmissionNotifierIfInitialized(
-          context: context,
-          ref: ref,
-          queryParam: q,
-          onInitialized: onInitialized,
-        );
+        // update submission state
+        for (final q in [
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byPrompt,
+            id: promptId,
+          ),
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byUser,
+            id: userId,
+          ),
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byRandom,
+          ),
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byFollowing,
+          ),
+        ]) {
+          updateSubmissionNotifierIfInitialized(
+            ref: ref,
+            queryParam: q,
+            onInitialized: (n) => n.toggleSubmissionLike(
+              submissionId: submissionId,
+              isLiked: isLiked,
+            ),
+          );
+        }
+      } catch (e) {
+        customShowSnackbar(e);
       }
     }
 
     void handleDelete() async {
-      void onInitialized(SubmissionNotifier notifier) {
-        notifier.deleteSubmission(widget.submission.id);
-      }
+      final submissionId = widget.submission.id;
+      final userId = widget.submission.user.uid;
+      final promptId = widget.submission.prompt.id;
 
-      // update firestore
-      await deleteSubmission(submissionId: widget.submission.id);
+      try {
+        // update firestore
+        await deleteSubmission(submissionId);
 
-      // update submission state
-      for (final q in [
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byPrompt,
-          id: widget.submission.prompt.id,
-        ),
-        SubmissionQueryParam(
-          type: SubmissionQueryType.byUser,
-          id: widget.submission.user.uid,
-        ),
-      ]) {
-        updateSubmissionNotifierIfInitialized(
-          context: context,
+        // update submission state
+        for (final q in [
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byPrompt,
+            id: widget.submission.prompt.id,
+          ),
+          SubmissionQueryParam(
+            type: SubmissionQueryType.byUser,
+            id: widget.submission.user.uid,
+          ),
+        ]) {
+          updateSubmissionNotifierIfInitialized(
+            ref: ref,
+            queryParam: q,
+            onInitialized: (n) => n.deleteSubmission(submissionId),
+          );
+        }
+
+        // update submission count for prompt
+        updatePromptNotifierIfInitialized(
           ref: ref,
-          queryParam: q,
-          onInitialized: onInitialized,
+          onInitialized: (n) => n.updateSubmissionCount(
+            promptId: promptId,
+            isIncrementing: false,
+          ),
         );
+
+        // update submission count for user
+        updateUserNotifierIfInitialized(
+          ref: ref,
+          userId: userId,
+          onInitialized: (n) => n.updateSubmissionsCount(false),
+        );
+      } catch (e) {
+        customShowSnackbar(e);
       }
-
-      // update submission count for prompt
-      updatePromptNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        onInitialized: (notifier) => notifier.updateSubmissionCount(
-          promptId: widget.submission.prompt.id,
-          isIncrementing: false,
-        ),
-      );
-
-      // update submission count for user
-      updateUserNotifierIfInitialized(
-        context: context,
-        ref: ref,
-        userId: widget.submission.user.uid,
-        onInitialized: (notifier) => notifier.updateSubmissionsCount(false),
-      );
     }
 
     void showCommentSheet() {
@@ -308,7 +311,6 @@ class _SubmissionState extends ConsumerState<Submission> {
                   }
                   if (value == "delete") {
                     customShowDialog(
-                      context: context,
                       title: "Delete Submission",
                       content:
                           "Are you sure you want to delete this submission?",
@@ -495,7 +497,6 @@ class _CommentBottomSheetState extends ConsumerState<CommentBottomSheet> {
       );
 
       updateCommentCountHelper(
-        context: context,
         ref: ref,
         isIncrementing: true,
         submission: widget.submission,

@@ -45,7 +45,6 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       await auth.currentUser?.reauthenticateWithCredential(credential);
 
       await customShowDialog(
-        context: context,
         title: "Delete Account",
         content:
             "Are you sure you want to delete your account? All images and comments will be permanently deleted. This cannot be undone.",

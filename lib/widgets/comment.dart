@@ -37,7 +37,6 @@ class Comment extends ConsumerWidget {
           .removeComment(comment.id);
 
       updateCommentCountHelper(
-        context: context,
         ref: ref,
         isIncrementing: false,
         submission: submission!,
@@ -90,7 +89,6 @@ class Comment extends ConsumerWidget {
                     onSelected: (value) {
                       if (value == "delete") {
                         customShowDialog(
-                          context: context,
                           title: "Delete Comment",
                           content:
                               "Are you sure you want to delete this comment?",

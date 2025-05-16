@@ -15,11 +15,11 @@ import 'package:picture_that/utils/preference_utils.dart';
 ///
 
 void updateSubmissionNotifierIfInitialized({
-  required BuildContext context,
   required WidgetRef ref,
   required SubmissionQueryParam queryParam,
   required Function(SubmissionNotifier) onInitialized,
 }) {
+  final context = navigatorKey.currentContext!;
   if (context.mounted == false) return;
 
   final container = ProviderScope.containerOf(context);
@@ -33,11 +33,11 @@ void updateSubmissionNotifierIfInitialized({
 }
 
 void updateUserNotifierIfInitialized({
-  required BuildContext context,
   required WidgetRef ref,
   required String userId,
   required Function(UserNotifier) onInitialized,
 }) {
+  final context = navigatorKey.currentContext!;
   if (context.mounted == false) return;
 
   final container = ProviderScope.containerOf(context);
@@ -51,10 +51,10 @@ void updateUserNotifierIfInitialized({
 }
 
 void updatePromptNotifierIfInitialized({
-  required BuildContext context,
   required WidgetRef ref,
   required Function(PromptNotifier) onInitialized,
 }) {
+  final context = navigatorKey.currentContext!;
   if (context.mounted == false) return;
 
   final container = ProviderScope.containerOf(context);
@@ -68,11 +68,11 @@ void updatePromptNotifierIfInitialized({
 }
 
 void updateCommentCountHelper({
-  required BuildContext context,
   required WidgetRef ref,
   required bool isIncrementing,
   required SubmissionModel submission,
 }) {
+  final context = navigatorKey.currentContext!;
   if (context.mounted == false) return;
 
   void onInitialized(SubmissionNotifier notifier) {
@@ -84,7 +84,6 @@ void updateCommentCountHelper({
 
   // update count for prompt submission
   updateSubmissionNotifierIfInitialized(
-    context: context,
     ref: ref,
     queryParam: SubmissionQueryParam(
       type: SubmissionQueryType.byPrompt,
@@ -95,7 +94,6 @@ void updateCommentCountHelper({
 
   // update count for user submission
   updateSubmissionNotifierIfInitialized(
-    context: context,
     ref: ref,
     queryParam: SubmissionQueryParam(
       type: SubmissionQueryType.byUser,
@@ -106,7 +104,6 @@ void updateCommentCountHelper({
 
   // update count for discover feed submission
   updateSubmissionNotifierIfInitialized(
-    context: context,
     ref: ref,
     queryParam: SubmissionQueryParam(
       type: SubmissionQueryType.byRandom,
@@ -116,7 +113,6 @@ void updateCommentCountHelper({
 
   // update count for following feed submission
   updateSubmissionNotifierIfInitialized(
-    context: context,
     ref: ref,
     queryParam: SubmissionQueryParam(
       type: SubmissionQueryType.byFollowing,
@@ -352,7 +348,6 @@ Future<void> toggleFollow(
 
   // update profile to show the new following count
   updateUserNotifierIfInitialized(
-    context: context,
     ref: ref,
     userId: auth.currentUser!.uid,
     onInitialized: (notifier) => notifier.updateFollowingCount(!isFollowing),
@@ -360,7 +355,6 @@ Future<void> toggleFollow(
 
   // update their profile to show the new follower count
   updateUserNotifierIfInitialized(
-    context: context,
     ref: ref,
     userId: profileUid,
     onInitialized: (notifier) => notifier.updateFollowersCount(!isFollowing),

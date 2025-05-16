@@ -585,7 +585,7 @@ Future<void> createSubmission({required SubmissionModel submission}) async {
 }
 
 /// delete a submission
-Future<void> deleteSubmission({required String submissionId}) async {
+Future<void> deleteSubmission(String submissionId) async {
   final docRef = db.collection("submissions").doc(submissionId);
 
   final commentsSnapshot = await db
