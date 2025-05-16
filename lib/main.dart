@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picture_that/firebase_service.dart';
 import 'firebase_options.dart';
 import 'package:picture_that/auth_wrapper.dart';
 
@@ -14,6 +15,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await initializeFcm();
 
   runApp(const ProviderScope(child: MyApp()));
 }

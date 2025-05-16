@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:picture_that/providers/notification_badge_provider.dart';
 import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/edit_profile_screen.dart';
 import 'package:picture_that/screens/followers_screen.dart';
@@ -94,14 +95,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profileUid = widget.userId!;
     final isSelf = profileUid == auth.currentUser?.uid;
     final userAsync = ref.watch(userProvider(profileUid));
+    final notificationsStreamAsync = ref.watch(hasUnseenNotificationsProvider);
 
     return Scaffold(
       appBar: AppBar(
         actions: [
           if (isSelf)
-            IconButton(
-              onPressed: () => navigate(const NotificationsScreen()),
-              icon: Icon(Icons.notifications_outlined),
+            notificationsStreamAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error: (e, _) => const SizedBox.shrink(),
+              data: (isNew) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: isNew,
+                    smallSize: 10.0,
+                    child: const Icon(Icons.notifications_outlined),
+                  ),
+                  onPressed: () => navigate(const NotificationsScreen()),
+                );
+              },
             ),
           PopupMenuButton(
             icon: Icon(Icons.more_vert),
@@ -253,15 +265,20 @@ class ProfileHeader extends ConsumerWidget {
       children: [
         CustomImageViewer(
           heroTag: user.uid,
-          button: isSelf
-              ? CustomButton(
-                  label: "Update Profile Image",
-                  onPressed: () {
-                    navigateBack();
-                    navigate(const EditProfileScreen());
-                  },
-                )
-              : null,
+          actions: [
+            if (isSelf)
+              CustomButton(
+                label: "Edit Profile Image",
+                onPressed: () {
+                  navigateBack();
+                  navigate(const EditProfileScreen());
+                },
+              ),
+            IconButton.filledTonal(
+              icon: const Icon(Icons.share),
+              onPressed: onShare,
+            ),
+          ],
           customImage: CustomImage(
             key: ValueKey(user.uid),
             imageProvider: NetworkImage(user.profileImageUrl),

@@ -2,10 +2,12 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:picture_that/models/comment_model.dart';
+import 'package:picture_that/models/notification_model.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/models/relationship_model.dart';
 import 'package:picture_that/models/submission_model.dart';
@@ -15,6 +17,7 @@ import 'package:picture_that/providers/submission_provider.dart';
 final FirebaseAuth auth = FirebaseAuth.instance;
 final FirebaseFirestore db = FirebaseFirestore.instance;
 final FirebaseStorage storage = FirebaseStorage.instance;
+final FirebaseMessaging messaging = FirebaseMessaging.instance;
 GoogleSignIn googleSignIn = GoogleSignIn();
 
 //
@@ -102,9 +105,14 @@ Future<void> signUpWithEmailAndPassword({
     throw Exception("Username is already taken");
   }
 
-  UserCredential credential = await auth.createUserWithEmailAndPassword(
+  final credential = await auth.createUserWithEmailAndPassword(
     email: email,
     password: password,
+  );
+
+  await uploadFcmToken(
+    await messaging.getToken(),
+    userId: credential.user?.uid,
   );
 
   String profileImageUrl = await uploadImage(
@@ -128,9 +136,14 @@ Future<void> signInWithEmailAndPassword({
   required String email,
   required String password,
 }) async {
-  await auth.signInWithEmailAndPassword(
+  final credential = await auth.signInWithEmailAndPassword(
     email: email,
     password: password,
+  );
+
+  await uploadFcmToken(
+    await messaging.getToken(),
+    userId: credential.user?.uid,
   );
 }
 
@@ -143,6 +156,11 @@ Future<AuthCredential?> signInWithGoogle() async {
 
   final userCredential = await auth.signInWithCredential(credential);
   final additionalUserInfo = userCredential.additionalUserInfo;
+
+  await uploadFcmToken(
+    await messaging.getToken(),
+    userId: userCredential.user?.uid,
+  );
 
   if (additionalUserInfo?.isNewUser == true) {
     final firstName = additionalUserInfo?.profile!["given_name"] ?? "";
@@ -165,7 +183,7 @@ Future<AuthCredential?> signInWithGoogle() async {
 /// sign out
 Future<void> signOut() async {
   if (await googleSignIn.isSignedIn()) await googleSignIn.disconnect();
-
+  await deleteFcmToken(await messaging.getToken()); // delete device token
   await auth.signOut();
 }
 
@@ -179,7 +197,6 @@ Future<void> deleteAccount() async {
   final userId = auth.currentUser?.uid;
   if (userId == null) return;
 
-  // delete all the users submissions, comments, and relationships
   final batch = db.batch();
 
   final userDocRef = db.collection("users").doc(userId);
@@ -196,6 +213,8 @@ Future<void> deleteAccount() async {
         Filter("following", isEqualTo: auth.currentUser?.uid),
       ))
       .get();
+  final fcmTokensSnapshot =
+      await db.collection("fcmTokens").where("userId", isEqualTo: userId).get();
 
   // delete user auth
   await auth.currentUser?.delete();
@@ -208,6 +227,9 @@ Future<void> deleteAccount() async {
     batch.delete(doc.reference);
   }
   for (final doc in relationshipsSnapshot.docs) {
+    batch.delete(doc.reference);
+  }
+  for (final doc in fcmTokensSnapshot.docs) {
     batch.delete(doc.reference);
   }
   batch.delete(userDocRef);
@@ -433,6 +455,28 @@ Future<({List<SubmissionModel> items, DocumentSnapshot? lastDoc})>
   return (items: items, lastDoc: docs.last);
 }
 
+/// get a single submission
+Future<SubmissionModel?> getSubmission({required String submissionId}) async {
+  final snapshot = await db.collection("submissions").doc(submissionId).get();
+  if (!snapshot.exists) return null;
+
+  final data = snapshot.data() as Map<String, dynamic>;
+  final userData = await getUser(userId: data["userId"]);
+
+  final commentsCount = await getDocumentCount(
+    query: db
+        .collection("comments")
+        .where("submissionId", isEqualTo: submissionId),
+  );
+
+  return SubmissionModel.fromMap({
+    ...data,
+    "isLiked": data["likes"].contains(auth.currentUser?.uid),
+    "commentsCount": commentsCount,
+    "user": userData,
+  });
+}
+
 /// get a single prompt
 Future<PromptModel?> getPrompt({required String promptId}) async {
   final snapshot = await db.collection("prompts").doc(promptId).get();
@@ -565,6 +609,20 @@ Future<({List<CommentModel> items, DocumentSnapshot? lastDoc})> getComments({
   return (items: items, lastDoc: docs.last);
 }
 
+/// get a single comment
+Future<CommentModel?> getComment({required String commentId}) async {
+  final snapshot = await db.collection("comments").doc(commentId).get();
+  if (!snapshot.exists) return null;
+
+  final data = snapshot.data() as Map<String, dynamic>;
+  final userData = await getUser(userId: data["userId"]);
+
+  return CommentModel.fromMap({
+    ...data,
+    "user": userData,
+  });
+}
+
 /// add a comment
 Future<String> createComment({
   required String submissionId,
@@ -638,6 +696,101 @@ Future<void> deleteRelationship(String id) async {
   await docRef.delete();
 }
 
+/// get a list of notifications from "notifications" collection
+Future<({List<NotificationModel> items, DocumentSnapshot? lastDoc})>
+    getNotifications({
+  required int limit,
+  DocumentSnapshot? lastDocument,
+}) async {
+  Query query = db
+      .collection("notifications")
+      .where("recipientId", isEqualTo: auth.currentUser?.uid)
+      .orderBy("createdAt", descending: true)
+      .limit(limit);
+
+  if (lastDocument != null) {
+    query = query.startAfterDocument(lastDocument);
+  }
+
+  final snapshot = await query.get();
+  final docs = snapshot.docs;
+
+  if (docs.isEmpty) return (items: <NotificationModel>[], lastDoc: null);
+
+  final items = snapshot.docs.map((doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return NotificationModel.fromMap(data);
+  }).toList();
+
+  return (items: items, lastDoc: docs.last);
+}
+
 //
 // Notifications
 //
+
+/// initialize firebase cloud messaging
+///
+/// NOTE: this function call will break ios currently, as ios
+///   requires apns to be configured, which requires a paid developer account.
+Future<void> initializeFcm() async {
+  // request permission to send notifications
+  await messaging.requestPermission();
+
+  // listen for token refresh
+  messaging.onTokenRefresh.listen(uploadFcmToken);
+
+  // listen for messages when app is in foreground
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    // showDialog(
+    //   context: navigatorKey.currentContext!,
+    //   builder: (context) => AlertDialog(
+    //     title: Text(message.notification?.title ?? ""),
+    //     content: Text(message.notification?.body ?? ""),
+    //     actions: [
+    //       TextButton(
+    //         onPressed: () => Navigator.of(context).pop(),
+    //         child: const Text("OK"),
+    //       ),
+    //     ],
+    //   ),
+    // );
+  });
+}
+
+/// get device token and upload to firestore
+Future<void> uploadFcmToken(String? token, {String? userId}) async {
+  if (token == null) return;
+  userId ??= auth.currentUser?.uid;
+
+  final existing = await db
+      .collection("fcmTokens")
+      .where("token", isEqualTo: token)
+      .limit(1)
+      .get();
+
+  if (existing.docs.isEmpty) {
+    final docRef = db.collection("fcmTokens").doc();
+    await docRef.set({
+      "id": docRef.id,
+      "token": token,
+      "userId": userId,
+      "date": DateTime.now().toUtc(),
+    });
+  }
+}
+
+/// delete device token from firestore
+Future<void> deleteFcmToken(String? token) async {
+  if (token == null) return;
+
+  final snapshot = await db
+      .collection("fcmTokens")
+      .where("token", isEqualTo: token)
+      .limit(1)
+      .get();
+
+  if (snapshot.docs.isNotEmpty) {
+    await snapshot.docs.first.reference.delete();
+  }
+}

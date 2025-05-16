@@ -26,6 +26,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   share_plus: ^11.0.0
   google_sign_in: ^6.3.0
+  firebase_messaging: ^15.2.5
 
 dev_dependencies:
   flutter_test:
@@ -39,6 +40,9 @@ flutter:
     - assets/splash_screen_light.png
     - assets/splash_screen_dark.png
     - assets/google.png
+    - assets/apple.png
+    - assets/logo_light.png
+    - assets/default_pfp.png
 
 # make sure to run `dart run flutter_native_splash:create`
 flutter_native_splash:

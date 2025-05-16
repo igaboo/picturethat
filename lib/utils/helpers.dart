@@ -8,6 +8,7 @@ import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
+import 'package:picture_that/utils/preference_utils.dart';
 
 ///
 /// Notifier helpers
@@ -152,51 +153,33 @@ String getTimeLeft() {
   }
 }
 
-String getTimeElapsed(DateTime pastTime) {
-  final Duration diff = DateTime.now().difference(pastTime);
+String getTimeElapsed(DateTime pastTime, {bool? isShort}) {
+  final diff = DateTime.now().difference(pastTime);
 
-  if (diff.inSeconds < 60) {
-    return "Just now";
-  } else if (diff.inMinutes < 60) {
-    return Intl.plural(
-      diff.inMinutes,
-      one: "1 minute ago",
-      other: "${diff.inMinutes} minutes ago",
-    );
-  } else if (diff.inHours < 24) {
-    return Intl.plural(
-      diff.inHours,
-      one: "1 hour ago",
-      other: "${diff.inHours} hours ago",
-    );
-  } else if (diff.inDays < 7) {
-    return Intl.plural(
-      diff.inDays,
-      one: "1 day ago",
-      other: "${diff.inDays} days ago",
-    );
-  } else if (diff.inDays < 30) {
-    final int weeks = (diff.inDays / 7).floor();
-    return Intl.plural(
-      weeks,
-      one: "1 week ago",
-      other: "$weeks weeks ago",
-    );
-  } else if (diff.inDays < 365) {
-    final int months = (diff.inDays / 30).floor();
-    return Intl.plural(
-      months,
-      one: "1 month ago",
-      other: "$months months ago",
-    );
-  } else {
-    final int years = (diff.inDays / 365).floor();
-    return Intl.plural(
-      years,
-      one: "1 year ago",
-      other: "$years years ago",
-    );
+  final units = [
+    [diff.inSeconds, 60, 's', 'Just now', 'second'],
+    [diff.inMinutes, 60, 'm', null, 'minute'],
+    [diff.inHours, 24, 'h', null, 'hour'],
+    [diff.inDays, 30, 'd', null, 'day'],
+    [(diff.inDays / 30).round(), 12, 'mo', null, 'month'],
+    [(diff.inDays / 365).round(), double.infinity, 'y', null, 'year'],
+  ];
+
+  for (final unit in units) {
+    final value = unit[0] as int;
+    final max = unit[1] as num;
+    final shortLabel = unit[2] as String;
+    final fallback = unit[3] as String?;
+    final longLabel = unit[4] as String;
+
+    if (value < max) {
+      if (fallback != null) return fallback;
+      if (isShort == true) return "$value$shortLabel";
+      return "$value $longLabel${value > 1 ? 's' : ''} ago";
+    }
   }
+
+  return '';
 }
 
 String getFormattedDate(DateTime date) {
@@ -387,4 +370,20 @@ Future<void> toggleFollow(
   ref.invalidate(submissionProvider(
     SubmissionQueryParam(type: SubmissionQueryType.byFollowing),
   ));
+}
+
+///
+/// Notification helpers
+///
+
+Future<void> updateLastSeenNotifications() async {
+  final now = DateTime.now();
+  await setString('lastSeenNotifications', now.toIso8601String());
+}
+
+Future<DateTime?> getLastSeenNotifications() async {
+  final lastSeen = await getString('lastSeenNotifications');
+  if (lastSeen.isEmpty) return null;
+
+  return DateTime.tryParse(lastSeen);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/firebase_service.dart';
+import 'package:picture_that/providers/notification_badge_provider.dart';
 import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
@@ -34,6 +35,8 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final notificationsStreamAsync = ref.watch(hasUnseenNotificationsProvider);
+
     return Scaffold(
       body: PageView(
         controller: _pageController,
@@ -50,7 +53,7 @@ class _HomeState extends ConsumerState<Home> {
             _pageController?.jumpToPage(index);
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.lightbulb),
             label: "Prompts",
@@ -60,7 +63,11 @@ class _HomeState extends ConsumerState<Home> {
             label: "Feed",
           ),
           NavigationDestination(
-            icon: Icon(Icons.person),
+            icon: Badge(
+              isLabelVisible: notificationsStreamAsync.value ?? false,
+              smallSize: 10.0,
+              child: Icon(Icons.person),
+            ),
             label: "Profile",
           ),
         ],
