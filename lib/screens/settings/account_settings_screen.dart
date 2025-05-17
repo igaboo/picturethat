@@ -12,8 +12,8 @@ import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
-import 'package:picture_that/widgets/custom_button.dart';
-import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
 
 class AccountSettingsScreen extends ConsumerStatefulWidget {
@@ -89,7 +89,7 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account Settings'),
+        title: const Text('Account'),
       ),
       body: ListView(
         children: [

@@ -75,50 +75,31 @@ void updateCommentCountHelper({
   final context = navigatorKey.currentContext!;
   if (context.mounted == false) return;
 
-  void onInitialized(SubmissionNotifier notifier) {
-    notifier.updateCommentCount(
-      submissionId: submission.id,
-      isIncrementing: isIncrementing,
-    );
-  }
-
-  // update count for prompt submission
-  updateSubmissionNotifierIfInitialized(
-    ref: ref,
-    queryParam: SubmissionQueryParam(
+  for (final q in [
+    SubmissionQueryParam(
       type: SubmissionQueryType.byPrompt,
       id: submission.prompt.id,
     ),
-    onInitialized: onInitialized,
-  );
-
-  // update count for user submission
-  updateSubmissionNotifierIfInitialized(
-    ref: ref,
-    queryParam: SubmissionQueryParam(
+    SubmissionQueryParam(
       type: SubmissionQueryType.byUser,
       id: submission.user.uid,
     ),
-    onInitialized: onInitialized,
-  );
-
-  // update count for discover feed submission
-  updateSubmissionNotifierIfInitialized(
-    ref: ref,
-    queryParam: SubmissionQueryParam(
+    SubmissionQueryParam(
       type: SubmissionQueryType.byRandom,
     ),
-    onInitialized: onInitialized,
-  );
-
-  // update count for following feed submission
-  updateSubmissionNotifierIfInitialized(
-    ref: ref,
-    queryParam: SubmissionQueryParam(
+    SubmissionQueryParam(
       type: SubmissionQueryType.byFollowing,
     ),
-    onInitialized: onInitialized,
-  );
+  ]) {
+    updateSubmissionNotifierIfInitialized(
+      ref: ref,
+      queryParam: q,
+      onInitialized: (notifier) => notifier.updateCommentCount(
+        submissionId: submission.id,
+        isIncrementing: isIncrementing,
+      ),
+    );
+  }
 }
 
 ///
@@ -261,11 +242,23 @@ String getFormattedUnit({
 /// Navigation helpers
 ///
 
-void navigate(Widget screen) {
-  final context = navigatorKey.currentContext!;
+String? getCurrentRouteName() {
+  final navigator = navigatorKey.currentState;
+  if (navigator == null) return null;
 
+  Route? currentRoute;
+  navigator.popUntil((route) {
+    currentRoute = route;
+    return true;
+  });
+
+  return currentRoute?.settings.name;
+}
+
+void navigate(Widget screen) {
   final routeName = screen.runtimeType.toString();
-  final currentRouteName = ModalRoute.of(context)?.settings.name;
+  final currentRouteName = getCurrentRouteName();
+
   if (currentRouteName == routeName) return;
 
   navigatorKey.currentState?.push(

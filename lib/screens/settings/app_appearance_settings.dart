@@ -1,41 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/providers/theme_provider.dart';
+import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/widgets/settings_list_tile.dart';
-
-const List<Map<String, dynamic>> themeOptions = [
-  {
-    "key": "light",
-    "title": "Light",
-    "icon": Icons.light_mode,
-  },
-  {
-    "key": "dark",
-    "title": "Dark",
-    "icon": Icons.dark_mode,
-  },
-  {
-    "key": "system",
-    "title": "System",
-    "icon": Icons.brightness_4,
-  }
-];
-
-const List<Color> themeColors = [
-  Colors.red,
-  Colors.green,
-  Colors.blue,
-  Colors.yellow,
-  Colors.purple,
-  Colors.orange,
-  Colors.pink,
-  Colors.teal,
-  Colors.brown,
-  Colors.cyan,
-  Colors.indigo,
-  Colors.lime,
-  Colors.amber,
-];
 
 class AppAppearanceScreen extends ConsumerWidget {
   const AppAppearanceScreen({super.key});
@@ -49,7 +16,7 @@ class AppAppearanceScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text("App Appearance Settings")),
+      appBar: AppBar(title: Text("App Appearance")),
       body: ListView(
         children: [
           SettingsListHeader(title: "Theme Settings"),
@@ -98,45 +65,77 @@ class AppAppearanceScreen extends ConsumerWidget {
           SettingsListHeader(title: "Theme Color"),
           Padding(
             padding: const EdgeInsets.only(left: 32.0, right: 32.0, top: 16.0),
-            child: Wrap(
-              alignment: WrapAlignment.spaceBetween,
+            child: Column(
               spacing: 16.0,
-              runSpacing: 16.0,
-              children: themeColors.map((color) {
-                final isSelected = themeAsync.color == color;
-
-                return GestureDetector(
-                  onTap: () => themeNotifier.setColor(color),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+              children: [
+                ...themeColors.map((row) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
+                      ...row.map((color) {
+                        final isSelected =
+                            themeAsync.color.toARGB32() == color?.toARGB32();
+
+                        if (color == null) {
+                          return const SizedBox(
+                            width: 50,
+                            height: 50,
+                          );
+                        }
+
+                        return ThemeColorOption(
                           color: color,
-                          shape: BoxShape.circle,
-                        ),
-                        child: isSelected
-                            ? Container(
-                                margin: const EdgeInsets.all(5.0),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: colorScheme.surface,
-                                    width: 5,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
+                          isSelected: isSelected,
+                          onTap: () => themeNotifier.setColor(color),
+                        );
+                      })
                     ],
-                  ),
-                );
-              }).toList(),
+                  );
+                }),
+              ],
             ),
-          )
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class ThemeColorOption extends StatelessWidget {
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const ThemeColorOption({
+    super.key,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+        ),
+        child: isSelected
+            ? Container(
+                margin: const EdgeInsets.all(5.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surface,
+                    width: 5,
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }

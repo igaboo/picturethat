@@ -18,7 +18,7 @@ class BehaviorSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Behavior Settings")),
+      appBar: AppBar(title: Text("Behavior")),
       body: ListView(
         children: [
           SettingsListHeader(title: "Miscellaneous"),
