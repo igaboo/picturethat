@@ -14,10 +14,10 @@ import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/image_utils.dart';
-import 'package:picture_that/widgets/custom_button.dart';
-import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
-import 'package:picture_that/widgets/custom_text_field.dart';
+import 'package:picture_that/widgets/common/custom_text_field.dart';
 
 final headerSkeleton = CustomSkeletonizer(
   child: SubmitPhotoScreenHeader(

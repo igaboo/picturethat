@@ -4,7 +4,7 @@ import 'package:picture_that/models/notification_model.dart';
 import 'package:picture_that/providers/notification_provider.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/widgets/empty_state.dart';
-import 'package:picture_that/widgets/notification.dart';
+import 'package:picture_that/widgets/notification/notification.dart';
 
 final fetchingNextPageSkeleton = const Placeholder();
 

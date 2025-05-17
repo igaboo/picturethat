@@ -9,7 +9,7 @@ import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
-import 'package:picture_that/widgets/submission_list.dart';
+import 'package:picture_that/widgets/submission/submission_list.dart';
 
 final appBarTitleSkeleton = CustomSkeletonizer(
   child: TitleText(prompt: getDummyPrompt()),

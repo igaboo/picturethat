@@ -9,7 +9,7 @@ import 'package:picture_that/screens/notifications_screen.dart';
 import 'package:picture_that/screens/settings/settings_screen.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -19,11 +19,11 @@ import 'package:picture_that/models/user_model.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/providers/user_provider.dart';
 import 'package:picture_that/firebase_service.dart';
-import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
-import 'package:picture_that/widgets/custom_tooltip.dart';
-import 'package:picture_that/widgets/submission.dart';
-import 'package:picture_that/widgets/submission_list.dart';
+import 'package:picture_that/widgets/common/custom_tooltip.dart';
+import 'package:picture_that/widgets/submission/submission.dart';
+import 'package:picture_that/widgets/submission/submission_list.dart';
 
 /// TODO
 /// add follow and unfollow logic

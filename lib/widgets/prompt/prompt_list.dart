@@ -5,7 +5,7 @@ import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
-import 'package:picture_that/widgets/prompt.dart';
+import 'package:picture_that/widgets/prompt/prompt.dart';
 
 final fetchingNextPageSkeleton = CustomSkeletonizer(
   child: Prompt(prompt: getDummyPrompt(index: 1)),

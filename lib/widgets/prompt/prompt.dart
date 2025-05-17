@@ -3,7 +3,7 @@ import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/screens/prompt_feed_screen.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final widgetHeight = 300.0;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
 
 typedef EmptyStateAction = ({
   String label,

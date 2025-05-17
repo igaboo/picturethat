@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/providers/notification_badge_provider.dart';
 import 'package:picture_that/providers/notification_provider.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/widgets/notifications_list.dart';
+import 'package:picture_that/widgets/notification/notifications_list.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});

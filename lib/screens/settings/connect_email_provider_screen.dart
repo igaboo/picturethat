@@ -3,8 +3,8 @@ import 'package:picture_that/firebase_service.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/text_validation.dart';
-import 'package:picture_that/widgets/custom_button.dart';
-import 'package:picture_that/widgets/custom_text_field.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_text_field.dart';
 
 class ConnectEmailProviderScreen extends StatefulWidget {
   const ConnectEmailProviderScreen({super.key});

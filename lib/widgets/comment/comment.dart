@@ -7,7 +7,7 @@ import 'package:picture_that/providers/comment_provider.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
-import 'package:picture_that/widgets/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
 
 class Comment extends ConsumerWidget {
   final CommentModel comment;

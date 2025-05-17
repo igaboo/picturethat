@@ -5,7 +5,7 @@ import 'package:picture_that/providers/pagination_provider.dart';
 import 'package:picture_that/providers/submission_provider.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
-import 'package:picture_that/widgets/submission.dart';
+import 'package:picture_that/widgets/submission/submission.dart';
 
 final fetchingNextPageSkeleton = CustomSkeletonizer(
   child: Submission(

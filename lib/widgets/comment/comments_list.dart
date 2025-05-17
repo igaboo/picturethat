@@ -4,10 +4,10 @@ import 'package:picture_that/models/comment_model.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/providers/comment_provider.dart';
 import 'package:picture_that/providers/pagination_provider.dart';
-import 'package:picture_that/widgets/comment.dart';
+import 'package:picture_that/widgets/comment/comment.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/empty_state.dart';
-import 'package:picture_that/widgets/submission.dart';
+import 'package:picture_that/widgets/submission/submission.dart';
 
 final fetchingNextPageSkeleton = CustomSkeletonizer(
     child: SizedBox(

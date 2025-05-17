@@ -5,9 +5,9 @@ import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
-import 'package:picture_that/widgets/custom_tooltip.dart';
-import 'package:picture_that/widgets/prompt.dart';
-import 'package:picture_that/widgets/prompt_list.dart';
+import 'package:picture_that/widgets/common/custom_tooltip.dart';
+import 'package:picture_that/widgets/prompt/prompt.dart';
+import 'package:picture_that/widgets/prompt/prompt_list.dart';
 
 final promptsListSkeleton = CustomSkeletonizer(
   child: ListView.separated(

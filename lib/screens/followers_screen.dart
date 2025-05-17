@@ -6,8 +6,8 @@ import 'package:picture_that/providers/relationship_provider.dart';
 import 'package:picture_that/screens/tabs/profile_screen.dart';
 import 'package:picture_that/utils/show_snackbar.dart';
 import 'package:picture_that/utils/helpers.dart';
-import 'package:picture_that/widgets/custom_image.dart';
-import 'package:picture_that/widgets/custom_button.dart';
+import 'package:picture_that/widgets/common/custom_image.dart';
+import 'package:picture_that/widgets/common/custom_button.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 
