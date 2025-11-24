@@ -303,6 +303,10 @@ String getErrorMessage(String errorCode) {
       return "That was the wrong google account. Please try again.";
     case "credential-already-in-use":
       return "This provider is already linked to another account.";
+    case "network-request-failed":
+      return "Network error. Please check your internet connection.";
+    case "firebase_firestore":
+      return "There was an error fetching data. Please try again later.";
     default:
       return "An unknown error occurred. Please try again later.";
   }

@@ -8,6 +8,7 @@ import 'package:picture_that/screens/authentication/landing_screen.dart';
 import 'package:picture_that/screens/forgot_password.dart';
 import 'package:picture_that/screens/settings/connect_email_provider_screen.dart';
 import 'package:picture_that/screens/settings/delete_account_screen.dart';
+import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/constants.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/utils/show_dialog.dart';
@@ -95,7 +96,11 @@ class AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
         children: [
           userAsync.when(
             loading: () => CircularProgressIndicator(),
-            error: (error, _) => Text("Error: $error"),
+            error: (error, _) => ErrorEmptyState(
+              callback: () {},
+              description:
+                  "There was an error loading your profile data. Please try again later.",
+            ),
             data: (user) {
               return SettingsListTile(
                 title: "${user?.firstName} ${user?.lastName}",

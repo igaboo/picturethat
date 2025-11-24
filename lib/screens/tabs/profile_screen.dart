@@ -8,6 +8,7 @@ import 'package:picture_that/screens/followers_screen.dart';
 import 'package:picture_that/screens/notifications_screen.dart';
 import 'package:picture_that/screens/settings/settings_screen.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
+import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/common/custom_button.dart';
 import 'package:picture_that/widgets/empty_state.dart';
@@ -97,6 +98,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final userAsync = ref.watch(userProvider(profileUid));
     final notificationsStreamAsync = ref.watch(hasUnseenNotificationsProvider);
 
+    Future<void> refreshUser() async {
+      ref.invalidate(userProvider(profileUid));
+      await ref.read(userProvider(profileUid).future);
+    }
+
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -152,7 +158,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         children: [
           userAsync.when(
             loading: () => profileSkeleton,
-            error: (e, _) => Text("Error: $e"),
+            error: (e, _) => ErrorEmptyState(
+              callback: refreshUser,
+              description:
+                  "An error occurred while fetching the user profile. Try again later.",
+            ),
             data: (user) {
               if (user == null) return const Text("No user found");
 
@@ -176,7 +186,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 onRefresh: refreshSubmissions,
                 child: feedAsync.when(
                   loading: () => profileSkeleton,
-                  error: (e, _) => Text("Error: $e"),
+                  error: (e, _) => ErrorEmptyState(
+                    callback: refreshSubmissions,
+                    description:
+                        "An error occurred while fetching the submissions list. Try again later.",
+                  ),
                   data: (submissions) => SubmissionListSliver(
                     emptyState: isSelf
                         ? EmptyState(

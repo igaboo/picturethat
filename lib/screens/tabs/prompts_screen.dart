@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:picture_that/models/prompt_model.dart';
 import 'package:picture_that/providers/prompt_provider.dart';
 import 'package:picture_that/screens/submit_photo_screen.dart';
+import 'package:picture_that/screens/tabs/feed_screen.dart';
 import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/custom_skeletonizer.dart';
 import 'package:picture_that/widgets/common/custom_tooltip.dart';
@@ -56,7 +57,11 @@ class _PromptsScreenState extends ConsumerState<PromptsScreen>
             onRefresh: _refreshPrompts,
             child: promptsAsync.when(
               loading: () => promptsListSkeleton,
-              error: (e, _) => Center(child: Text("Error: $e")),
+              error: (e, _) => ErrorEmptyState(
+                callback: _refreshPrompts,
+                description:
+                    "An error occurred while fetching prompts. Please try again later.",
+              ),
               data: (prompts) => PromptList(promptState: prompts),
             ),
           ),

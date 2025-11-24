@@ -23,11 +23,11 @@ class CustomNotification extends ConsumerWidget {
   String _getActionText() {
     switch (notification.type) {
       case NotificationType.comment:
-        return " commented on your post: ${notification.commentText}";
+        return " commented on your post: ${notification.commentText} ";
       case NotificationType.like:
-        return " liked your post.";
+        return " liked your post. ";
       case NotificationType.follow:
-        return " started following you.";
+        return " started following you. ";
     }
   }
 

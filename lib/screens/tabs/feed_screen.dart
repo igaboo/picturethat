@@ -197,11 +197,10 @@ class _FeedPageContentState extends ConsumerState<FeedPageContent>
           onRefresh: refreshSubmissions,
           child: submissionsAsync.when(
             loading: () => submissionListSkeleton,
-            error: (e, _) => EmptyState(
-              title: "Error",
-              subtitle: "An error occurred while loading submissions.",
-              icon: Icons.error,
-              action: (label: "Retry", onPressed: refreshSubmissions),
+            error: (e, _) => ErrorEmptyState(
+              callback: refreshSubmissions,
+              description:
+                  "There was an error fetching feed submissions. Please try again later.",
             ),
             data: (submissions) {
               return SubmissionListSliver(
@@ -222,6 +221,27 @@ class _FeedPageContentState extends ConsumerState<FeedPageContent>
           child: widget.tooltip,
         ),
       ],
+    );
+  }
+}
+
+class ErrorEmptyState extends StatelessWidget {
+  final Function() callback;
+  final String? description;
+
+  const ErrorEmptyState({
+    required this.callback,
+    this.description,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return EmptyState(
+      title: "Error",
+      subtitle: description ?? "Please try again later.",
+      icon: Icons.error,
+      action: (label: "Retry", onPressed: callback),
     );
   }
 }

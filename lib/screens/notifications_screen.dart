@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:picture_that/models/notification_model.dart';
 import 'package:picture_that/providers/notification_badge_provider.dart';
 import 'package:picture_that/providers/notification_provider.dart';
 import 'package:picture_that/utils/helpers.dart';
+import 'package:picture_that/widgets/custom_skeletonizer.dart';
+import 'package:picture_that/widgets/notification/notification.dart';
 import 'package:picture_that/widgets/notification/notifications_list.dart';
+
+Widget buildNotificationsListSkeleton(count) => CustomSkeletonizer(
+      child: ListView.builder(
+        itemCount: count,
+        itemBuilder: (context, index) {
+          return CustomNotification(
+            notification: getDummyNotification(index: index),
+            isNotificationNew: false,
+          );
+        },
+      ),
+    );
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -55,7 +70,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         title: const Text("Notifications"),
       ),
       body: notificationsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => buildNotificationsListSkeleton(15),
         error: (e, _) => Center(child: Text("Error: $e")),
         data: (notifications) {
           return RefreshIndicator(

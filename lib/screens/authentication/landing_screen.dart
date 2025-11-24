@@ -17,129 +17,152 @@ class LandingScreen extends StatelessWidget {
     final isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 0), // hides header
+      appBar: AppBar(
+        toolbarHeight: 0.0,
+        backgroundColor: colorScheme.primaryContainer.withAlpha(100),
+      ),
       resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        maintainBottomViewPadding: true,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Images
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Image(
-                  image: AssetImage("assets/hero.png"),
-                  fit: BoxFit.cover,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [
+                0.0,
+                0.8
+              ],
+              colors: [
+                colorScheme.primaryContainer.withAlpha(100),
+                colorScheme.surface,
+              ]),
+        ),
+        child: SafeArea(
+          maintainBottomViewPadding: true,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Images
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Image(
+                    image: AssetImage("assets/hero.png"),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            // Text
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-              child: Column(
-                spacing: 10.0,
-                children: [
-                  Text(
-                    "A fresh perspective, every day.",
-                    textAlign: TextAlign.center,
-                    style: textTheme.displaySmall,
-                  ),
-                  Text(
-                    "A new photo prompt daily—capture it your way, share your work, and explore others' interpretations.",
-                    textAlign: TextAlign.center,
-                    style: textTheme.bodyLarge,
-                  ),
-                ],
-              ),
-            ),
-            // Buttons
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 32.0,
-                right: 32.0,
-                bottom: 16.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 16.0,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+              // Text
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 32.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 350),
+                  child: Column(
+                    spacing: 10.0,
                     children: [
-                      if (!isAndroid)
+                      Text(
+                        "A fresh perspective, every day.",
+                        textAlign: TextAlign.center,
+                        style: textTheme.displaySmall!.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        "A new photo prompt daily—capture it your way, share your work, and explore others' interpretations.",
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Buttons
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 32.0,
+                  right: 32.0,
+                  bottom: 16.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 16.0,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!isAndroid)
+                          CustomButton(
+                            label: "Continue with Apple",
+                            onPressed: () {},
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            outlineColor: Colors.black.withAlpha(50),
+                            prefix: Image.asset(
+                              "assets/apple.png",
+                              width: 20,
+                              height: 20,
+                            ),
+                          ),
                         CustomButton(
-                          label: "Continue with Apple",
-                          onPressed: () {},
+                          label: "Continue with Google",
+                          onPressed: () async {
+                            final credential = await signInWithGoogle();
+
+                            if (credential != null) {
+                              navigateAndDisableBack(Home());
+                            }
+                          },
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
                           outlineColor: Colors.black.withAlpha(50),
                           prefix: Image.asset(
-                            "assets/apple.png",
+                            "assets/google.png",
                             width: 20,
                             height: 20,
                           ),
                         ),
-                      CustomButton(
-                        label: "Continue with Google",
-                        onPressed: () async {
-                          final credential = await signInWithGoogle();
-
-                          if (credential != null) {
-                            navigateAndDisableBack(Home());
-                          }
-                        },
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        outlineColor: Colors.black.withAlpha(50),
-                        prefix: Image.asset(
-                          "assets/google.png",
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                      CustomButton(
-                        label: "Or continue with email",
-                        onPressed: () => navigate(const RegisterScreen()),
-                        type: CustomButtonType.text,
-                      ),
-                    ],
-                  ),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: textTheme.bodyMedium!.copyWith(
-                        color: colorScheme.secondary,
-                      ),
-                      children: [
-                        TextSpan(text: "By continuing, you agree to our \n"),
-                        TextSpan(
-                          text: "Terms of Service",
-                          style: TextStyle(
-                              color: colorScheme.primary,
-                              decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () =>
-                                launchUrl(Uri.parse("https://www.google.com")),
-                        ),
-                        TextSpan(text: " and "),
-                        TextSpan(
-                          text: "Privacy Policy",
-                          style: TextStyle(
-                              color: colorScheme.primary,
-                              decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () =>
-                                launchUrl(Uri.parse("https://www.google.com")),
+                        CustomButton(
+                          label: "Or continue with email",
+                          onPressed: () => navigate(const RegisterScreen()),
+                          type: CustomButtonType.text,
                         ),
                       ],
                     ),
-                  )
-                ],
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: textTheme.bodyMedium!.copyWith(
+                          color: colorScheme.secondary,
+                        ),
+                        children: [
+                          TextSpan(text: "By continuing, you agree to our \n"),
+                          TextSpan(
+                            text: "Terms of Service",
+                            style: TextStyle(
+                                color: colorScheme.primary,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                  Uri.parse("https://www.google.com")),
+                          ),
+                          TextSpan(text: " and "),
+                          TextSpan(
+                            text: "Privacy Policy",
+                            style: TextStyle(
+                                color: colorScheme.primary,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                  Uri.parse("https://www.google.com")),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
