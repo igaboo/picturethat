@@ -13,7 +13,6 @@ import 'package:picture_that/utils/helpers.dart';
 import 'package:picture_that/widgets/common/custom_button.dart';
 import 'package:picture_that/widgets/empty_state.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:picture_that/models/submission_model.dart';
 import 'package:picture_that/models/user_model.dart';
